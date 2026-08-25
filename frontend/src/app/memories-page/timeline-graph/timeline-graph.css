@@ -1,0 +1,93 @@
+.timeline-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.timeline-svg {
+  width: 100%;
+  height: 160px;
+  display: block;
+}
+
+.lane-line {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.lane-label {
+  fill: var(--color-text-faint);
+  font-size: 11px;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dot {
+  cursor: pointer;
+  stroke: var(--color-bg);
+  stroke-width: 2;
+  transition: r 0.15s ease;
+}
+
+.dot:hover {
+  r: 9;
+}
+
+.dot-photo {
+  fill: var(--color-pink);
+}
+
+.dot-audio {
+  fill: var(--color-blue);
+}
+
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -115%);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  width: 160px;
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+  z-index: 5;
+  text-align: center;
+}
+
+.tooltip-thumb {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.tooltip-audio-icon {
+  width: 100%;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: var(--color-surface-strong);
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.tooltip-caption {
+  margin: 0 0 2px;
+  font-size: 0.78rem;
+  color: var(--color-text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tooltip-date {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--color-text-faint);
+}

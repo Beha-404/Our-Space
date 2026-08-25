@@ -1,0 +1,97 @@
+<div class="landing">
+	<header class="landing-nav">
+		<div class="brand">
+			<span class="brand-mark">✦</span>
+			<span class="brand-name gradient-text">OurSpace</span>
+		</div>
+		<div class="landing-nav-actions">
+			<app-language-switcher></app-language-switcher>
+			<a routerLink="/login" class="btn btn-ghost btn-sm">{{ 'landing.navLogin' | translate }}</a>
+			<a routerLink="/register" class="btn btn-primary btn-sm">{{ 'landing.navRegister' | translate }}</a>
+		</div>
+	</header>
+
+	<section class="hero fade-in">
+		<h1>{{ 'landing.heroTitle' | translate }} <span class="gradient-text">{{ 'landing.heroHighlight' | translate }}</span></h1>
+		<p class="hero-subtitle">{{ 'landing.heroSubtitle' | translate }}</p>
+		<div class="hero-actions">
+			<a routerLink="/register" class="btn btn-primary">{{ 'landing.ctaCreate' | translate }}</a>
+			<a routerLink="/login" class="btn btn-ghost">{{ 'landing.ctaLogin' | translate }}</a>
+		</div>
+	</section>
+
+	<section class="preview">
+		<h2>{{ 'landing.previewTitle' | translate }}</h2>
+		<p class="preview-subtitle">{{ 'landing.previewSubtitle' | translate }}</p>
+
+		<div class="memory-collage">
+			<div class="memory-card mc-1">
+				<div class="mc-swatch mc-swatch-photo">🖼️</div>
+				<p>{{ 'landing.memoryPhoto' | translate }}</p>
+			</div>
+			<div class="memory-card mc-2">
+				<div class="mc-swatch mc-swatch-audio">🎧</div>
+				<p>{{ 'landing.memoryAudio' | translate }}</p>
+			</div>
+			<div class="memory-card mc-3">
+				<div class="mc-swatch mc-swatch-event">📅</div>
+				<p>{{ 'landing.memoryEvent' | translate }}</p>
+			</div>
+			<div class="memory-card mc-4">
+				<div class="mc-swatch mc-swatch-wish">💫</div>
+				<p>{{ 'landing.memoryWish' | translate }}</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="how-it-works">
+		<h2>{{ 'landing.howTitle' | translate }}</h2>
+		<div class="steps">
+			<div class="card step">
+				<span class="step-number">1</span>
+				<h3>{{ 'landing.step1Title' | translate }}</h3>
+				<p>{{ 'landing.step1Desc' | translate }}</p>
+			</div>
+			<div class="card step">
+				<span class="step-number">2</span>
+				<h3>{{ 'landing.step2Title' | translate }}</h3>
+				<p>{{ 'landing.step2Desc' | translate }}</p>
+			</div>
+			<div class="card step">
+				<span class="step-number">3</span>
+				<h3>{{ 'landing.step3Title' | translate }}</h3>
+				<p>{{ 'landing.step3Desc' | translate }}</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="features">
+		<h2>{{ 'landing.featuresTitle' | translate }}</h2>
+		<div class="feature-grid">
+			<div class="card feature-card">
+				<span class="feature-icon">🖼️</span>
+				<h3>{{ 'landing.featurePhotosTitle' | translate }}</h3>
+				<p>{{ 'landing.featurePhotosDesc' | translate }}</p>
+			</div>
+			<div class="card feature-card">
+				<span class="feature-icon">🎧</span>
+				<h3>{{ 'landing.featureAudioTitle' | translate }}</h3>
+				<p>{{ 'landing.featureAudioDesc' | translate }}</p>
+			</div>
+			<div class="card feature-card">
+				<span class="feature-icon">📈</span>
+				<h3>{{ 'landing.featureTimelineTitle' | translate }}</h3>
+				<p>{{ 'landing.featureTimelineDesc' | translate }}</p>
+			</div>
+			<div class="card feature-card">
+				<span class="feature-icon">📝</span>
+				<h3>{{ 'landing.featureWishlistTitle' | translate }}</h3>
+				<p>{{ 'landing.featureWishlistDesc' | translate }}</p>
+			</div>
+		</div>
+	</section>
+
+	<footer class="landing-footer">
+		<p>{{ 'landing.footer' | translate }}</p>
+	</footer>
+</div>

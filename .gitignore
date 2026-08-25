@@ -37,3 +37,6 @@ frontend/dist/
 
 # .NET user-specific files
 *.csproj.user
+
+# User-uploaded files (photos/audio) — local dev storage only
+backend/OurSpace.API/uploads/

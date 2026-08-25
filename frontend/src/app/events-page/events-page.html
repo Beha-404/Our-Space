@@ -1,0 +1,112 @@
+<div class="page">
+	<app-navbar></app-navbar>
+
+	<div class="container fade-in events-content">
+		<h1>{{ 'events.title' | translate }}</h1>
+		<p class="subtitle">{{ 'events.subtitle' | translate }}</p>
+
+		@if (!isPaired()) {
+			<div class="card notice-card">
+				<p>{{ 'events.needPartner' | translate }}</p>
+			</div>
+		} @else {
+			<div class="card add-event-card">
+				<h4>{{ 'events.addTitle' | translate }}</h4>
+
+				<div class="field-row">
+					<div class="field">
+						<label for="title">{{ 'events.titleLabel' | translate }}</label>
+						<input id="title" type="text" [placeholder]="'events.titlePlaceholder' | translate"
+							[value]="formData().title" (input)="updateField('title', $any($event.target).value)">
+					</div>
+					<div class="field">
+						<label for="eventDate">{{ 'events.dateLabel' | translate }}</label>
+						<input id="eventDate" type="date" [value]="formData().eventDate"
+							(input)="updateField('eventDate', $any($event.target).value)">
+					</div>
+				</div>
+
+				<div class="field">
+					<label for="description">{{ 'events.descLabel' | translate }}</label>
+					<input id="description" type="text" [placeholder]="'events.descPlaceholder' | translate"
+						[value]="formData().description" (input)="updateField('description', $any($event.target).value)">
+				</div>
+
+				<span class="hint">{{ 'events.reminderNote' | translate }}</span>
+
+				@if (addErrorKey()) {
+					<div class="alert alert-error">{{ addErrorKey() | translate }}</div>
+				}
+
+				<button class="btn btn-primary" (click)="addEvent()" [disabled]="adding()">
+					{{ (adding() ? 'events.adding' : 'events.addButton') | translate }}
+				</button>
+			</div>
+
+			<h2 class="section-title">{{ 'events.upcomingTitle' | translate }}</h2>
+
+			@if (events().length === 0 && !loading()) {
+				<p class="muted-hint">{{ 'events.noEvents' | translate }}</p>
+			}
+
+			<div class="events-list">
+				@for (event of events(); track event.id) {
+					@if (editingEventId() === event.id) {
+						<div class="card event-card event-card-editing">
+							<div class="field-row">
+								<div class="field">
+									<label>{{ 'events.titleLabel' | translate }}</label>
+									<input type="text" [value]="editFormData().title" (input)="updateEditField('title', $any($event.target).value)">
+								</div>
+								<div class="field">
+									<label>{{ 'events.dateLabel' | translate }}</label>
+									<input type="date" [value]="editFormData().eventDate" (input)="updateEditField('eventDate', $any($event.target).value)">
+								</div>
+							</div>
+							<div class="field">
+								<label>{{ 'events.descLabel' | translate }}</label>
+								<input type="text" [value]="editFormData().description" (input)="updateEditField('description', $any($event.target).value)">
+							</div>
+							@if (editErrorKey()) {
+								<div class="alert alert-error">{{ editErrorKey() | translate }}</div>
+							}
+							<div class="edit-actions">
+								<button class="btn btn-primary btn-sm" (click)="saveEdit(event.id)" [disabled]="saving()">
+									{{ (saving() ? 'profile.saving' : 'profile.saveDate') | translate }}
+								</button>
+								<button class="btn btn-ghost btn-sm" (click)="cancelEdit()">{{ 'profile.cancelDate' | translate }}</button>
+							</div>
+						</div>
+					} @else {
+						<div class="card event-card">
+							<div class="event-date-badge">
+								<span class="event-day">{{ event.eventDate | date:'d' }}</span>
+								<span class="event-month">{{ event.eventDate | date:'MMM' }}</span>
+							</div>
+							<div class="event-info">
+								<h3>{{ event.title }}</h3>
+								@if (event.description) {
+									<p>{{ event.description }}</p>
+								}
+								<span class="event-meta">
+									@if (daysUntil(event.eventDate) === 0) {
+										{{ 'events.today' | translate }}
+									} @else if (daysUntil(event.eventDate) === 1) {
+										{{ 'events.tomorrow' | translate }}
+									} @else {
+										{{ daysUntil(event.eventDate) }} {{ 'events.daysLeft' | translate }}
+									}
+									· {{ 'events.addedBy' | translate }} {{ event.createdByUsername }}
+								</span>
+							</div>
+							<div class="event-actions">
+								<button class="btn btn-ghost btn-sm" (click)="startEdit(event)">{{ 'profile.editDate' | translate }}</button>
+								<button class="btn btn-ghost btn-sm" (click)="deleteEvent(event.id)">{{ 'events.deleteButton' | translate }}</button>
+							</div>
+						</div>
+					}
+				}
+			</div>
+		}
+	</div>
+</div>

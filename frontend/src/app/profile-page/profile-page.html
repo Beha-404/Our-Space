@@ -1,0 +1,171 @@
+<div class="page">
+	<app-navbar></app-navbar>
+
+	<div class="container fade-in profile-content">
+		<h1>{{ 'profile.titlePrefix' | translate }} <span class="gradient-text">{{ 'profile.title' | translate }}</span></h1>
+
+		@if (currentUser(); as user) {
+			<div class="card profile-card">
+				<div class="avatar-col">
+					<app-avatar [name]="user.displayName || user.username" [pictureUrl]="user.profilePictureUrl" [size]="84"></app-avatar>
+					<input #pictureFileInput type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)">
+					<label for="pictureFile" class="btn btn-ghost btn-sm">
+						{{ (uploadingPicture() ? 'profile.uploadingPicture' : 'profile.changePicture') | translate }}
+					</label>
+					@if (pictureErrorKey()) {
+						<span class="picture-error">{{ pictureErrorKey() | translate }}</span>
+					}
+				</div>
+
+				<div class="profile-form">
+					<div class="subsection">
+						<div class="subsection-header">
+							<span class="lock-icon">🔒</span>
+							<h4>{{ 'profile.basicInfoTitle' | translate }}</h4>
+							<span class="hint">{{ 'profile.basicInfoHint' | translate }}</span>
+						</div>
+						<div class="field-row">
+							<div class="field">
+								<label>{{ 'profile.usernameLabel' | translate }}</label>
+								<input type="text" [value]="user.username" disabled>
+							</div>
+							<div class="field">
+								<label>{{ 'profile.emailLabel' | translate }}</label>
+								<input type="text" [value]="user.email" disabled>
+							</div>
+						</div>
+					</div>
+
+					<div class="subsection subsection-editable">
+						<div class="subsection-header">
+							<span class="edit-icon">✎</span>
+							<h4>{{ 'profile.editableTitle' | translate }}</h4>
+							<span class="hint">{{ 'profile.editableHint' | translate }}</span>
+						</div>
+
+						<div class="field">
+							<label for="displayName">{{ 'profile.displayNameLabel' | translate }}</label>
+							<input id="displayName" type="text" [placeholder]="'profile.displayNamePlaceholder' | translate"
+								[value]="formData().displayName"
+								(input)="updateField('displayName', $any($event.target).value)">
+						</div>
+
+						@if (saveMessageKey()) {
+							<div class="alert alert-success">{{ saveMessageKey() | translate }}</div>
+						}
+						@if (saveErrorKey()) {
+							<div class="alert alert-error">{{ saveErrorKey() | translate }}</div>
+						}
+
+						<button class="btn btn-primary" (click)="saveProfile()" [disabled]="saving()">
+							{{ (saving() ? 'profile.saving' : 'profile.saveButton') | translate }}
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<h2 class="section-title">{{ 'profile.partnerTitle' | translate }}</h2>
+			<div class="card pairing-card">
+				@if (user.partner; as partner) {
+					<div class="paired-row">
+						<app-avatar [name]="partner.displayName || partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="48"></app-avatar>
+						<div class="paired-info">
+							<h3>{{ partner.displayName || partner.username }}</h3>
+
+							@if (!editingRelationshipDate()) {
+								@if (partner.relationshipStartDate) {
+									<p>{{ 'profile.togetherSince' | translate }} {{ partner.relationshipStartDate | date:'longDate' }}
+										<button class="link-btn" (click)="startEditRelationshipDate()">{{ 'profile.editDate' | translate }}</button>
+									</p>
+								} @else {
+									<p>
+										{{ 'profile.dateNotAdded' | translate }}
+										<button class="link-btn" (click)="startEditRelationshipDate()">{{ 'profile.addDate' | translate }}</button>
+									</p>
+								}
+							} @else {
+								<div class="date-edit-row">
+									<input type="date" [value]="relationshipDateEdit()" (input)="relationshipDateEdit.set($any($event.target).value)">
+									<button class="btn btn-primary btn-sm" (click)="saveRelationshipDate()" [disabled]="relationshipDateSaving()">
+										{{ (relationshipDateSaving() ? 'profile.saving' : 'profile.saveDate') | translate }}
+									</button>
+									<button class="btn btn-ghost btn-sm" (click)="cancelEditRelationshipDate()">{{ 'profile.cancelDate' | translate }}</button>
+								</div>
+								@if (relationshipDateErrorKey()) {
+									<div class="alert alert-error">{{ relationshipDateErrorKey() | translate }}</div>
+								}
+							}
+						</div>
+					</div>
+				} @else {
+					<p class="pairing-intro">{{ 'profile.notPairedIntro' | translate }}</p>
+
+					<div class="pairing-grid">
+						<div class="pairing-block">
+							<h4>{{ 'profile.generateCodeTitle' | translate }}</h4>
+							@if (pairingCode(); as pc) {
+								<div class="code-display">
+									<span class="code-value">{{ pc.code }}</span>
+									<button class="btn btn-sm" [class.btn-ghost]="!codeCopied()" [class.btn-copied]="codeCopied()" (click)="copyCode()">
+										{{ (codeCopied() ? 'profile.copied' : 'profile.copyButton') | translate }}
+									</button>
+								</div>
+								<p class="code-expiry">{{ 'profile.expiresLabel' | translate }} {{ pc.expiresAt | date:'short' }}</p>
+							} @else {
+								<button class="btn btn-ghost" (click)="generateCode()" [disabled]="pairingLoading()">
+									{{ (pairingLoading() ? 'profile.generating' : 'profile.generateCodeButton') | translate }}
+								</button>
+							}
+						</div>
+
+						<div class="pairing-block">
+							<h4>{{ 'profile.enterCodeTitle' | translate }}</h4>
+							<div class="field">
+								<input type="text" [placeholder]="'profile.codePlaceholder' | translate" [value]="pairInput()"
+									(input)="pairInput.set($any($event.target).value)">
+							</div>
+							<div class="field">
+								<label for="relStart">{{ 'profile.dateOptionalLabel' | translate }}</label>
+								<input id="relStart" type="date" [value]="relationshipDateInput()"
+									(input)="relationshipDateInput.set($any($event.target).value)">
+								<span class="hint">{{ 'profile.dateHint' | translate }}</span>
+							</div>
+							<button class="btn btn-primary" (click)="submitPair()">{{ 'profile.connectButton' | translate }}</button>
+						</div>
+					</div>
+
+					@if (pairErrorKey()) {
+						<div class="alert alert-error">{{ pairErrorKey() | translate }}</div>
+					}
+				}
+			</div>
+
+			<h2 class="section-title">{{ 'profile.dangerZoneTitle' | translate }}</h2>
+			<div class="card danger-card">
+				@if (!deleteConfirming()) {
+					<div class="danger-row">
+						<div>
+							<h3>{{ 'profile.deleteAccountTitle' | translate }}</h3>
+							<p>{{ 'profile.deleteAccountDesc' | translate }}</p>
+						</div>
+						<button class="btn btn-danger" (click)="confirmDelete()">{{ 'profile.deleteButton' | translate }}</button>
+					</div>
+				} @else {
+					<div class="danger-row">
+						<div>
+							<h3>{{ 'profile.confirmDeleteTitle' | translate }}</h3>
+							<p>{{ 'profile.confirmDeleteDesc' | translate }}</p>
+							@if (deleteErrorKey()) {
+								<div class="alert alert-error">{{ deleteErrorKey() | translate }}</div>
+							}
+						</div>
+						<div class="danger-actions">
+							<button class="btn btn-ghost" (click)="cancelDelete()">{{ 'profile.cancelButton' | translate }}</button>
+							<button class="btn btn-danger" (click)="deleteAccount()">{{ 'profile.confirmDeleteButton' | translate }}</button>
+						</div>
+					</div>
+				}
+			</div>
+		}
+	</div>
+</div>

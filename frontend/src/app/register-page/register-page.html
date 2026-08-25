@@ -1,0 +1,45 @@
+<div class="auth-page">
+	<div class="auth-card card fade-in">
+		<div class="brand">
+			<span class="brand-mark">✦</span>
+			<span class="brand-name gradient-text">OurSpace</span>
+		</div>
+		<h1>{{ 'auth.registerTitle' | translate }}</h1>
+		<p class="subtitle">{{ 'auth.registerSubtitle' | translate }}</p>
+
+		<form (submit)="register(); $event.preventDefault()">
+			<div class="field">
+				<label for="username">{{ 'auth.usernameLabel' | translate }}</label>
+				<input id="username" type="text" autocomplete="username" [value]="registerData().username"
+					(input)="updateField('username', $any($event.target).value)">
+			</div>
+
+			<div class="field">
+				<label for="email">{{ 'auth.emailLabel' | translate }}</label>
+				<input id="email" type="email" autocomplete="email" [value]="registerData().email"
+					(input)="updateField('email', $any($event.target).value)">
+			</div>
+
+			<div class="field">
+				<label for="password">{{ 'auth.passwordLabel' | translate }}</label>
+				<input id="password" type="password" autocomplete="new-password" [value]="registerData().password"
+					(input)="updateField('password', $any($event.target).value)">
+				<span class="hint">{{ 'auth.passwordHint' | translate }}</span>
+			</div>
+
+			<div class="field">
+				<label for="confirmPassword">{{ 'auth.confirmPasswordLabel' | translate }}</label>
+				<input id="confirmPassword" type="password" autocomplete="new-password" [value]="registerData().confirmPassword"
+					(input)="updateField('confirmPassword', $any($event.target).value)">
+			</div>
+
+			@if (errorKey()) {
+				<div class="alert alert-error">{{ errorKey() | translate }}</div>
+			}
+
+			<button class="btn btn-primary" type="submit" style="width: 100%">{{ 'auth.registerButton' | translate }}</button>
+		</form>
+
+		<p class="switch-link">{{ 'auth.hasAccount' | translate }} <a routerLink="/login">{{ 'auth.loginLink' | translate }}</a></p>
+	</div>
+</div>

@@ -1,2 +1,94 @@
-<app-navbar></app-navbar>
-<p>home-page works!</p>
+<div class="page">
+	<app-navbar></app-navbar>
+
+	<div class="container fade-in home-content">
+		@if (userService.currentUser(); as user) {
+			<h1>{{ 'home.greeting' | translate }} <span class="gradient-text">{{ user.displayName || user.username }}</span> 👋</h1>
+
+			@if (user.partner; as partner) {
+				<div class="card couple-card">
+					<app-avatar [name]="partner.displayName || partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="56"></app-avatar>
+					<div>
+						<p class="couple-label">{{ 'profile.partnerTitle' | translate }}</p>
+						<h3>{{ partner.displayName || partner.username }}</h3>
+						@if (daysTogether() !== null) {
+							<p class="days-together">{{ 'home.togetherPrefix' | translate }} <strong>{{ daysTogether() }}</strong> {{ 'home.togetherSuffix' | translate }}</p>
+						}
+					</div>
+				</div>
+
+				<div class="events-preview-row">
+					<h2 class="section-title no-margin">{{ 'home.upcomingEventsTitle' | translate }}</h2>
+					<a routerLink="/events" class="link-btn">{{ 'home.viewAllEvents' | translate }}</a>
+				</div>
+				@if (upcomingEvents().length > 0) {
+					<div class="events-preview">
+						@for (event of upcomingEvents(); track event.id) {
+							<div class="card event-chip">
+								<span class="event-chip-date">{{ event.eventDate | date:'d MMM' }}</span>
+								<span class="event-chip-title">{{ event.title }}</span>
+							</div>
+						}
+					</div>
+				} @else {
+					<p class="muted-hint">{{ 'home.noUpcomingEvents' | translate }} <a routerLink="/events">{{ 'home.addEvent' | translate }}</a></p>
+				}
+			} @else {
+				<div class="card couple-card couple-card-empty">
+					<div>
+						<h3>{{ 'home.notConnectedTitle' | translate }}</h3>
+						<p>{{ 'home.notConnectedDesc' | translate }}</p>
+					</div>
+					<a routerLink="/profile" class="btn btn-primary">{{ 'home.connectCta' | translate }}</a>
+				</div>
+			}
+
+			@if (timelineItems().length > 0) {
+				<div class="graph-header">
+					<h2 class="section-title no-margin">{{ 'memories.timelineTitle' | translate }}</h2>
+					<a routerLink="/memories" class="link-btn">{{ 'home.viewAllMemories' | translate }}</a>
+				</div>
+				<div class="card timeline-card">
+					<app-timeline-graph [items]="timelineItems()"></app-timeline-graph>
+				</div>
+			} @else {
+				<h2 class="section-title">{{ 'home.emptyTitle' | translate }}</h2>
+				<div class="card empty-state">
+					<p>{{ 'home.emptyDesc' | translate }}</p>
+					<div class="mini-collage">
+						<span class="mini-swatch mini-swatch-photo">🖼️</span>
+						<span class="mini-swatch mini-swatch-audio">🎧</span>
+						<span class="mini-swatch mini-swatch-timeline">📈</span>
+						<span class="mini-swatch mini-swatch-wish">📝</span>
+					</div>
+					<a routerLink="/memories" class="btn btn-primary">{{ 'home.addFirstMemory' | translate }}</a>
+				</div>
+			}
+
+			<h2 class="section-title">{{ 'home.roadmapTitle' | translate }}</h2>
+			<div class="feature-grid">
+				<a routerLink="/memories" class="card feature-card feature-card-link">
+					<span class="feature-icon">🖼️</span>
+					<h3>{{ 'landing.featurePhotosTitle' | translate }}</h3>
+					<p>{{ 'landing.featurePhotosDesc' | translate }}</p>
+				</a>
+				<a routerLink="/memories" class="card feature-card feature-card-link">
+					<span class="feature-icon">🎧</span>
+					<h3>{{ 'landing.featureAudioTitle' | translate }}</h3>
+					<p>{{ 'landing.featureAudioDesc' | translate }}</p>
+				</a>
+				<a routerLink="/memories" class="card feature-card feature-card-link">
+					<span class="feature-icon">📈</span>
+					<h3>{{ 'landing.featureTimelineTitle' | translate }}</h3>
+					<p>{{ 'landing.featureTimelineDesc' | translate }}</p>
+				</a>
+				<div class="card feature-card">
+					<span class="feature-icon">📝</span>
+					<h3>{{ 'landing.featureWishlistTitle' | translate }}</h3>
+					<p>{{ 'landing.featureWishlistDesc' | translate }}</p>
+					<span class="badge">{{ 'home.comingSoon' | translate }}</span>
+				</div>
+			</div>
+		}
+	</div>
+</div>

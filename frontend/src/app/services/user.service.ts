@@ -1,4 +1,64 @@
-import { Service } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable, signal } from '@angular/core';
+import { tap } from 'rxjs';
+import { config } from '../config';
+import { PairingCodeResponse, PairRequest } from '../interfaces/pairing';
+import { UpdateUserRequest } from '../interfaces/updateUserRequest';
+import { User } from '../interfaces/user';
 
-@Service()
-export class UserService {}
+@Injectable({ providedIn: 'root' })
+export class UserService {
+    private http = inject(HttpClient);
+    private apiUrl = config.apiUrl;
+
+    readonly currentUser = signal<User | null>(null);
+
+    getCurrentUser() {
+        return this.http.get<User>(`${this.apiUrl}/user/current`);
+    }
+
+    refreshCurrentUser() {
+        return this.getCurrentUser().pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    clearCurrentUser(): void {
+        this.currentUser.set(null);
+    }
+
+    updateUser(userData: UpdateUserRequest) {
+        return this.http.put<User>(`${this.apiUrl}/user`, userData).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    deleteUser(userId: number) {
+        return this.http.delete(`${this.apiUrl}/user/${userId}`);
+    }
+
+    generatePairingCode() {
+        return this.http.post<PairingCodeResponse>(`${this.apiUrl}/user/pairing-code`, {});
+    }
+
+    pair(request: PairRequest) {
+        return this.http.post<User>(`${this.apiUrl}/user/pair`, request).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    setRelationshipDate(relationshipStartDate: string) {
+        return this.http.put<User>(`${this.apiUrl}/user/relationship-date`, { relationshipStartDate }).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    uploadProfilePicture(file: File) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return this.http.post<User>(`${this.apiUrl}/user/profile-picture`, formData).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+}

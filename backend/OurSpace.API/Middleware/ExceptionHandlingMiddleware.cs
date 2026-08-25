@@ -1,0 +1,35 @@
+using System.Net;
+using System.Text.Json;
+using OurSpace.API.Common.Exceptions;
+
+namespace OurSpace.API.Middleware;
+
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+{
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await next(context);
+        }
+        catch (ApiException ex)
+        {
+            logger.LogWarning(ex, "Handled API exception: {Message}", ex.Message);
+            await WriteProblem(context, ex.StatusCode, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unhandled exception");
+            await WriteProblem(context, HttpStatusCode.InternalServerError, "An unexpected error occurred.");
+        }
+    }
+
+    private static Task WriteProblem(HttpContext context, HttpStatusCode statusCode, string message)
+    {
+        context.Response.ContentType = "application/problem+json";
+        context.Response.StatusCode = (int)statusCode;
+
+        var problem = new { title = message, status = (int)statusCode };
+        return context.Response.WriteAsync(JsonSerializer.Serialize(problem));
+    }
+}

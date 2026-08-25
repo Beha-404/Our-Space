@@ -1,1 +1,335 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles + OurSpace design tokens */
+
+:root {
+  --color-bg: #0a0c18;
+  --color-bg-2: #12142a;
+  --color-surface: rgba(255, 255, 255, 0.045);
+  --color-surface-strong: rgba(255, 255, 255, 0.09);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.18);
+  --color-text: #f2f4fb;
+  --color-text-muted: #9aa3c0;
+  --color-text-faint: #6b7395;
+
+  --color-pink: #ff5da2;
+  --color-purple: #8b5cf6;
+  --color-blue: #38bdf8;
+  --color-danger: #f87171;
+  --color-success: #4ade80;
+
+  --gradient-primary: linear-gradient(135deg, var(--color-pink) 0%, var(--color-purple) 55%, var(--color-blue) 100%);
+  --gradient-text: linear-gradient(120deg, #ff8fc2, #b39bff, #7dd8ff);
+
+  --font-display: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --shadow-glow: 0 0 60px rgba(139, 92, 246, 0.18);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0 0 0.5em;
+}
+
+p {
+  margin: 0 0 1em;
+  color: var(--color-text-muted);
+}
+
+a {
+  color: var(--color-blue);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+/* Layout */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+/* Glass card */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-card);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Inputs */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.field input,
+.field textarea {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.field .hint {
+  font-size: 0.78rem;
+  color: var(--color-text-faint);
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: var(--color-purple);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: #0a0c18;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-surface-strong);
+}
+
+.btn-danger {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: var(--color-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.2);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+
+.btn-copied {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.4);
+  color: var(--color-success);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-blue);
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+/* Alerts */
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+}
+
+.alert-error {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #fca5a5;
+}
+
+.alert-success {
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #86efac;
+}
+
+/* Avatar */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #0a0c18;
+  font-family: var(--font-display);
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+/* Animated background */
+.cosmic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(ellipse at top, var(--color-bg-2) 0%, var(--color-bg) 60%);
+}
+
+.cosmic-bg .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.35;
+  animation: drift 22s ease-in-out infinite alternate;
+}
+
+.cosmic-bg .orb-1 {
+  width: 420px;
+  height: 420px;
+  top: -80px;
+  left: -60px;
+  background: var(--color-pink);
+}
+
+.cosmic-bg .orb-2 {
+  width: 480px;
+  height: 480px;
+  bottom: -120px;
+  right: -100px;
+  background: var(--color-blue);
+  animation-delay: -8s;
+}
+
+.cosmic-bg .orb-3 {
+  width: 360px;
+  height: 360px;
+  top: 40%;
+  left: 55%;
+  background: var(--color-purple);
+  animation-delay: -14s;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, -30px) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-bg .orb {
+    animation: none;
+  }
+}
+
+/* Fade-in utility */
+.fade-in {
+  animation: fadeIn 0.45s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

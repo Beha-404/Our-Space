@@ -1,0 +1,90 @@
+<div class="page">
+	<app-navbar></app-navbar>
+
+	<div class="container fade-in memories-content">
+		<h1>{{ 'memories.title' | translate }}</h1>
+		<p class="subtitle">{{ 'memories.subtitle' | translate }}</p>
+
+		@if (!isPaired()) {
+			<div class="card notice-card">
+				<p>{{ 'memories.needPartner' | translate }}</p>
+			</div>
+		} @else {
+			<div class="card upload-card">
+				<div class="type-toggle">
+					<button type="button" class="toggle-btn" [class.active]="uploadType() === 'photo'" (click)="setUploadType('photo')">
+						🖼️ {{ 'landing.featurePhotosTitle' | translate }}
+					</button>
+					<button type="button" class="toggle-btn" [class.active]="uploadType() === 'audio'" (click)="setUploadType('audio')">
+						🎧 {{ 'landing.featureAudioTitle' | translate }}
+					</button>
+				</div>
+
+				<div class="field-row">
+					<div class="field">
+						<label for="file">{{ uploadType() === 'photo' ? ('memories.pickPhoto' | translate) : ('memories.pickAudio' | translate) }}</label>
+						<input id="file" #fileInput type="file" [accept]="uploadType() === 'photo' ? 'image/*' : 'audio/*'" (change)="onFileSelected($event)">
+					</div>
+					<div class="field">
+						<label for="uploadDate">{{ uploadType() === 'photo' ? ('memories.takenAt' | translate) : ('memories.recordedAt' | translate) }}</label>
+						<input id="uploadDate" type="date" [value]="uploadDate()" (input)="uploadDate.set($any($event.target).value)">
+					</div>
+				</div>
+
+				<div class="field">
+					<label for="caption">{{ 'memories.captionLabel' | translate }}</label>
+					<input id="caption" type="text" [placeholder]="'memories.captionPlaceholder' | translate"
+						[value]="uploadCaption()" (input)="uploadCaption.set($any($event.target).value)">
+				</div>
+
+				@if (uploadErrorKey()) {
+					<div class="alert alert-error">{{ uploadErrorKey() | translate }}</div>
+				}
+
+				<button class="btn btn-primary" (click)="upload()" [disabled]="uploading()">
+					{{ (uploading() ? 'memories.uploading' : 'memories.uploadButton') | translate }}
+				</button>
+			</div>
+
+			@if (timelineItems().length > 0) {
+				<h2 class="section-title">{{ 'memories.timelineTitle' | translate }}</h2>
+				<div class="card timeline-card">
+					<app-timeline-graph [items]="timelineItems()"></app-timeline-graph>
+				</div>
+			}
+
+			<div class="feed-header">
+				<h2 class="section-title no-margin">{{ 'memories.feedTitle' | translate }}</h2>
+				<div class="sort-toggle">
+					<button type="button" class="sort-btn" [class.active]="sortOrder() === 'newest'" (click)="sortOrder.set('newest')">{{ 'memories.sortNewest' | translate }}</button>
+					<button type="button" class="sort-btn" [class.active]="sortOrder() === 'oldest'" (click)="sortOrder.set('oldest')">{{ 'memories.sortOldest' | translate }}</button>
+				</div>
+			</div>
+
+			@if (feed().length === 0 && !loading()) {
+				<p class="muted-hint">{{ 'memories.noMemories' | translate }}</p>
+			} @else {
+				<div class="feed">
+					@for (post of feed(); track post.id + post.type) {
+						<div class="card post-card">
+							<div class="post-header">
+								<span class="post-type-badge">{{ post.type === 'photo' ? '🖼️' : '🎧' }}</span>
+								<div class="post-header-text">
+									<h3 class="post-title">{{ post.caption || (post.type === 'photo' ? ('memories.untitledPhoto' | translate) : ('memories.untitledAudio' | translate)) }}</h3>
+									<span class="post-meta">{{ post.date | date:'longDate' }} · {{ 'events.addedBy' | translate }} {{ post.uploadedByUsername }}</span>
+								</div>
+								<button class="link-btn danger-link" (click)="deletePost(post)">{{ 'events.deleteButton' | translate }}</button>
+							</div>
+
+							@if (post.type === 'photo') {
+								<img [src]="post.imageUrl" [alt]="post.caption || ''" class="post-image" loading="lazy">
+							} @else {
+								<audio [src]="post.audioUrl" controls class="post-audio"></audio>
+							}
+						</div>
+					}
+				</div>
+			}
+		}
+	</div>
+</div>
