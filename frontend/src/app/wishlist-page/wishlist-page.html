@@ -1,0 +1,75 @@
+<div class="page">
+	<app-navbar></app-navbar>
+
+	<div class="container fade-in wishlist-content">
+		<h1>{{ 'wishlist.title' | translate }}</h1>
+		<p class="subtitle">{{ 'wishlist.subtitle' | translate }}</p>
+
+		@if (!isPaired()) {
+			<div class="card notice-card">
+				<p>{{ 'wishlist.needPartner' | translate }}</p>
+			</div>
+		} @else {
+			<div class="card add-wish-card">
+				<div class="add-wish-row">
+					<input type="text" [placeholder]="'wishlist.addPlaceholder' | translate"
+						[value]="newWish()" (input)="newWish.set($any($event.target).value)"
+						(keyup.enter)="addWish()">
+					<button class="btn btn-primary" (click)="addWish()" [disabled]="adding()">
+						{{ (adding() ? 'wishlist.adding' : 'wishlist.addButton') | translate }}
+					</button>
+				</div>
+				@if (addErrorKey()) {
+					<div class="alert alert-error">{{ addErrorKey() | translate }}</div>
+				}
+			</div>
+
+			@if (wishes().length === 0 && !loading()) {
+				<p class="muted-hint">{{ 'wishlist.empty' | translate }}</p>
+			} @else {
+				<div class="wish-list">
+					@for (wish of wishes(); track wish.id) {
+						<div class="card wish-row" [class.wish-done]="wish.isFulfilled">
+							<button class="wish-check" [class.checked]="wish.isFulfilled"
+								(click)="toggleFulfilled(wish)"
+								[attr.aria-label]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate"
+								[title]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate">
+								@if (wish.isFulfilled) { ✓ }
+							</button>
+
+							<div class="wish-info">
+								<h3 class="wish-title">{{ wish.title }}</h3>
+								<span class="wish-meta">
+									{{ 'wishlist.addedOn' | translate }} {{ wish.createdAt | date:'longDate' }}
+									· {{ 'events.addedBy' | translate }} {{ wish.createdByUsername }}
+									@if (wish.isFulfilled && wish.fulfilledAt) {
+										· {{ 'wishlist.fulfilledOn' | translate }} {{ wish.fulfilledAt | date:'longDate' }}
+									}
+								</span>
+							</div>
+
+							@if (wish.isFulfilled) {
+								<span class="wish-badge">{{ 'wishlist.fulfilledBadge' | translate }}</span>
+							}
+
+							<button class="link-btn danger-link" (click)="confirmDelete(wish)">{{ 'events.deleteButton' | translate }}</button>
+						</div>
+					}
+				</div>
+			}
+		}
+
+		@if (wishPendingDelete()) {
+			<div class="modal-backdrop" (click)="cancelDelete()">
+				<div class="modal-card card" (click)="$event.stopPropagation()">
+					<h3>{{ 'wishlist.confirmDeleteTitle' | translate }}</h3>
+					<p>{{ 'wishlist.confirmDeleteDesc' | translate }}</p>
+					<div class="modal-actions">
+						<button class="btn btn-ghost btn-sm" (click)="cancelDelete()">{{ 'profile.cancelButton' | translate }}</button>
+						<button class="btn btn-danger btn-sm" (click)="deleteWish()">{{ 'profile.confirmDeleteButton' | translate }}</button>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+</div>

@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { catchError, map, of, tap } from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { catchError, map, Observable, of, shareReplay, tap } from 'rxjs';
 import { config } from '../config';
-import { AuthResponse } from '../interfaces/authResponse';
+import { AuthResponse, LoginResponse } from '../interfaces/authResponse';
 import { LoginRequest } from '../interfaces/loginRequest';
 import { RegisterRequest } from '../interfaces/registerRequest';
 import { UserService } from './user.service';
@@ -13,62 +13,75 @@ export class AuthService {
     private userService = inject(UserService);
     private apiUrl = config.apiUrl;
 
+    private accessToken: string | null = null;
+    private refreshInFlight: Observable<boolean> | null = null;
+
+    readonly sessionRestored = signal(false);
+
     login(loginData: LoginRequest) {
-        return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginData).pipe(
-            tap(response => this.storeTokens(response))
-        );
-    }
-
-    register(registerData: RegisterRequest) {
-        return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, registerData);
-    }
-
-    logout() {
-        const refreshToken = localStorage.getItem('refreshToken');
-        this.clearTokens();
-
-        if (refreshToken) {
-            this.http.post(`${this.apiUrl}/auth/logout`, { refreshToken }).subscribe();
-        }
-    }
-
-    /**
-     * True only if a NON-EXPIRED access token is present. A read-only check — does NOT
-     * clear an expired access token, since a still-valid refresh token might exist
-     * alongside it (the normal case every ~15 minutes for an active session) and callers
-     * need that refresh token intact to silently re-authenticate via refreshSession().
-     */
-    isLoggedIn(): boolean {
-        return this.isTokenValid(localStorage.getItem('accessToken'));
-    }
-
-    hasRefreshToken(): boolean {
-        return !!localStorage.getItem('refreshToken');
-    }
-
-    /** Attempts to exchange the stored refresh token for a fresh session. */
-    refreshSession() {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-            return of(false);
-        }
-
-        return this.http.post<AuthResponse>(`${this.apiUrl}/auth/refresh`, { refreshToken }).pipe(
-            tap(response => this.storeTokens(response)),
-            map(() => true),
-            catchError(() => {
-                this.clearTokens();
-                return of(false);
+        return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, loginData, { withCredentials: true }).pipe(
+            tap(response => {
+                if (response.auth) this.accessToken = response.auth.token;
             })
         );
     }
 
-    getToken() {
-        return localStorage.getItem('accessToken');
+    verifyLogin(username: string, code: string) {
+        return this.http.post<AuthResponse>(`${this.apiUrl}/auth/verify-login`, { username, code }, { withCredentials: true }).pipe(
+            tap(response => this.accessToken = response.token)
+        );
     }
 
-    getRefreshToken() {
-        return localStorage.getItem('refreshToken');
+    register(registerData: RegisterRequest) {
+        return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, registerData, { withCredentials: true });
+    }
+
+    logout(): Observable<void> {
+        this.accessToken = null;
+        this.refreshInFlight = null;
+        this.userService.clearCurrentUser();
+
+        return this.http.post<void>(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true }).pipe(
+            catchError(() => of(void 0)),
+            shareReplay({ bufferSize: 1, refCount: false }),
+        );
+    }
+
+    isLoggedIn(): boolean {
+        return this.isTokenValid(this.accessToken);
+    }
+
+    restoreSession(): Observable<boolean> {
+        return this.refreshSession().pipe(tap(() => this.sessionRestored.set(true)));
+    }
+
+    refreshSession(): Observable<boolean> {
+        this.refreshInFlight ??= this.http
+            .post<AuthResponse>(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true })
+            .pipe(
+                tap(response => this.accessToken = response.token),
+                map(() => true),
+                catchError(() => {
+                    this.accessToken = null;
+                    return of(false);
+                }),
+                tap(() => queueMicrotask(() => this.refreshInFlight = null)),
+                shareReplay({ bufferSize: 1, refCount: false }),
+            );
+
+        return this.refreshInFlight;
+    }
+
+    forgotPassword(email: string) {
+        return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
+    }
+
+    resetPassword(email: string, code: string, newPassword: string) {
+        return this.http.post(`${this.apiUrl}/auth/reset-password`, { email, code, newPassword });
+    }
+
+    getToken(): string | null {
+        return this.accessToken;
     }
 
     private isTokenValid(token: string | null): boolean {
@@ -86,16 +99,5 @@ export class AuthService {
         const base64 = input.replace(/-/g, '+').replace(/_/g, '/');
         const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
         return atob(padded);
-    }
-
-    private clearTokens(): void {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        this.userService.clearCurrentUser();
-    }
-
-    private storeTokens(response: AuthResponse): void {
-        localStorage.setItem('accessToken', response.token);
-        localStorage.setItem('refreshToken', response.refreshToken);
     }
 }

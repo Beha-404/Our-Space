@@ -8,8 +8,8 @@ export class EventService {
     private http = inject(HttpClient);
     private apiUrl = config.apiUrl;
 
-    getUpcoming() {
-        return this.http.get<EventItem[]>(`${this.apiUrl}/events`);
+    getUpcoming(includePast = false) {
+        return this.http.get<EventItem[]>(`${this.apiUrl}/events?includePast=${includePast}`);
     }
 
     create(request: CreateEventRequest) {

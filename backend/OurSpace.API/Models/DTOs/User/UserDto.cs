@@ -4,15 +4,14 @@ public record UserDto(
     int Id,
     string Username,
     string Email,
-    string? DisplayName,
     string? ProfilePictureUrl,
-    PartnerDto? Partner
+    PartnerDto? Partner,
+    string? PendingEmail
 );
 
 public record PartnerDto(
     int Id,
     string Username,
-    string? DisplayName,
     string? ProfilePictureUrl,
     DateOnly? RelationshipStartDate
 );

@@ -11,6 +11,7 @@ public class AudioMessage
     public User UploadedByUser { get; set; } = null!;
 
     public required string FilePath { get; set; }
+    public long SizeBytes { get; set; }
     public string? Caption { get; set; }
     public DateOnly RecordedAt { get; set; }
 

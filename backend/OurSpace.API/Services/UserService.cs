@@ -1,14 +1,21 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OurSpace.API.Common.Exceptions;
+using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.User;
 using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
-public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUserService
+public partial class UserService(
+    AppDbContext db,
+    IFileStorageService fileStorage,
+    ILocalizer localizer,
+    IEmailQueue emailQueue,
+    IFileUrlSigner urlSigner) : IUserService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -27,10 +34,21 @@ public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUs
     {
         var user = await GetUserOrThrow(userId);
 
-        if (request.DisplayName is not null)
-            user.DisplayName = request.DisplayName;
-        if (request.ProfilePictureUrl is not null)
-            user.ProfilePictureUrl = request.ProfilePictureUrl;
+        if (request.Username is not null)
+        {
+            var username = request.Username.Trim();
+            if (string.IsNullOrWhiteSpace(username))
+                throw new BadRequestException(localizer.T("User.UsernameRequired"));
+
+            if (!string.Equals(username, user.Username, StringComparison.Ordinal))
+            {
+                var taken = await db.Users.AnyAsync(u => u.Id != userId && u.Username == username);
+                if (taken)
+                    throw new ConflictException(localizer.T("Auth.UsernameTaken"));
+
+                user.Username = username;
+            }
+        }
 
         user.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
@@ -38,16 +56,86 @@ public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUs
         return await ToDto(user);
     }
 
+    public async Task RequestEmailChangeAsync(int userId, string newEmail)
+    {
+        var user = await GetUserOrThrow(userId);
+        newEmail = newEmail.Trim();
+
+        if (!EmailRegex().IsMatch(newEmail))
+            throw new BadRequestException(localizer.T("Auth.InvalidEmail"));
+
+        if (string.Equals(newEmail, user.Email, StringComparison.OrdinalIgnoreCase))
+            throw new BadRequestException(localizer.T("User.SameEmail"));
+
+        var taken = await db.Users.AnyAsync(u => u.Id != userId && u.Email == newEmail);
+        if (taken)
+            throw new ConflictException(localizer.T("Auth.EmailTaken"));
+
+        var code = GenerateCode();
+        user.PendingEmail = newEmail;
+        user.EmailChangeCode = code;
+        user.EmailChangeCodeExpiresAt = DateTime.UtcNow.AddHours(24);
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        var subject = localizer.For("Email.EmailChange.Subject", user.PreferredLanguage);
+        var body = localizer.For("Email.EmailChange.Body", user.PreferredLanguage, newEmail, code);
+        emailQueue.Enqueue(user.Email, subject, body);
+    }
+
+    public async Task<UserDto> ConfirmEmailChangeAsync(int userId, string code)
+    {
+        var user = await GetUserOrThrow(userId);
+
+        if (string.IsNullOrWhiteSpace(user.PendingEmail) || user.EmailChangeCode is null)
+            throw new BadRequestException(localizer.T("User.NoPendingEmailChange"));
+
+        if (user.EmailChangeCode != code.Trim() || user.EmailChangeCodeExpiresAt < DateTime.UtcNow)
+            throw new BadRequestException(localizer.T("User.InvalidEmailChangeCode"));
+
+        var taken = await db.Users.AnyAsync(u => u.Id != userId && u.Email == user.PendingEmail);
+        if (taken)
+        {
+            ClearPendingEmailChange(user);
+            await db.SaveChangesAsync();
+            throw new ConflictException(localizer.T("Auth.EmailTaken"));
+        }
+
+        user.Email = user.PendingEmail;
+        ClearPendingEmailChange(user);
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        return await ToDto(user);
+    }
+
+    public async Task<UserDto> CancelEmailChangeAsync(int userId)
+    {
+        var user = await GetUserOrThrow(userId);
+        ClearPendingEmailChange(user);
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        return await ToDto(user);
+    }
+
+    private static void ClearPendingEmailChange(User user)
+    {
+        user.PendingEmail = null;
+        user.EmailChangeCode = null;
+        user.EmailChangeCodeExpiresAt = null;
+    }
+
     public async Task<UserDto> UpdateProfilePictureAsync(int userId, IFormFile file)
     {
         if (file.Length == 0)
-            throw new BadRequestException("Fajl je prazan.");
+            throw new BadRequestException(localizer.T("User.PictureFileEmpty"));
 
         if (file.Length > MaxFileSizeBytes)
-            throw new BadRequestException("Slika je prevelika (maksimalno 5MB).");
+            throw new BadRequestException(localizer.T("User.PictureTooLarge"));
 
         if (!AllowedContentTypes.Contains(file.ContentType))
-            throw new BadRequestException("Nepodržan format slike. Dozvoljeno: JPEG, PNG, WEBP, GIF.");
+            throw new BadRequestException(localizer.T("User.PictureUnsupportedFormat"));
 
         var user = await GetUserOrThrow(userId);
         var oldPictureUrl = user.ProfilePictureUrl;
@@ -82,7 +170,7 @@ public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUs
 
         var alreadyPaired = await db.Couples.AnyAsync(c => c.User1Id == userId || c.User2Id == userId);
         if (alreadyPaired)
-            throw new ConflictException("Već si uparen/a sa partnerom.");
+            throw new ConflictException(localizer.T("User.AlreadyPaired"));
 
         user.PairingCode = GenerateCode();
         user.PairingCodeExpiresAt = DateTime.UtcNow.AddHours(24);
@@ -97,14 +185,14 @@ public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUs
 
         var alreadyPaired = await db.Couples.AnyAsync(c => c.User1Id == userId || c.User2Id == userId);
         if (alreadyPaired)
-            throw new ConflictException("Već si uparen/a sa partnerom.");
+            throw new ConflictException(localizer.T("User.AlreadyPaired"));
 
         var partner = await db.Users.SingleOrDefaultAsync(u => u.PairingCode == request.Code);
         if (partner is null || partner.PairingCodeExpiresAt < DateTime.UtcNow)
-            throw new BadRequestException("Nevažeći ili istekao kod za uparivanje.");
+            throw new BadRequestException(localizer.T("User.InvalidPairingCode"));
 
         if (partner.Id == user.Id)
-            throw new BadRequestException("Ne možeš se upariti sam sa sobom.");
+            throw new BadRequestException(localizer.T("User.CannotPairSelf"));
 
         var couple = new Couple
         {
@@ -129,7 +217,7 @@ public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUs
         var user = await GetUserOrThrow(userId);
 
         var couple = await db.Couples.SingleOrDefaultAsync(c => c.User1Id == userId || c.User2Id == userId)
-            ?? throw new BadRequestException("Nisi uparen/a sa partnerom.");
+            ?? throw new BadRequestException(localizer.T("User.NotPaired"));
 
         couple.RelationshipStartDate = request.RelationshipStartDate;
         await db.SaveChangesAsync();
@@ -137,9 +225,20 @@ public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUs
         return await ToDto(user);
     }
 
+    public async Task UpdateLanguageAsync(int userId, string language)
+    {
+        if (!Localizer.SupportedLangs.Contains(language))
+            throw new BadRequestException(localizer.T("User.UnsupportedLanguage"));
+
+        var user = await GetUserOrThrow(userId);
+        user.PreferredLanguage = language;
+        user.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+    }
+
     private async Task<User> GetUserOrThrow(int userId) =>
         await db.Users.SingleOrDefaultAsync(u => u.Id == userId)
-        ?? throw new NotFoundException("Korisnik nije pronađen.");
+        ?? throw new NotFoundException(localizer.T("User.NotFound"));
 
     private async Task<UserDto> ToDto(User user)
     {
@@ -152,12 +251,15 @@ public class UserService(AppDbContext db, IFileStorageService fileStorage) : IUs
         if (couple is not null)
         {
             var partner = couple.User1Id == user.Id ? couple.User2 : couple.User1;
-            partnerDto = new PartnerDto(partner.Id, partner.Username, partner.DisplayName, partner.ProfilePictureUrl, couple.RelationshipStartDate);
+            partnerDto = new PartnerDto(partner.Id, partner.Username, urlSigner.Sign(partner.ProfilePictureUrl), couple.RelationshipStartDate);
         }
 
-        return new UserDto(user.Id, user.Username, user.Email, user.DisplayName, user.ProfilePictureUrl, partnerDto);
+        return new UserDto(user.Id, user.Username, user.Email, urlSigner.Sign(user.ProfilePictureUrl), partnerDto, user.PendingEmail);
     }
 
     private static string GenerateCode() =>
         RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+
+    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
+    private static partial Regex EmailRegex();
 }

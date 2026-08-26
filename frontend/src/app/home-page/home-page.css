@@ -38,27 +38,67 @@ h1 {
 
 .events-preview {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
 }
 
-.event-chip {
+.event-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border-radius: 100px;
+  gap: 18px;
+  padding: 16px 20px;
 }
 
-.event-chip-date {
+.event-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-border);
+}
+
+.event-day {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.8rem;
-  color: var(--color-purple);
+  font-size: 1.2rem;
+  line-height: 1.1;
 }
 
-.event-chip-title {
+.event-month {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.event-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-info h3 {
+  margin: 0 0 2px;
+  font-size: 1rem;
+}
+
+.event-info p {
+  margin: 0 0 4px;
   font-size: 0.85rem;
+}
+
+.event-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-faint);
+}
+
+@media (max-width: 640px) {
+  .event-card {
+    flex-wrap: wrap;
+  }
 }
 
 .muted-hint {
@@ -100,24 +140,39 @@ h1 {
 .couple-card {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 24px 28px;
+  gap: 16px;
+  padding: 16px 20px;
+  max-width: 380px;
 }
 
 @media (max-width: 480px) {
   .couple-card {
-    padding: 20px;
+    padding: 16px;
+    max-width: none;
   }
 }
 
 .couple-card-empty {
   justify-content: space-between;
   flex-wrap: wrap;
+  max-width: none;
 }
+
 
 .couple-card h3 {
   margin: 2px 0 4px;
   font-size: 1.15rem;
+}
+
+.couple-names {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.heart-inline {
+  font-size: 0.95em;
 }
 
 .couple-label {
@@ -137,59 +192,74 @@ h1 {
   color: var(--color-text);
 }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.feed-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 36px 0 14px;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
   gap: 18px;
 }
 
-.feature-card {
-  padding: 22px 20px;
-  position: relative;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+.feed-scroll {
+  max-height: 700px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
-.feature-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-border-strong);
+.post-card {
+  padding: 0;
+  overflow: hidden;
 }
 
-.feature-icon {
-  font-size: 1.6rem;
+.post-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+.post-type-badge {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.post-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-title {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.post-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-faint);
+}
+
+.post-image {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
   display: block;
-  margin-bottom: 10px;
 }
 
-.feature-card h3 {
-  font-size: 1.05rem;
-  margin-bottom: 6px;
+.post-audio {
+  width: 100%;
+  padding: 0 18px 18px;
+  box-sizing: content-box;
 }
 
-.feature-card p {
-  font-size: 0.85rem;
-  margin: 0;
-}
-
-.feature-card-link {
-  display: block;
-  color: inherit;
-  cursor: pointer;
-}
-
-.feature-card-link:hover {
-  text-decoration: none;
-  border-color: var(--color-purple);
-}
-
-.badge {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 100px;
-  background: var(--color-surface-strong);
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
+@media (max-width: 480px) {
+  .post-header {
+    padding: 14px;
+  }
 }

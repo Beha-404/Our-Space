@@ -1,38 +1,124 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
+using OurSpace.API.Common;
+using OurSpace.API.Common.Exceptions;
+using OurSpace.API.Common.Localization;
 using OurSpace.API.Models.DTOs.Auth;
+using OurSpace.API.Options;
 using OurSpace.API.Services;
 
 namespace OurSpace.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(
+    IAuthService authService,
+    IOptions<AuthCookieOptions> cookieOptions,
+    IOptions<JwtOptions> jwtOptions,
+    ILocalizer localizer) : ControllerBase
 {
+    private string CookieName => cookieOptions.Value.Secure ? "__Secure-osRefresh" : "osRefresh";
+
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
+    [EnableRateLimiting(RateLimitPolicies.Login)]
+    public async Task<ActionResult<RegisterResponse>> Register(RegisterRequest request)
     {
-        var response = await authService.RegisterAsync(request);
-        return Created(string.Empty, response);
+        var outcome = await authService.RegisterAsync(request);
+
+        if (outcome.NeedsApproval)
+            return Accepted(new RegisterResponse(true, null));
+
+        SetRefreshCookie(outcome.Result!.RefreshToken);
+        return Created(string.Empty, new RegisterResponse(false, outcome.Result.Response));
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
+    [EnableRateLimiting(RateLimitPolicies.Login)]
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
-        var response = await authService.LoginAsync(request);
-        return Ok(response);
+        var outcome = await authService.LoginAsync(request);
+
+        if (outcome.RequiresTwoFactor)
+            return Ok(new LoginResponse(true, null));
+
+        SetRefreshCookie(outcome.Result!.RefreshToken);
+        return Ok(new LoginResponse(false, outcome.Result.Response));
+    }
+
+    [HttpPost("verify-login")]
+    [EnableRateLimiting(RateLimitPolicies.VerifyLogin)]
+    public async Task<ActionResult<AuthResponse>> VerifyLogin(VerifyLoginRequest request)
+    {
+        var result = await authService.VerifyLoginAsync(request);
+        SetRefreshCookie(result.RefreshToken);
+        return Ok(result.Response);
+    }
+
+    [HttpPost("forgot-password")]
+    [EnableRateLimiting(RateLimitPolicies.ForgotPassword)]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+    {
+        await authService.RequestPasswordResetAsync(request.Email);
+        return NoContent();
+    }
+
+    [HttpPost("reset-password")]
+    [EnableRateLimiting(RateLimitPolicies.ResetPassword)]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+    {
+        await authService.ResetPasswordAsync(request);
+        ClearRefreshCookie();
+        return NoContent();
     }
 
     [HttpPost("refresh")]
-    public async Task<ActionResult<AuthResponse>> Refresh(RefreshRequest request)
+    public async Task<ActionResult<AuthResponse>> Refresh()
     {
-        var response = await authService.RefreshAsync(request.RefreshToken);
-        return Ok(response);
+        var refreshToken = Request.Cookies[CookieName];
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            throw new UnauthorizedAppException(localizer.T("Auth.InvalidRefreshToken"));
+
+        var result = await authService.RefreshAsync(refreshToken);
+        SetRefreshCookie(result.RefreshToken);
+        return Ok(result.Response);
     }
 
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout(RefreshRequest request)
+    public async Task<IActionResult> Logout()
     {
-        await authService.LogoutAsync(request.RefreshToken);
+        var refreshToken = Request.Cookies[CookieName];
+        if (!string.IsNullOrWhiteSpace(refreshToken))
+            await authService.LogoutAsync(refreshToken);
+
+        ClearRefreshCookie();
         return NoContent();
+    }
+
+    private void SetRefreshCookie(string refreshToken)
+    {
+        Response.Cookies.Append(CookieName, refreshToken, BuildCookieOptions(
+            DateTimeOffset.UtcNow.AddDays(jwtOptions.Value.RefreshTokenDays)));
+    }
+
+    private void ClearRefreshCookie()
+    {
+        Response.Cookies.Append(CookieName, string.Empty, BuildCookieOptions(DateTimeOffset.UnixEpoch));
+    }
+
+    private CookieOptions BuildCookieOptions(DateTimeOffset expires)
+    {
+        var opts = cookieOptions.Value;
+
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = opts.Secure,
+            SameSite = opts.SameSite,
+            Expires = expires,
+            IsEssential = true,
+            Path = "/api/auth",
+            Domain = opts.Domain,
+        };
     }
 }

@@ -6,6 +6,6 @@ namespace OurSpace.API.Services;
 public interface IPhotoService
 {
     Task<PhotoDto> UploadAsync(int userId, IFormFile file, DateOnly takenAt, string? caption);
-    Task<List<PhotoDto>> GetAllAsync(int userId);
+    Task<PagedResult<PhotoDto>> GetAllAsync(int userId, int page, int pageSize);
     Task DeleteAsync(int userId, int photoId);
 }

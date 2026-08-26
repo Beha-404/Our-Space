@@ -1,4 +1,5 @@
-import { DatePipe } from '@angular/common';
+﻿import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Navbar } from '../navbar/navbar';
@@ -31,7 +32,8 @@ export class EventsPage {
   editErrorKey = signal('');
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe(() => this.loadEvents());
+    this.userService.refreshCurrentUser().subscribe();
+    this.loadEvents();
   }
 
   updateField(field: 'title' | 'description' | 'eventDate', value: string): void {
@@ -40,7 +42,7 @@ export class EventsPage {
 
   loadEvents(): void {
     this.loading.set(true);
-    this.eventService.getUpcoming().subscribe({
+    this.eventService.getUpcoming(true).subscribe({
       next: (events) => {
         this.events.set(events);
         this.loading.set(false);
@@ -74,9 +76,9 @@ export class EventsPage {
         this.formData.set({ title: '', description: '', eventDate: '' });
         this.loadEvents();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.adding.set(false);
-        this.addErrorKey.set('events.addError');
+        this.addErrorKey.set(err.error?.title ?? 'events.addError');
       }
     });
   }
@@ -123,9 +125,9 @@ export class EventsPage {
         this.editingEventId.set(null);
         this.loadEvents();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.saving.set(false);
-        this.editErrorKey.set('events.addError');
+        this.editErrorKey.set(err.error?.title ?? 'events.addError');
       }
     });
   }

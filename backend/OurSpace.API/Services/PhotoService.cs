@@ -1,15 +1,25 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OurSpace.API.Common.Exceptions;
+using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.Memory;
 using OurSpace.API.Models.Entities;
+using OurSpace.API.Options;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 
 namespace OurSpace.API.Services;
 
-public class PhotoService(AppDbContext db, IFileStorageService fileStorage) : IPhotoService
+public class PhotoService(
+    AppDbContext db,
+    IFileStorageService fileStorage,
+    ILocalizer localizer,
+    IFileUrlSigner urlSigner,
+    IStorageQuotaService quota,
+    IOptions<StorageOptions> storageOptions) : IPhotoService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -18,26 +28,41 @@ public class PhotoService(AppDbContext db, IFileStorageService fileStorage) : IP
 
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
     private const int ThumbnailWidth = 480;
+    private const int MaxPageSize = 50;
 
     public async Task<PhotoDto> UploadAsync(int userId, IFormFile file, DateOnly takenAt, string? caption)
     {
         ValidateFile(file);
 
-        var couple = await GetCoupleOrThrow(userId);
+        var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
         var extension = Path.GetExtension(file.FileName);
         if (string.IsNullOrWhiteSpace(extension)) extension = ".jpg";
 
-        await using var uploadStream = file.OpenReadStream();
-        var filePath = await fileStorage.SaveAsync(uploadStream, "photos", extension);
+        string filePath;
+
+        await using (var uploadStream = file.OpenReadStream())
+        {
+            var (content, storedExtension) = await DownscaleAsync(uploadStream, extension);
+
+            await using (content)
+            {
+                await quota.EnsureRoomAsync(coupleId, content.Length);
+
+                content.Position = 0;
+                filePath = await fileStorage.SaveAsync(content, "photos", storedExtension);
+            }
+        }
 
         var thumbnailPath = await GenerateThumbnailAsync(filePath);
+        var sizeBytes = fileStorage.GetSizeBytes(filePath) + fileStorage.GetSizeBytes(thumbnailPath);
 
         var photo = new Photo
         {
-            CoupleId = couple.Id,
+            CoupleId = coupleId,
             UploadedByUserId = userId,
             FilePath = filePath,
             ThumbnailPath = thumbnailPath,
+            SizeBytes = sizeBytes,
             Caption = string.IsNullOrWhiteSpace(caption) ? null : caption.Trim(),
             TakenAt = takenAt,
         };
@@ -45,31 +70,39 @@ public class PhotoService(AppDbContext db, IFileStorageService fileStorage) : IP
         db.Photos.Add(photo);
         await db.SaveChangesAsync();
 
-        var uploader = await db.Users.SingleAsync(u => u.Id == userId);
-        return ToDto(photo, uploader.Username);
+        return ToDto(photo, username);
     }
 
-    public async Task<List<PhotoDto>> GetAllAsync(int userId)
+    public async Task<PagedResult<PhotoDto>> GetAllAsync(int userId, int page, int pageSize)
     {
-        var couple = await GetCoupleOrThrow(userId);
+        var coupleId = await GetCoupleIdOrThrow(userId);
 
-        return await db.Photos
-            .Include(p => p.UploadedByUser)
-            .Where(p => p.CoupleId == couple.Id)
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+
+        var photos = await db.Photos
+            .Where(p => p.CoupleId == coupleId)
             .OrderByDescending(p => p.TakenAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize + 1)
             .Select(p => new PhotoDto(p.Id, p.FilePath, p.ThumbnailPath, p.Caption, p.TakenAt, p.UploadedByUser.Username, p.CreatedAt))
             .ToListAsync();
+
+        var hasMore = photos.Count > pageSize;
+        if (hasMore) photos.RemoveAt(photos.Count - 1);
+
+        return new PagedResult<PhotoDto>(photos.Select(Signed).ToList(), hasMore);
     }
 
     public async Task DeleteAsync(int userId, int photoId)
     {
-        var couple = await GetCoupleOrThrow(userId);
+        var coupleId = await GetCoupleIdOrThrow(userId);
 
         var photo = await db.Photos.SingleOrDefaultAsync(p => p.Id == photoId)
-            ?? throw new NotFoundException("Slika nije pronađena.");
+            ?? throw new NotFoundException(localizer.T("Photo.NotFound"));
 
-        if (photo.CoupleId != couple.Id)
-            throw new BadRequestException("Nemaš pristup ovoj slici.");
+        if (photo.CoupleId != coupleId)
+            throw new NotFoundException(localizer.T("Photo.NotFound"));
 
         fileStorage.Delete(photo.FilePath);
         fileStorage.Delete(photo.ThumbnailPath);
@@ -81,13 +114,46 @@ public class PhotoService(AppDbContext db, IFileStorageService fileStorage) : IP
     private void ValidateFile(IFormFile file)
     {
         if (file.Length == 0)
-            throw new BadRequestException("Fajl je prazan.");
+            throw new BadRequestException(localizer.T("Photo.FileEmpty"));
 
         if (file.Length > MaxFileSizeBytes)
-            throw new BadRequestException("Slika je prevelika (maksimalno 10MB).");
+            throw new BadRequestException(localizer.T("Photo.TooLarge"));
 
         if (!AllowedContentTypes.Contains(file.ContentType))
-            throw new BadRequestException("Nepodržan format slike. Dozvoljeno: JPEG, PNG, WEBP, GIF.");
+            throw new BadRequestException(localizer.T("Photo.UnsupportedFormat"));
+    }
+
+    private async Task<(MemoryStream Content, string Extension)> DownscaleAsync(Stream source, string extension)
+    {
+        var output = new MemoryStream();
+
+        if (extension.Equals(".gif", StringComparison.OrdinalIgnoreCase))
+        {
+            await source.CopyToAsync(output);
+            return (output, extension);
+        }
+
+        var maxDimension = storageOptions.Value.MaxImageDimension;
+
+        using var image = await Image.LoadAsync(source);
+
+        image.Mutate(x =>
+        {
+            x.AutoOrient();
+
+            if (image.Width > maxDimension || image.Height > maxDimension)
+            {
+                x.Resize(new ResizeOptions
+                {
+                    Mode = ResizeMode.Max,
+                    Size = new Size(maxDimension, maxDimension),
+                });
+            }
+        });
+
+        await image.SaveAsJpegAsync(output, new JpegEncoder { Quality = storageOptions.Value.ImageQuality });
+
+        return (output, ".jpg");
     }
 
     private async Task<string> GenerateThumbnailAsync(string originalUrl)
@@ -108,10 +174,31 @@ public class PhotoService(AppDbContext db, IFileStorageService fileStorage) : IP
         return await fileStorage.SaveAsync(thumbStream, "thumbnails", ".jpg");
     }
 
-    private async Task<Couple> GetCoupleOrThrow(int userId) =>
-        await db.Couples.SingleOrDefaultAsync(c => c.User1Id == userId || c.User2Id == userId)
-        ?? throw new BadRequestException("Moraš biti uparen/a sa partnerom da bi dodavao/la slike.");
+    private async Task<int> GetCoupleIdOrThrow(int userId)
+    {
+        var id = await db.Couples
+            .Where(c => c.User1Id == userId || c.User2Id == userId)
+            .Select(c => (int?)c.Id)
+            .SingleOrDefaultAsync();
 
-    private static PhotoDto ToDto(Photo photo, string uploadedByUsername) =>
-        new(photo.Id, photo.FilePath, photo.ThumbnailPath, photo.Caption, photo.TakenAt, uploadedByUsername, photo.CreatedAt);
+        return id ?? throw new BadRequestException(localizer.T("Photo.NeedPartner"));
+    }
+
+    private async Task<(int CoupleId, string Username)> GetCoupleAndUsernameOrThrow(int userId)
+    {
+        var row = await db.Couples
+            .Where(c => c.User1Id == userId || c.User2Id == userId)
+            .Select(c => new { c.Id, Username = c.User1Id == userId ? c.User1.Username : c.User2.Username })
+            .SingleOrDefaultAsync();
+
+        return row is null
+            ? throw new BadRequestException(localizer.T("Photo.NeedPartner"))
+            : (row.Id, row.Username);
+    }
+
+    private PhotoDto ToDto(Photo photo, string uploadedByUsername) =>
+        Signed(new PhotoDto(photo.Id, photo.FilePath, photo.ThumbnailPath, photo.Caption, photo.TakenAt, uploadedByUsername, photo.CreatedAt));
+
+    private PhotoDto Signed(PhotoDto dto) =>
+        dto with { Url = urlSigner.Sign(dto.Url), ThumbnailUrl = urlSigner.Sign(dto.ThumbnailUrl) };
 }

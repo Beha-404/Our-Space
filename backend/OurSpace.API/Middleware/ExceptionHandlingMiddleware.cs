@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using OurSpace.API.Common.Exceptions;
+using OurSpace.API.Common.Localization;
 
 namespace OurSpace.API.Middleware;
 
@@ -20,7 +21,8 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         catch (Exception ex)
         {
             logger.LogError(ex, "Unhandled exception");
-            await WriteProblem(context, HttpStatusCode.InternalServerError, "An unexpected error occurred.");
+            var localizer = context.RequestServices.GetRequiredService<ILocalizer>();
+            await WriteProblem(context, HttpStatusCode.InternalServerError, localizer.T("Generic.UnexpectedError"));
         }
     }
 

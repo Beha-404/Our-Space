@@ -12,6 +12,7 @@ public class Photo
 
     public required string FilePath { get; set; }
     public required string ThumbnailPath { get; set; }
+    public long SizeBytes { get; set; }
     public string? Caption { get; set; }
     public DateOnly TakenAt { get; set; }
 

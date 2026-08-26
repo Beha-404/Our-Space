@@ -173,6 +173,12 @@ h1 {
   box-sizing: content-box;
 }
 
+.load-more-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
 @media (max-width: 640px) {
   .field-row {
     grid-template-columns: 1fr;

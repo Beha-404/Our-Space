@@ -20,6 +20,11 @@ export const routes: Routes = [
         loadComponent: () => import('./register-page/register-page').then(m => m.RegisterPage)
     },
     {
+        path: 'forgot-password',
+        canActivate: [guestGuard],
+        loadComponent: () => import('./forgot-password-page/forgot-password-page').then(m => m.ForgotPasswordPage)
+    },
+    {
         path: 'home',
         canActivate: [authGuard],
         loadComponent: () => import('./home-page/home-page').then(m => m.HomePage)
@@ -38,6 +43,11 @@ export const routes: Routes = [
         path: 'memories',
         canActivate: [authGuard],
         loadComponent: () => import('./memories-page/memories-page').then(m => m.MemoriesPage)
+    },
+    {
+        path: 'wishlist',
+        canActivate: [authGuard],
+        loadComponent: () => import('./wishlist-page/wishlist-page').then(m => m.WishlistPage)
     },
     {
         path: '**',

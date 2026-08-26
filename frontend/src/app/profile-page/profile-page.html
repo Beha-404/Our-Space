@@ -7,7 +7,7 @@
 		@if (currentUser(); as user) {
 			<div class="card profile-card">
 				<div class="avatar-col">
-					<app-avatar [name]="user.displayName || user.username" [pictureUrl]="user.profilePictureUrl" [size]="84"></app-avatar>
+					<app-avatar [name]="user.username" [pictureUrl]="user.profilePictureUrl" [size]="84"></app-avatar>
 					<input #pictureFileInput type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)">
 					<label for="pictureFile" class="btn btn-ghost btn-sm">
 						{{ (uploadingPicture() ? 'profile.uploadingPicture' : 'profile.changePicture') | translate }}
@@ -20,34 +20,13 @@
 				<div class="profile-form">
 					<div class="subsection">
 						<div class="subsection-header">
-							<span class="lock-icon">🔒</span>
 							<h4>{{ 'profile.basicInfoTitle' | translate }}</h4>
-							<span class="hint">{{ 'profile.basicInfoHint' | translate }}</span>
-						</div>
-						<div class="field-row">
-							<div class="field">
-								<label>{{ 'profile.usernameLabel' | translate }}</label>
-								<input type="text" [value]="user.username" disabled>
-							</div>
-							<div class="field">
-								<label>{{ 'profile.emailLabel' | translate }}</label>
-								<input type="text" [value]="user.email" disabled>
-							</div>
-						</div>
-					</div>
-
-					<div class="subsection subsection-editable">
-						<div class="subsection-header">
-							<span class="edit-icon">✎</span>
-							<h4>{{ 'profile.editableTitle' | translate }}</h4>
-							<span class="hint">{{ 'profile.editableHint' | translate }}</span>
 						</div>
 
 						<div class="field">
-							<label for="displayName">{{ 'profile.displayNameLabel' | translate }}</label>
-							<input id="displayName" type="text" [placeholder]="'profile.displayNamePlaceholder' | translate"
-								[value]="formData().displayName"
-								(input)="updateField('displayName', $any($event.target).value)">
+							<label for="username">{{ 'profile.usernameLabel' | translate }}</label>
+							<input id="username" type="text" [value]="formData().username"
+								(input)="updateField('username', $any($event.target).value)">
 						</div>
 
 						@if (saveMessageKey()) {
@@ -61,6 +40,67 @@
 							{{ (saving() ? 'profile.saving' : 'profile.saveButton') | translate }}
 						</button>
 					</div>
+
+					<div class="subsection subsection-editable">
+						<div class="subsection-header">
+							<h4>{{ 'profile.emailLabel' | translate }}</h4>
+							<span class="hint">{{ 'profile.emailChangeHint' | translate }}</span>
+						</div>
+
+						<div class="field">
+							<input type="text" [value]="user.email" disabled>
+						</div>
+
+						@if (user.pendingEmail) {
+							<div class="pending-email">
+								<p class="pending-email-line">
+									<span class="pending-dot"></span>
+									{{ 'profile.pendingEmailLabel' | translate }} <strong>{{ user.pendingEmail }}</strong>
+								</p>
+								<div class="field">
+									<label for="confirmCode">{{ 'profile.confirmCodeLabel' | translate }}</label>
+									<input id="confirmCode" type="text" inputmode="numeric"
+										[placeholder]="'profile.confirmCodePlaceholder' | translate"
+										[value]="confirmCode()" (input)="confirmCode.set($any($event.target).value)">
+								</div>
+								@if (confirmErrorKey()) {
+									<div class="alert alert-error">{{ confirmErrorKey() | translate }}</div>
+								}
+								<div class="email-actions">
+									<button class="btn btn-primary btn-sm" (click)="confirmEmailChange()" [disabled]="confirmingEmail()">
+										{{ (confirmingEmail() ? 'profile.confirming' : 'profile.confirmEmailButton') | translate }}
+									</button>
+									<button class="btn btn-ghost btn-sm" (click)="cancelEmailChange()">
+										{{ 'profile.cancelEmailChange' | translate }}
+									</button>
+								</div>
+							</div>
+						} @else if (editingEmail()) {
+							<div class="field">
+								<label for="newEmail">{{ 'profile.newEmailLabel' | translate }}</label>
+								<input id="newEmail" type="email" [placeholder]="'profile.newEmailPlaceholder' | translate"
+									[value]="newEmail()" (input)="newEmail.set($any($event.target).value)">
+							</div>
+							@if (emailErrorKey()) {
+								<div class="alert alert-error">{{ emailErrorKey() | translate }}</div>
+							}
+							<div class="email-actions">
+								<button class="btn btn-primary btn-sm" (click)="requestEmailChange()" [disabled]="emailSending()">
+									{{ (emailSending() ? 'profile.sendingCode' : 'profile.sendCodeButton') | translate }}
+								</button>
+								<button class="btn btn-ghost btn-sm" (click)="cancelEditEmail()">
+									{{ 'profile.cancelButton' | translate }}
+								</button>
+							</div>
+						} @else {
+							@if (emailMessageKey()) {
+								<div class="alert alert-success">{{ emailMessageKey() | translate }}</div>
+							}
+							<button class="btn btn-ghost btn-sm" (click)="startEditEmail()">
+								{{ 'profile.changeEmailButton' | translate }}
+							</button>
+						}
+					</div>
 				</div>
 			</div>
 
@@ -68,9 +108,9 @@
 			<div class="card pairing-card">
 				@if (user.partner; as partner) {
 					<div class="paired-row">
-						<app-avatar [name]="partner.displayName || partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="48"></app-avatar>
+						<app-avatar [name]="partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="48"></app-avatar>
 						<div class="paired-info">
-							<h3>{{ partner.displayName || partner.username }}</h3>
+							<h3>{{ partner.username }}</h3>
 
 							@if (!editingRelationshipDate()) {
 								@if (partner.relationshipStartDate) {

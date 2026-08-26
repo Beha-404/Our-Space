@@ -73,7 +73,7 @@
 									<h3 class="post-title">{{ post.caption || (post.type === 'photo' ? ('memories.untitledPhoto' | translate) : ('memories.untitledAudio' | translate)) }}</h3>
 									<span class="post-meta">{{ post.date | date:'longDate' }} · {{ 'events.addedBy' | translate }} {{ post.uploadedByUsername }}</span>
 								</div>
-								<button class="link-btn danger-link" (click)="deletePost(post)">{{ 'events.deleteButton' | translate }}</button>
+								<button class="link-btn danger-link" (click)="confirmDeletePost(post)">{{ 'events.deleteButton' | translate }}</button>
 							</div>
 
 							@if (post.type === 'photo') {
@@ -84,7 +84,28 @@
 						</div>
 					}
 				</div>
+
+				@if (hasMore()) {
+					<div class="load-more-row">
+						<button class="btn btn-ghost" (click)="loadMore()" [disabled]="loadingMore()">
+							{{ (loadingMore() ? 'memories.loadingMore' : 'memories.loadMore') | translate }}
+						</button>
+					</div>
+				}
 			}
+		}
+
+		@if (postPendingDelete(); as post) {
+			<div class="modal-backdrop" (click)="cancelDeletePost()">
+				<div class="modal-card card" (click)="$event.stopPropagation()">
+					<h3>{{ 'profile.confirmDeleteTitle' | translate }}</h3>
+					<p>{{ 'profile.confirmDeleteDesc' | translate }}</p>
+					<div class="modal-actions">
+						<button class="btn btn-ghost btn-sm" (click)="cancelDeletePost()">{{ 'profile.cancelButton' | translate }}</button>
+						<button class="btn btn-danger btn-sm" (click)="deletePost()">{{ 'profile.confirmDeleteButton' | translate }}</button>
+					</div>
+				</div>
+			</div>
 		}
 	</div>
 </div>

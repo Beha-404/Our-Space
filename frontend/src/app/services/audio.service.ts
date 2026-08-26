@@ -2,14 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { config } from '../config';
 import { AudioMessage } from '../interfaces/audio';
+import { PagedResult } from '../interfaces/paged-result';
 
 @Injectable({ providedIn: 'root' })
 export class AudioService {
     private http = inject(HttpClient);
     private apiUrl = config.apiUrl;
 
-    getAll() {
-        return this.http.get<AudioMessage[]>(`${this.apiUrl}/audio`);
+    getAll(page = 1, pageSize = 20) {
+        return this.http.get<PagedResult<AudioMessage>>(`${this.apiUrl}/audio?page=${page}&pageSize=${pageSize}`);
     }
 
     upload(file: File, recordedAt: string, caption: string | null) {

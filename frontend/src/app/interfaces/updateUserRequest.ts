@@ -1,4 +1,3 @@
 export interface UpdateUserRequest {
-    displayName: string | null;
-    profilePictureUrl: string | null;
+    username: string | null;
 }

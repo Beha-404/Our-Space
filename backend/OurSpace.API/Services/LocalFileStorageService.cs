@@ -1,10 +1,5 @@
-namespace OurSpace.API.Services;
+﻿namespace OurSpace.API.Services;
 
-/// <summary>
-/// Saves uploaded files to a local "uploads" folder next to the app. Swap this
-/// implementation (behind IFileStorageService) for a cloud provider (e.g. Cloudflare R2)
-/// when deploying online — nothing else in the app needs to change.
-/// </summary>
 public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageService
 {
     private readonly string _uploadsRoot = Path.Combine(env.ContentRootPath, "uploads");
@@ -30,6 +25,12 @@ public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageServ
         var path = GetPhysicalPath(url);
         if (File.Exists(path))
             File.Delete(path);
+    }
+
+    public long GetSizeBytes(string url)
+    {
+        var file = new FileInfo(GetPhysicalPath(url));
+        return file.Exists ? file.Length : 0;
     }
 
     public string GetPhysicalPath(string url)

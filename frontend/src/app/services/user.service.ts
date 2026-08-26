@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { tap } from 'rxjs';
+import { finalize, Observable, shareReplay, tap } from 'rxjs';
 import { config } from '../config';
 import { PairingCodeResponse, PairRequest } from '../interfaces/pairing';
 import { UpdateUserRequest } from '../interfaces/updateUserRequest';
@@ -13,18 +13,25 @@ export class UserService {
 
     readonly currentUser = signal<User | null>(null);
 
+    private inFlight: Observable<User> | null = null;
+
     getCurrentUser() {
         return this.http.get<User>(`${this.apiUrl}/user/current`);
     }
 
-    refreshCurrentUser() {
-        return this.getCurrentUser().pipe(
-            tap(user => this.currentUser.set(user))
+    refreshCurrentUser(): Observable<User> {
+        this.inFlight ??= this.getCurrentUser().pipe(
+            tap(user => this.currentUser.set(user)),
+            finalize(() => { this.inFlight = null; }),
+            shareReplay({ bufferSize: 1, refCount: false }),
         );
+
+        return this.inFlight;
     }
 
     clearCurrentUser(): void {
         this.currentUser.set(null);
+        this.inFlight = null;
     }
 
     updateUser(userData: UpdateUserRequest) {
@@ -49,6 +56,26 @@ export class UserService {
 
     setRelationshipDate(relationshipStartDate: string) {
         return this.http.put<User>(`${this.apiUrl}/user/relationship-date`, { relationshipStartDate }).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    updateLanguage(language: string) {
+        return this.http.put(`${this.apiUrl}/user/language`, { language });
+    }
+
+    requestEmailChange(newEmail: string) {
+        return this.http.post(`${this.apiUrl}/user/email-change`, { newEmail });
+    }
+
+    confirmEmailChange(code: string) {
+        return this.http.post<User>(`${this.apiUrl}/user/email-change/confirm`, { code }).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
+    cancelEmailChange() {
+        return this.http.delete<User>(`${this.apiUrl}/user/email-change`).pipe(
             tap(user => this.currentUser.set(user))
         );
     }

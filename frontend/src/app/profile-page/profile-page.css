@@ -54,12 +54,6 @@ h1 {
   min-width: 0;
 }
 
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
 .field input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -74,13 +68,46 @@ h1 {
 
 .subsection:first-of-type {
   background: rgba(255, 255, 255, 0.015);
-  border: 1px dashed var(--color-border);
+  border: 1px solid var(--color-border);
 }
 
 .subsection-editable {
   background: rgba(139, 92, 246, 0.05);
   border: 1px solid rgba(139, 92, 246, 0.2);
   margin-bottom: 0;
+}
+
+.email-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pending-email {
+  border-top: 1px solid var(--color-border);
+  padding-top: 14px;
+  margin-top: 2px;
+}
+
+.pending-email-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+}
+
+.pending-email-line strong {
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.pending-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-pink);
+  flex-shrink: 0;
 }
 
 .subsection-header {
@@ -95,11 +122,6 @@ h1 {
   font-family: var(--font-display);
   font-size: 0.95rem;
   color: var(--color-text);
-}
-
-.lock-icon,
-.edit-icon {
-  font-size: 0.85rem;
 }
 
 .subsection-header .hint {
@@ -218,7 +240,6 @@ h1 {
     align-items: center;
     text-align: center;
   }
-  .field-row,
   .pairing-grid {
     grid-template-columns: 1fr;
   }

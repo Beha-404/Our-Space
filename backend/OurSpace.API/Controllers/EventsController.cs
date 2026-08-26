@@ -19,9 +19,9 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<EventDto>>> GetUpcoming()
+    public async Task<ActionResult<List<EventDto>>> GetUpcoming([FromQuery] bool includePast = false)
     {
-        var events = await eventService.GetUpcomingAsync(this.GetUserId());
+        var events = await eventService.GetUpcomingAsync(this.GetUserId(), includePast);
         return Ok(events);
     }
 

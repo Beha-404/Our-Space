@@ -1,12 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 
 namespace OurSpace.API.Services;
 
-/// <summary>
-/// Periodically checks for upcoming events (within 3 days) and sends a one-time reminder
-/// email to both partners via IEmailService. Runs every 6 hours.
-/// </summary>
 public class EventReminderBackgroundService(
     IServiceScopeFactory scopeFactory,
     ILogger<EventReminderBackgroundService> logger) : BackgroundService
@@ -35,7 +32,8 @@ public class EventReminderBackgroundService(
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+        var emailQueue = scope.ServiceProvider.GetRequiredService<IEmailQueue>();
+        var localizer = scope.ServiceProvider.GetRequiredService<ILocalizer>();
 
         var now = DateTime.UtcNow;
         var reminderCutoff = now.AddDays(ReminderWindowDays);
@@ -48,11 +46,14 @@ public class EventReminderBackgroundService(
 
         foreach (var ev in dueEvents)
         {
-            var subject = $"Podsjetnik: {ev.Title}";
-            var body = $"Događaj \"{ev.Title}\" je zakazan za {ev.EventDate:dd.MM.yyyy.}.";
+            var eventDateText = ev.EventDate.ToString("dd.MM.yyyy.");
 
-            await emailService.SendAsync(ev.Couple.User1.Email, subject, body);
-            await emailService.SendAsync(ev.Couple.User2.Email, subject, body);
+            foreach (var recipient in new[] { ev.Couple.User1, ev.Couple.User2 })
+            {
+                var subject = localizer.For("Email.Reminder.Subject", recipient.PreferredLanguage, ev.Title);
+                var body = localizer.For("Email.Reminder.Body", recipient.PreferredLanguage, ev.Title, eventDateText);
+                emailQueue.Enqueue(recipient.Email, subject, body);
+            }
 
             ev.ReminderSentAt = now;
         }

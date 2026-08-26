@@ -22,24 +22,67 @@
 
 	<section class="preview">
 		<h2>{{ 'landing.previewTitle' | translate }}</h2>
-		<p class="preview-subtitle">{{ 'landing.previewSubtitle' | translate }}</p>
 
-		<div class="memory-collage">
-			<div class="memory-card mc-1">
-				<div class="mc-swatch mc-swatch-photo">🖼️</div>
+		<div class="preview-row">
+			<div class="preview-shot-wrap">
+				<article class="mock" aria-hidden="true">
+					<header class="mock-head">
+						<span class="mock-icon">🖼</span>
+						<span class="mock-titles">
+							<strong>{{ 'landing.mockPhotoTitle' | translate }}</strong>
+							<small>{{ 'landing.mockPhotoMeta' | translate }}</small>
+						</span>
+					</header>
+					<div class="mock-body">
+						<div class="mock-photo"></div>
+					</div>
+				</article>
 				<p>{{ 'landing.memoryPhoto' | translate }}</p>
 			</div>
-			<div class="memory-card mc-2">
-				<div class="mc-swatch mc-swatch-audio">🎧</div>
+
+			<div class="preview-shot-wrap">
+				<article class="mock" aria-hidden="true">
+					<header class="mock-head">
+						<span class="mock-icon">🎧</span>
+						<span class="mock-titles">
+							<strong>{{ 'landing.mockAudioTitle' | translate }}</strong>
+							<small>{{ 'landing.mockAudioMeta' | translate }}</small>
+						</span>
+					</header>
+					<div class="mock-body">
+						<div class="mock-player">
+							<span class="mock-play"></span>
+							<span class="mock-wave">
+								<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+								<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+							</span>
+							<span class="mock-time">0:24</span>
+						</div>
+					</div>
+				</article>
 				<p>{{ 'landing.memoryAudio' | translate }}</p>
 			</div>
-			<div class="memory-card mc-3">
-				<div class="mc-swatch mc-swatch-event">📅</div>
+
+			<div class="preview-shot-wrap">
+				<article class="mock" aria-hidden="true">
+					<header class="mock-head">
+						<span class="mock-icon">📅</span>
+						<span class="mock-titles">
+							<strong>{{ 'landing.mockEventTitle' | translate }}</strong>
+							<small>{{ 'landing.mockEventMeta' | translate }}</small>
+						</span>
+					</header>
+					<div class="mock-body">
+						<div class="mock-event">
+							<span class="mock-date">
+								<strong>14</strong>
+								<small>{{ 'landing.mockEventMonth' | translate }}</small>
+							</span>
+							<span class="mock-event-desc">{{ 'landing.mockEventDesc' | translate }}</span>
+						</div>
+					</div>
+				</article>
 				<p>{{ 'landing.memoryEvent' | translate }}</p>
-			</div>
-			<div class="memory-card mc-4">
-				<div class="mc-swatch mc-swatch-wish">💫</div>
-				<p>{{ 'landing.memoryWish' | translate }}</p>
 			</div>
 		</div>
 	</section>

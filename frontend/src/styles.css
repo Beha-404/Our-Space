@@ -1,5 +1,4 @@
-/* Global styles + OurSpace design tokens */
-
+﻿
 :root {
   --color-bg: #0a0c18;
   --color-bg-2: #12142a;
@@ -72,7 +71,6 @@ button {
   font-family: var(--font-body);
 }
 
-/* Layout */
 .page {
   min-height: 100vh;
   display: flex;
@@ -92,7 +90,6 @@ button {
   }
 }
 
-/* Glass card */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -102,7 +99,6 @@ button {
   box-shadow: var(--shadow-card);
 }
 
-/* Gradient text */
 .gradient-text {
   background: var(--gradient-text);
   -webkit-background-clip: text;
@@ -110,7 +106,6 @@ button {
   color: transparent;
 }
 
-/* Inputs */
 .field {
   display: flex;
   flex-direction: column;
@@ -154,7 +149,6 @@ button {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
 }
 
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -235,7 +229,6 @@ button {
   text-decoration: underline;
 }
 
-/* Alerts */
 .alert {
   border-radius: var(--radius-sm);
   padding: 12px 16px;
@@ -255,7 +248,6 @@ button {
   color: #86efac;
 }
 
-/* Avatar */
 .avatar {
   display: inline-flex;
   align-items: center;
@@ -270,7 +262,6 @@ button {
   object-fit: cover;
 }
 
-/* Animated background */
 .cosmic-bg {
   position: fixed;
   inset: 0;
@@ -324,7 +315,41 @@ button {
   }
 }
 
-/* Fade-in utility */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 14, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 26px;
+  text-align: center;
+}
+
+.modal-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.modal-card p {
+  margin: 0 0 22px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
 .fade-in {
   animation: fadeIn 0.45s ease both;
 }

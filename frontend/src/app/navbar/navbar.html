@@ -8,14 +8,15 @@
 		<a routerLink="/home" routerLinkActive="active">{{ 'nav.home' | translate }}</a>
 		<a routerLink="/memories" routerLinkActive="active">{{ 'nav.memories' | translate }}</a>
 		<a routerLink="/events" routerLinkActive="active">{{ 'nav.events' | translate }}</a>
+		<a routerLink="/wishlist" routerLinkActive="active">{{ 'nav.wishlist' | translate }}</a>
 	</div>
 
 	<div class="nav-user">
 		<app-language-switcher></app-language-switcher>
 		@if (userService.currentUser(); as user) {
 			<a routerLink="/profile" routerLinkActive="active" class="user-link">
-				<span class="user-name">{{ user.displayName || user.username }}</span>
-				<app-avatar [name]="user.displayName || user.username" [pictureUrl]="user.profilePictureUrl" [size]="36"></app-avatar>
+				<span class="user-name">{{ user.username }}</span>
+				<app-avatar [name]="user.username" [pictureUrl]="user.profilePictureUrl" [size]="36"></app-avatar>
 			</a>
 		}
 		<button class="btn btn-ghost btn-sm" (click)="logout()">{{ 'nav.logout' | translate }}</button>

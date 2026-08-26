@@ -11,10 +11,6 @@ export const authGuard: CanActivateFn = () => {
     return of(true);
   }
 
-  if (!authService.hasRefreshToken()) {
-    return of(router.parseUrl('/login'));
-  }
-
   return authService.refreshSession().pipe(
     map(success => success ? true : router.parseUrl('/login'))
   );

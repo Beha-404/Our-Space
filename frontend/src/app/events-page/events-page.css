@@ -112,6 +112,15 @@ h1 {
   flex-shrink: 0;
 }
 
+.event-expired {
+  opacity: 0.55;
+}
+
+.event-expired .event-day,
+.event-expired .event-month {
+  color: var(--color-text-faint);
+}
+
 .event-card-editing {
   display: block;
   padding: 20px 22px;

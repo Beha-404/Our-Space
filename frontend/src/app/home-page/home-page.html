@@ -3,14 +3,14 @@
 
 	<div class="container fade-in home-content">
 		@if (userService.currentUser(); as user) {
-			<h1>{{ 'home.greeting' | translate }} <span class="gradient-text">{{ user.displayName || user.username }}</span> 👋</h1>
+			<h1>{{ 'home.greeting' | translate }} <span class="gradient-text">{{ user.username }}</span> 👋</h1>
 
 			@if (user.partner; as partner) {
 				<div class="card couple-card">
-					<app-avatar [name]="partner.displayName || partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="56"></app-avatar>
+					<app-avatar [name]="partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="56"></app-avatar>
 					<div>
 						<p class="couple-label">{{ 'profile.partnerTitle' | translate }}</p>
-						<h3>{{ partner.displayName || partner.username }}</h3>
+						<h3 class="couple-names"><span class="heart-inline">❤️</span> {{ partner.username }}</h3>
 						@if (daysTogether() !== null) {
 							<p class="days-together">{{ 'home.togetherPrefix' | translate }} <strong>{{ daysTogether() }}</strong> {{ 'home.togetherSuffix' | translate }}</p>
 						}
@@ -24,9 +24,29 @@
 				@if (upcomingEvents().length > 0) {
 					<div class="events-preview">
 						@for (event of upcomingEvents(); track event.id) {
-							<div class="card event-chip">
-								<span class="event-chip-date">{{ event.eventDate | date:'d MMM' }}</span>
-								<span class="event-chip-title">{{ event.title }}</span>
+							<div class="card event-card">
+								<div class="event-date-badge">
+									<span class="event-day">{{ event.eventDate | date:'d' }}</span>
+									<span class="event-month">{{ event.eventDate | date:'MMM' }}</span>
+								</div>
+								<div class="event-info">
+									<h3>{{ event.title }}</h3>
+									@if (event.description) {
+										<p>{{ event.description }}</p>
+									}
+									<span class="event-meta">
+										@if (daysUntil(event.eventDate) < 0) {
+											{{ 'events.expired' | translate }}
+										} @else if (daysUntil(event.eventDate) === 0) {
+											{{ 'events.today' | translate }}
+										} @else if (daysUntil(event.eventDate) === 1) {
+											{{ 'events.tomorrow' | translate }}
+										} @else {
+											{{ 'events.inPrefix' | translate }} {{ daysUntil(event.eventDate) }} {{ 'events.daysLeft' | translate }}
+										}
+										· {{ 'events.addedBy' | translate }} {{ event.createdByUsername }}
+									</span>
+								</div>
 							</div>
 						}
 					</div>
@@ -65,30 +85,31 @@
 				</div>
 			}
 
-			<h2 class="section-title">{{ 'home.roadmapTitle' | translate }}</h2>
-			<div class="feature-grid">
-				<a routerLink="/memories" class="card feature-card feature-card-link">
-					<span class="feature-icon">🖼️</span>
-					<h3>{{ 'landing.featurePhotosTitle' | translate }}</h3>
-					<p>{{ 'landing.featurePhotosDesc' | translate }}</p>
-				</a>
-				<a routerLink="/memories" class="card feature-card feature-card-link">
-					<span class="feature-icon">🎧</span>
-					<h3>{{ 'landing.featureAudioTitle' | translate }}</h3>
-					<p>{{ 'landing.featureAudioDesc' | translate }}</p>
-				</a>
-				<a routerLink="/memories" class="card feature-card feature-card-link">
-					<span class="feature-icon">📈</span>
-					<h3>{{ 'landing.featureTimelineTitle' | translate }}</h3>
-					<p>{{ 'landing.featureTimelineDesc' | translate }}</p>
-				</a>
-				<div class="card feature-card">
-					<span class="feature-icon">📝</span>
-					<h3>{{ 'landing.featureWishlistTitle' | translate }}</h3>
-					<p>{{ 'landing.featureWishlistDesc' | translate }}</p>
-					<span class="badge">{{ 'home.comingSoon' | translate }}</span>
+			@if (feed().length > 0) {
+				<div class="feed-header">
+					<h2 class="section-title no-margin">{{ 'memories.feedTitle' | translate }}</h2>
+					<a routerLink="/memories" class="link-btn">{{ 'home.viewAllMemories' | translate }}</a>
 				</div>
-			</div>
+				<div class="feed feed-scroll">
+					@for (post of feed(); track post.id + post.type) {
+						<div class="card post-card">
+							<div class="post-header">
+								<span class="post-type-badge">{{ post.type === 'photo' ? '🖼️' : '🎧' }}</span>
+								<div class="post-header-text">
+									<h3 class="post-title">{{ post.caption || (post.type === 'photo' ? ('memories.untitledPhoto' | translate) : ('memories.untitledAudio' | translate)) }}</h3>
+									<span class="post-meta">{{ post.date | date:'longDate' }} · {{ 'events.addedBy' | translate }} {{ post.uploadedByUsername }}</span>
+								</div>
+							</div>
+
+							@if (post.type === 'photo') {
+								<img [src]="post.imageUrl" [alt]="post.caption || ''" class="post-image" loading="lazy">
+							} @else {
+								<audio [src]="post.audioUrl" controls class="post-audio"></audio>
+							}
+						</div>
+					}
+				</div>
+			}
 		}
 	</div>
 </div>

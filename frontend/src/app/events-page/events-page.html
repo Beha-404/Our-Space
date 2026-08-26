@@ -43,7 +43,7 @@
 				</button>
 			</div>
 
-			<h2 class="section-title">{{ 'events.upcomingTitle' | translate }}</h2>
+			<h2 class="section-title">{{ 'events.allTitle' | translate }}</h2>
 
 			@if (events().length === 0 && !loading()) {
 				<p class="muted-hint">{{ 'events.noEvents' | translate }}</p>
@@ -78,7 +78,7 @@
 							</div>
 						</div>
 					} @else {
-						<div class="card event-card">
+						<div class="card event-card" [class.event-expired]="daysUntil(event.eventDate) < 0">
 							<div class="event-date-badge">
 								<span class="event-day">{{ event.eventDate | date:'d' }}</span>
 								<span class="event-month">{{ event.eventDate | date:'MMM' }}</span>
@@ -89,12 +89,14 @@
 									<p>{{ event.description }}</p>
 								}
 								<span class="event-meta">
-									@if (daysUntil(event.eventDate) === 0) {
+									@if (daysUntil(event.eventDate) < 0) {
+										{{ 'events.expired' | translate }}
+									} @else if (daysUntil(event.eventDate) === 0) {
 										{{ 'events.today' | translate }}
 									} @else if (daysUntil(event.eventDate) === 1) {
 										{{ 'events.tomorrow' | translate }}
 									} @else {
-										{{ daysUntil(event.eventDate) }} {{ 'events.daysLeft' | translate }}
+										{{ 'events.inPrefix' | translate }} {{ daysUntil(event.eventDate) }} {{ 'events.daysLeft' | translate }}
 									}
 									· {{ 'events.addedBy' | translate }} {{ event.createdByUsername }}
 								</span>

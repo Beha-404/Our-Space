@@ -1,13 +1,19 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OurSpace.API.Common.Exceptions;
+using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.Memory;
 using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
-public class AudioService(AppDbContext db, IFileStorageService fileStorage) : IAudioService
+public class AudioService(
+    AppDbContext db,
+    IFileStorageService fileStorage,
+    ILocalizer localizer,
+    IFileUrlSigner urlSigner,
+    IStorageQuotaService quota) : IAudioService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -15,23 +21,27 @@ public class AudioService(AppDbContext db, IFileStorageService fileStorage) : IA
     };
 
     private const long MaxFileSizeBytes = 20 * 1024 * 1024;
+    private const int MaxPageSize = 50;
 
     public async Task<AudioDto> UploadAsync(int userId, IFormFile file, DateOnly recordedAt, string? caption)
     {
         ValidateFile(file);
 
-        var couple = await GetCoupleOrThrow(userId);
+        var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
         var extension = Path.GetExtension(file.FileName);
         if (string.IsNullOrWhiteSpace(extension)) extension = ".mp3";
+
+        await quota.EnsureRoomAsync(coupleId, file.Length);
 
         await using var uploadStream = file.OpenReadStream();
         var filePath = await fileStorage.SaveAsync(uploadStream, "audio", extension);
 
         var audio = new AudioMessage
         {
-            CoupleId = couple.Id,
+            CoupleId = coupleId,
             UploadedByUserId = userId,
             FilePath = filePath,
+            SizeBytes = fileStorage.GetSizeBytes(filePath),
             Caption = string.IsNullOrWhiteSpace(caption) ? null : caption.Trim(),
             RecordedAt = recordedAt,
         };
@@ -39,31 +49,39 @@ public class AudioService(AppDbContext db, IFileStorageService fileStorage) : IA
         db.AudioMessages.Add(audio);
         await db.SaveChangesAsync();
 
-        var uploader = await db.Users.SingleAsync(u => u.Id == userId);
-        return ToDto(audio, uploader.Username);
+        return ToDto(audio, username);
     }
 
-    public async Task<List<AudioDto>> GetAllAsync(int userId)
+    public async Task<PagedResult<AudioDto>> GetAllAsync(int userId, int page, int pageSize)
     {
-        var couple = await GetCoupleOrThrow(userId);
+        var coupleId = await GetCoupleIdOrThrow(userId);
 
-        return await db.AudioMessages
-            .Include(a => a.UploadedByUser)
-            .Where(a => a.CoupleId == couple.Id)
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+
+        var audio = await db.AudioMessages
+            .Where(a => a.CoupleId == coupleId)
             .OrderByDescending(a => a.RecordedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize + 1)
             .Select(a => new AudioDto(a.Id, a.FilePath, a.Caption, a.RecordedAt, a.UploadedByUser.Username, a.CreatedAt))
             .ToListAsync();
+
+        var hasMore = audio.Count > pageSize;
+        if (hasMore) audio.RemoveAt(audio.Count - 1);
+
+        return new PagedResult<AudioDto>(audio.Select(Signed).ToList(), hasMore);
     }
 
     public async Task DeleteAsync(int userId, int audioId)
     {
-        var couple = await GetCoupleOrThrow(userId);
+        var coupleId = await GetCoupleIdOrThrow(userId);
 
         var audio = await db.AudioMessages.SingleOrDefaultAsync(a => a.Id == audioId)
-            ?? throw new NotFoundException("Audio poruka nije pronađena.");
+            ?? throw new NotFoundException(localizer.T("Audio.NotFound"));
 
-        if (audio.CoupleId != couple.Id)
-            throw new BadRequestException("Nemaš pristup ovoj audio poruci.");
+        if (audio.CoupleId != coupleId)
+            throw new NotFoundException(localizer.T("Audio.NotFound"));
 
         fileStorage.Delete(audio.FilePath);
 
@@ -74,19 +92,40 @@ public class AudioService(AppDbContext db, IFileStorageService fileStorage) : IA
     private void ValidateFile(IFormFile file)
     {
         if (file.Length == 0)
-            throw new BadRequestException("Fajl je prazan.");
+            throw new BadRequestException(localizer.T("Audio.FileEmpty"));
 
         if (file.Length > MaxFileSizeBytes)
-            throw new BadRequestException("Audio fajl je prevelik (maksimalno 20MB).");
+            throw new BadRequestException(localizer.T("Audio.TooLarge"));
 
         if (!AllowedContentTypes.Contains(file.ContentType))
-            throw new BadRequestException("Nepodržan format audio fajla.");
+            throw new BadRequestException(localizer.T("Audio.UnsupportedFormat"));
     }
 
-    private async Task<Couple> GetCoupleOrThrow(int userId) =>
-        await db.Couples.SingleOrDefaultAsync(c => c.User1Id == userId || c.User2Id == userId)
-        ?? throw new BadRequestException("Moraš biti uparen/a sa partnerom da bi dodavao/la audio poruke.");
+    private async Task<int> GetCoupleIdOrThrow(int userId)
+    {
+        var id = await db.Couples
+            .Where(c => c.User1Id == userId || c.User2Id == userId)
+            .Select(c => (int?)c.Id)
+            .SingleOrDefaultAsync();
 
-    private static AudioDto ToDto(AudioMessage audio, string uploadedByUsername) =>
-        new(audio.Id, audio.FilePath, audio.Caption, audio.RecordedAt, uploadedByUsername, audio.CreatedAt);
+        return id ?? throw new BadRequestException(localizer.T("Audio.NeedPartner"));
+    }
+
+    private async Task<(int CoupleId, string Username)> GetCoupleAndUsernameOrThrow(int userId)
+    {
+        var row = await db.Couples
+            .Where(c => c.User1Id == userId || c.User2Id == userId)
+            .Select(c => new { c.Id, Username = c.User1Id == userId ? c.User1.Username : c.User2.Username })
+            .SingleOrDefaultAsync();
+
+        return row is null
+            ? throw new BadRequestException(localizer.T("Audio.NeedPartner"))
+            : (row.Id, row.Username);
+    }
+
+    private AudioDto ToDto(AudioMessage audio, string uploadedByUsername) =>
+        Signed(new AudioDto(audio.Id, audio.FilePath, audio.Caption, audio.RecordedAt, uploadedByUsername, audio.CreatedAt));
+
+    private AudioDto Signed(AudioDto dto) =>
+        dto with { Url = urlSigner.Sign(dto.Url) };
 }

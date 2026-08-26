@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
@@ -24,10 +25,20 @@ export class ProfilePage {
   uploadingPicture = signal(false);
   pictureErrorKey = signal('');
 
-  formData = signal({ displayName: '' });
+  formData = signal({ username: '' });
   saving = signal(false);
   saveMessageKey = signal('');
   saveErrorKey = signal('');
+
+  editingEmail = signal(false);
+  newEmail = signal('');
+  emailSending = signal(false);
+  emailMessageKey = signal('');
+  emailErrorKey = signal('');
+
+  confirmCode = signal('');
+  confirmingEmail = signal(false);
+  confirmErrorKey = signal('');
 
   pairingCode = signal<{ code: string; expiresAt: string } | null>(null);
   pairingLoading = signal(false);
@@ -47,13 +58,11 @@ export class ProfilePage {
 
   constructor() {
     this.userService.refreshCurrentUser().subscribe(user => {
-      this.formData.set({
-        displayName: user.displayName ?? '',
-      });
+      this.formData.set({ username: user.username });
     });
   }
 
-  updateField(field: 'displayName', value: string): void {
+  updateField(field: 'username', value: string): void {
     this.formData.update(data => ({ ...data, [field]: value }));
   }
 
@@ -62,19 +71,84 @@ export class ProfilePage {
     this.saveMessageKey.set('');
     this.saveErrorKey.set('');
 
-    const data = this.formData();
     this.userService.updateUser({
-      displayName: data.displayName || null,
-      profilePictureUrl: null,
+      username: this.formData().username.trim() || null,
     }).subscribe({
       next: () => {
         this.saving.set(false);
         this.saveMessageKey.set('profile.saved');
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.saving.set(false);
-        this.saveErrorKey.set('profile.saveError');
+        this.saveErrorKey.set(err.error?.title ?? 'profile.saveError');
       }
+    });
+  }
+
+  startEditEmail(): void {
+    this.emailErrorKey.set('');
+    this.emailMessageKey.set('');
+    this.newEmail.set('');
+    this.editingEmail.set(true);
+  }
+
+  cancelEditEmail(): void {
+    this.editingEmail.set(false);
+  }
+
+  requestEmailChange(): void {
+    const email = this.newEmail().trim();
+    if (!email) {
+      this.emailErrorKey.set('auth.errInvalidEmail');
+      return;
+    }
+
+    this.emailSending.set(true);
+    this.emailErrorKey.set('');
+    this.emailMessageKey.set('');
+
+    this.userService.requestEmailChange(email).subscribe({
+      next: () => {
+        this.emailSending.set(false);
+        this.editingEmail.set(false);
+        this.emailMessageKey.set('profile.emailCodeSent');
+        this.userService.refreshCurrentUser().subscribe();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.emailSending.set(false);
+        this.emailErrorKey.set(err.error?.title ?? 'profile.emailChangeError');
+      }
+    });
+  }
+
+  confirmEmailChange(): void {
+    const code = this.confirmCode().trim();
+    if (!code) {
+      this.confirmErrorKey.set('profile.emailConfirmError');
+      return;
+    }
+
+    this.confirmingEmail.set(true);
+    this.confirmErrorKey.set('');
+
+    this.userService.confirmEmailChange(code).subscribe({
+      next: () => {
+        this.confirmingEmail.set(false);
+        this.confirmCode.set('');
+        this.emailMessageKey.set('profile.emailChanged');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.confirmingEmail.set(false);
+        this.confirmErrorKey.set(err.error?.title ?? 'profile.emailConfirmError');
+      }
+    });
+  }
+
+  cancelEmailChange(): void {
+    this.userService.cancelEmailChange().subscribe(() => {
+      this.confirmCode.set('');
+      this.confirmErrorKey.set('');
+      this.emailMessageKey.set('');
     });
   }
 
@@ -92,9 +166,9 @@ export class ProfilePage {
         const fileInput = this.pictureFileInput()?.nativeElement;
         if (fileInput) fileInput.value = '';
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.uploadingPicture.set(false);
-        this.pictureErrorKey.set('profile.pictureUploadError');
+        this.pictureErrorKey.set(err.error?.title ?? 'profile.pictureUploadError');
       }
     });
   }
@@ -108,9 +182,9 @@ export class ProfilePage {
         this.pairingLoading.set(false);
         this.pairingCode.set(res);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.pairingLoading.set(false);
-        this.pairErrorKey.set('profile.pairingCodeError');
+        this.pairErrorKey.set(err.error?.title ?? 'profile.pairingCodeError');
       }
     });
   }
@@ -141,7 +215,7 @@ export class ProfilePage {
         this.pairingCode.set(null);
         this.pairInput.set('');
       },
-      error: () => this.pairErrorKey.set('profile.pairError')
+      error: (err: HttpErrorResponse) => this.pairErrorKey.set(err.error?.title ?? 'profile.pairError')
     });
   }
 
@@ -170,9 +244,9 @@ export class ProfilePage {
         this.relationshipDateSaving.set(false);
         this.editingRelationshipDate.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.relationshipDateSaving.set(false);
-        this.relationshipDateErrorKey.set('profile.dateError');
+        this.relationshipDateErrorKey.set(err.error?.title ?? 'profile.dateError');
       }
     });
   }
@@ -192,10 +266,9 @@ export class ProfilePage {
     this.deleteErrorKey.set('');
     this.userService.deleteUser(user.id).subscribe({
       next: () => {
-        this.authService.logout();
-        this.router.navigate(['/login']);
+        this.authService.logout().subscribe(() => this.router.navigate(['/login']));
       },
-      error: () => this.deleteErrorKey.set('profile.deleteError')
+      error: (err: HttpErrorResponse) => this.deleteErrorKey.set(err.error?.title ?? 'profile.deleteError')
     });
   }
 }

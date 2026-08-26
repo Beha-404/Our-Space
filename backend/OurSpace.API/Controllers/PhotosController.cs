@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OurSpace.API.Common;
 using OurSpace.API.Common.Exceptions;
+using OurSpace.API.Common.Localization;
 using OurSpace.API.Models.DTOs.Memory;
 using OurSpace.API.Services;
 
@@ -10,7 +11,7 @@ namespace OurSpace.API.Controllers;
 [ApiController]
 [Route("api/photos")]
 [Authorize]
-public class PhotosController(IPhotoService photoService) : ControllerBase
+public class PhotosController(IPhotoService photoService, ILocalizer localizer) : ControllerBase
 {
     [HttpPost]
     [RequestSizeLimit(10 * 1024 * 1024)]
@@ -20,16 +21,16 @@ public class PhotosController(IPhotoService photoService) : ControllerBase
         [FromForm] string? caption)
     {
         if (file is null)
-            throw new BadRequestException("Fajl je obavezan.");
+            throw new BadRequestException(localizer.T("Photo.FileRequired"));
 
         var dto = await photoService.UploadAsync(this.GetUserId(), file, takenAt, caption);
         return Created(string.Empty, dto);
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<PhotoDto>>> GetAll()
+    public async Task<ActionResult<PagedResult<PhotoDto>>> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var photos = await photoService.GetAllAsync(this.GetUserId());
+        var photos = await photoService.GetAllAsync(this.GetUserId(), page, pageSize);
         return Ok(photos);
     }
 

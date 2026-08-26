@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Data;
@@ -11,6 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<AudioMessage> AudioMessages => Set<AudioMessage>();
+    public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<Invite> Invites => Set<Invite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,6 +22,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(u => u.Email).IsUnique();
             entity.HasIndex(u => u.PairingCode).IsUnique().HasFilter("[PairingCode] IS NOT NULL");
             entity.HasQueryFilter(u => !u.IsDeleted);
+        });
+
+        modelBuilder.Entity<Invite>(entity =>
+        {
+            entity.HasIndex(i => i.Code).IsUnique();
+
+            entity.HasOne(i => i.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(i => i.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Ignore(i => i.IsUsable);
+            entity.HasQueryFilter(i => !i.CreatedByUser.IsDeleted);
         });
 
         modelBuilder.Entity<Couple>(entity =>
@@ -62,7 +77,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasIndex(e => e.EventDate);
+            entity.HasIndex(e => new { e.CoupleId, e.EventDate });
             entity.HasQueryFilter(e => !e.Couple.User1.IsDeleted && !e.Couple.User2.IsDeleted);
         });
 
@@ -78,7 +93,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(p => p.UploadedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasIndex(p => p.TakenAt);
+            entity.HasIndex(p => new { p.CoupleId, p.TakenAt });
             entity.HasQueryFilter(p => !p.Couple.User1.IsDeleted && !p.Couple.User2.IsDeleted);
         });
 
@@ -94,8 +109,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(a => a.UploadedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasIndex(a => a.RecordedAt);
+            entity.HasIndex(a => new { a.CoupleId, a.RecordedAt });
             entity.HasQueryFilter(a => !a.Couple.User1.IsDeleted && !a.Couple.User2.IsDeleted);
+        });
+
+        modelBuilder.Entity<WishlistItem>(entity =>
+        {
+            entity.HasOne(w => w.Couple)
+                .WithMany()
+                .HasForeignKey(w => w.CoupleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(w => w.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(w => w.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(w => new { w.CoupleId, w.IsFulfilled, w.CreatedAt });
+            entity.HasQueryFilter(w => !w.Couple.User1.IsDeleted && !w.Couple.User2.IsDeleted);
         });
     }
 }

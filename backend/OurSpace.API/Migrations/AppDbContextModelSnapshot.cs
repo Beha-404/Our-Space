@@ -46,16 +46,17 @@ namespace OurSpace.API.Migrations
                     b.Property<DateOnly>("RecordedAt")
                         .HasColumnType("date");
 
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("UploadedByUserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoupleId");
-
-                    b.HasIndex("RecordedAt");
-
                     b.HasIndex("UploadedByUserId");
+
+                    b.HasIndex("CoupleId", "RecordedAt");
 
                     b.ToTable("AudioMessages");
                 });
@@ -122,13 +123,51 @@ namespace OurSpace.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoupleId");
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("CoupleId", "EventDate");
+
+                    b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("OurSpace.API.Models.Entities.Invite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UsedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("EventDate");
-
-                    b.ToTable("Events");
+                    b.ToTable("Invites");
                 });
 
             modelBuilder.Entity("OurSpace.API.Models.Entities.Photo", b =>
@@ -152,6 +191,9 @@ namespace OurSpace.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
                     b.Property<DateOnly>("TakenAt")
                         .HasColumnType("date");
 
@@ -164,11 +206,9 @@ namespace OurSpace.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoupleId");
-
-                    b.HasIndex("TakenAt");
-
                     b.HasIndex("UploadedByUserId");
+
+                    b.HasIndex("CoupleId", "TakenAt");
 
                     b.ToTable("Photos");
                 });
@@ -218,18 +258,39 @@ namespace OurSpace.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("ApprovalCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ApprovalCodeExpiresAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("EmailChangeCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EmailChangeCodeExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LoginCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LoginCodeAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LoginCodeExpiresAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PairingCode")
                         .HasColumnType("nvarchar(450)");
@@ -238,6 +299,22 @@ namespace OurSpace.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PasswordResetAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PasswordResetCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PasswordResetCodeExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PendingEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PreferredLanguage")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -264,6 +341,42 @@ namespace OurSpace.API.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("OurSpace.API.Models.Entities.WishlistItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CoupleId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FulfilledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsFulfilled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("CoupleId", "IsFulfilled", "CreatedAt");
+
+                    b.ToTable("WishlistItems");
                 });
 
             modelBuilder.Entity("OurSpace.API.Models.Entities.AudioMessage", b =>
@@ -323,6 +436,17 @@ namespace OurSpace.API.Migrations
                     b.Navigation("CreatedByUser");
                 });
 
+            modelBuilder.Entity("OurSpace.API.Models.Entities.Invite", b =>
+                {
+                    b.HasOne("OurSpace.API.Models.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+                });
+
             modelBuilder.Entity("OurSpace.API.Models.Entities.Photo", b =>
                 {
                     b.HasOne("OurSpace.API.Models.Entities.Couple", "Couple")
@@ -351,6 +475,25 @@ namespace OurSpace.API.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OurSpace.API.Models.Entities.WishlistItem", b =>
+                {
+                    b.HasOne("OurSpace.API.Models.Entities.Couple", "Couple")
+                        .WithMany()
+                        .HasForeignKey("CoupleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OurSpace.API.Models.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Couple");
+
+                    b.Navigation("CreatedByUser");
                 });
 #pragma warning restore 612, 618
         }

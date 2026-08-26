@@ -9,6 +9,7 @@ import { EventService } from '../services/event.service';
 import { PhotoService } from '../services/photo.service';
 import { AudioService } from '../services/audio.service';
 import { UserService } from '../services/user.service';
+import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
 import { buildTimelineItems } from '../shared/build-timeline-items';
 import { TimelineGraph } from '../memories-page/timeline-graph/timeline-graph';
 import { Photo } from '../interfaces/photo';
@@ -35,6 +36,20 @@ export class HomePage {
     buildTimelineItems(this.photos(), this.audioItems(), path => this.photoService.fullUrl(path))
   );
 
+  feed = computed<FeedPost[]>(() =>
+    buildFeedPosts(
+      this.photos(),
+      this.audioItems(),
+      path => this.photoService.fullUrl(path),
+      path => this.audioService.fullUrl(path),
+    )
+  );
+
+  daysUntil(eventDate: string): number {
+    const diffMs = new Date(eventDate).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0);
+    return Math.round(diffMs / (1000 * 60 * 60 * 24));
+  }
+
   daysTogether = computed(() => {
     const partner = this.userService.currentUser()?.partner;
     if (!partner?.relationshipStartDate) return null;
@@ -49,11 +64,11 @@ export class HomePage {
       if (user.partner) {
         this.eventService.getUpcoming().subscribe(events => this.upcomingEvents.set(events.slice(0, 3)));
         forkJoin({
-          photos: this.photoService.getAll(),
-          audio: this.audioService.getAll(),
+          photos: this.photoService.getAll(1, 20),
+          audio: this.audioService.getAll(1, 20),
         }).subscribe(({ photos, audio }) => {
-          this.photos.set(photos);
-          this.audioItems.set(audio);
+          this.photos.set(photos.items);
+          this.audioItems.set(audio.items);
         });
       }
     });

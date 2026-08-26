@@ -1,14 +1,9 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
 using OurSpace.API.Options;
 
 namespace OurSpace.API.Services;
 
-/// <summary>
-/// Sends email via the Resend API (https://resend.com). Never throws — a failed send
-/// (rate limit, quota exceeded, invalid recipient, network error) is logged and swallowed
-/// so a background job that emails multiple people never gets derailed by one failure.
-/// </summary>
 public class ResendEmailService(HttpClient httpClient, IOptions<EmailOptions> options, ILogger<ResendEmailService> logger) : IEmailService
 {
     private readonly EmailOptions _options = options.Value;

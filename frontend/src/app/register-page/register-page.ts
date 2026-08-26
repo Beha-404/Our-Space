@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
@@ -67,7 +68,7 @@ export class RegisterPage {
       password: data.password
     }).subscribe({
       next: () => this.router.navigate(['/login']),
-      error: () => this.errorKey.set('auth.errRegisterFailed')
+      error: (err: HttpErrorResponse) => this.errorKey.set(err.error?.title ?? 'auth.errRegisterFailed')
     });
   }
 }

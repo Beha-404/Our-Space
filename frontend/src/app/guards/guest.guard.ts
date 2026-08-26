@@ -11,10 +11,6 @@ export const guestGuard: CanActivateFn = () => {
     return of(router.parseUrl('/home'));
   }
 
-  if (!authService.hasRefreshToken()) {
-    return of(true);
-  }
-
   return authService.refreshSession().pipe(
     map(success => success ? router.parseUrl('/home') : true)
   );
