@@ -11,13 +11,14 @@ import { PhotoService } from '../services/photo.service';
 import { UserService } from '../services/user.service';
 import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
 import { buildTimelineItems } from '../shared/build-timeline-items';
+import { Lightbox } from '../shared/lightbox/lightbox';
 import { TimelineGraph } from './timeline-graph/timeline-graph';
 
 type UploadType = 'photo' | 'audio';
 type SortOrder = 'newest' | 'oldest';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, TimelineGraph],
+  imports: [Navbar, DatePipe, TranslatePipe, TimelineGraph, Lightbox],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',
@@ -170,6 +171,16 @@ export class MemoriesPage {
     this.selectedFile.set(null);
     const input = this.fileInputRef()?.nativeElement;
     if (input) input.value = '';
+  }
+
+  lightboxPost = signal<FeedPost | null>(null);
+
+  openLightbox(post: FeedPost): void {
+    this.lightboxPost.set(post);
+  }
+
+  closeLightbox(): void {
+    this.lightboxPost.set(null);
   }
 
   postPendingDelete = signal<FeedPost | null>(null);

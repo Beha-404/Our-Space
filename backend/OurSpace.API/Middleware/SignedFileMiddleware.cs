@@ -22,6 +22,35 @@ public class SignedFileMiddleware(RequestDelegate next)
             return;
         }
 
+        if (query.ContainsKey("download"))
+        {
+            var fileName = SafeFileName(query["name"], context.Request.Path.Value!);
+            context.Response.Headers.ContentDisposition = $"attachment; filename=\"{fileName}\"";
+        }
+
         await next(context);
+    }
+
+    private static string SafeFileName(string? requested, string path)
+    {
+        var fallback = Path.GetFileName(path);
+
+        if (string.IsNullOrWhiteSpace(requested))
+            return fallback;
+
+        var extension = Path.GetExtension(path);
+        var stem = Path.GetFileNameWithoutExtension(requested.Trim());
+
+        var cleaned = new string(stem
+            .Select(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or ' ' ? c : '-')
+            .ToArray())
+            .Trim();
+
+        cleaned = string.Join('-', cleaned.Split('-', StringSplitOptions.RemoveEmptyEntries));
+
+        if (cleaned.Length > 60)
+            cleaned = cleaned[..60];
+
+        return string.IsNullOrWhiteSpace(cleaned) ? fallback : cleaned + extension;
     }
 }

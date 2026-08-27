@@ -22,15 +22,11 @@ public class AuthController(
 
     [HttpPost("register")]
     [EnableRateLimiting(RateLimitPolicies.Login)]
-    public async Task<ActionResult<RegisterResponse>> Register(RegisterRequest request)
+    public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
-        var outcome = await authService.RegisterAsync(request);
-
-        if (outcome.NeedsApproval)
-            return Accepted(new RegisterResponse(true, null));
-
-        SetRefreshCookie(outcome.Result!.RefreshToken);
-        return Created(string.Empty, new RegisterResponse(false, outcome.Result.Response));
+        var result = await authService.RegisterAsync(request);
+        SetRefreshCookie(result.RefreshToken);
+        return Created(string.Empty, result.Response);
     }
 
     [HttpPost("login")]

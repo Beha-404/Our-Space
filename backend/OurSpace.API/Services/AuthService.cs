@@ -24,9 +24,11 @@ public partial class AuthService(
     private static readonly TimeSpan LoginCodeLifetime = TimeSpan.FromMinutes(10);
     private const int MaxLoginCodeAttempts = 5;
 
-    private static readonly TimeSpan ApprovalCodeLifetime = TimeSpan.FromHours(72);
-    public async Task<RegisterOutcome> RegisterAsync(RegisterRequest request)
+    public async Task<AuthResult> RegisterAsync(RegisterRequest request)
     {
+        if (!authOptions.Value.RegistrationOpen)
+            throw new BadRequestException(localizer.T("Auth.RegistrationClosed"));
+
         if (!EmailRegex().IsMatch(request.Email))
             throw new BadRequestException(localizer.T("Auth.InvalidEmail"));
 
@@ -41,58 +43,18 @@ public partial class AuthService(
         if (emailTaken)
             throw new ConflictException(localizer.T("Auth.EmailTaken"));
 
-        var isFirstAccount = !await db.Users.IgnoreQueryFilters().AnyAsync();
-        var invite = isFirstAccount ? null : await ResolveInviteOrThrow(request.InviteCode);
-
         var user = new User
         {
             Username = request.Username,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password),
             PreferredLanguage = localizer.CurrentLang,
-            IsApproved = isFirstAccount,
         };
-
-        if (!isFirstAccount)
-        {
-            user.ApprovalCode = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
-            user.ApprovalCodeExpiresAt = DateTime.UtcNow.Add(ApprovalCodeLifetime);
-        }
 
         db.Users.Add(user);
         await db.SaveChangesAsync();
 
-        if (isFirstAccount)
-            return new RegisterOutcome(false, await IssueTokensAsync(user));
-
-        invite!.UsedByUserId = user.Id;
-        invite.UsedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-
-        var inviter = await db.Users.SingleAsync(u => u.Id == invite.CreatedByUserId);
-        var subject = localizer.For("Email.AccountApproval.Subject", inviter.PreferredLanguage);
-        var body = localizer.For("Email.AccountApproval.Body", inviter.PreferredLanguage,
-            user.Username, user.Email, user.ApprovalCode!, (int)ApprovalCodeLifetime.TotalHours);
-
-        emailQueue.Enqueue(inviter.Email, subject, body);
-
-        return new RegisterOutcome(true, null);
-    }
-
-    private async Task<Invite> ResolveInviteOrThrow(string? inviteCode)
-    {
-        if (string.IsNullOrWhiteSpace(inviteCode))
-            throw new BadRequestException(localizer.T("Invite.Required"));
-
-        var normalized = inviteCode.Trim().ToUpperInvariant();
-
-        var invite = await db.Invites.SingleOrDefaultAsync(i => i.Code == normalized)
-            ?? throw new BadRequestException(localizer.T("Invite.Invalid"));
-
-        if (!invite.IsUsable)
-            throw new BadRequestException(localizer.T("Invite.Invalid"));
-
-        return invite;
+        return await IssueTokensAsync(user);
     }
 
     public async Task<LoginOutcome> LoginAsync(LoginRequest request)
@@ -100,9 +62,6 @@ public partial class AuthService(
         var user = await db.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
         if (user is null || !BCrypt.Net.BCrypt.EnhancedVerify(request.Password, user.PasswordHash))
             throw new UnauthorizedAppException(localizer.T("Auth.LoginFailed"));
-
-        if (!user.IsApproved)
-            throw new UnauthorizedAppException(localizer.T("Auth.NotApproved"));
 
         if (!authOptions.Value.TwoFactorEnabled)
             return new LoginOutcome(false, await IssueTokensAsync(user));

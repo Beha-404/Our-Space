@@ -43,6 +43,20 @@ h1 {
   gap: 16px;
 }
 
+.add-event-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.add-event-footer .hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
 .muted-hint {
   font-size: 0.9rem;
 }

@@ -34,6 +34,18 @@
   gap: 12px;
 }
 
+@media (max-width: 560px) {
+  .landing-nav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .landing-nav-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 .hero {
   max-width: 720px;
   margin: 60px auto 90px;
@@ -160,11 +172,21 @@
 .mock-photo {
   width: 100%;
   aspect-ratio: 16 / 10;
+  padding: 0;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background-image: url('/preview/couple.jpg'), var(--gradient-primary);
   background-size: cover;
   background-position: center;
+  cursor: zoom-in;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.mock-photo:hover,
+.mock-photo:focus-visible {
+  transform: scale(1.02);
+  border-color: var(--color-border-strong);
+  outline: none;
 }
 
 .mock-player {

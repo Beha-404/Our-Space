@@ -3,42 +3,108 @@
   width: 100%;
 }
 
-.timeline-svg {
-  width: 100%;
-  height: 160px;
-  display: block;
+.timeline-track {
+  position: relative;
+  height: 104px;
+  margin: 12px 46px 0;
 }
 
-.lane-line {
-  stroke: var(--color-border);
-  stroke-width: 1;
+.timeline-line {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border-strong);
 }
 
-.lane-label {
-  fill: var(--color-text-faint);
-  font-size: 11px;
-  font-family: var(--font-body);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.timeline-item {
+  position: absolute;
+  top: 0;
+  width: 84px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.dot {
+.timeline-item.staggered .timeline-label-title {
+  margin-top: 46px;
+}
+
+.timeline-item.staggered::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  width: 1px;
+  height: 32px;
+  background: var(--color-border);
+}
+
+.timeline-dot {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--color-bg);
   cursor: pointer;
-  stroke: var(--color-bg);
-  stroke-width: 2;
-  transition: r 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
-.dot:hover {
-  r: 9;
+.timeline-dot:hover,
+.timeline-dot:focus-visible {
+  transform: scale(1.35);
+  outline: none;
+}
+
+.timeline-label-title {
+  margin-top: 8px;
+  max-width: 100%;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-label-date {
+  font-size: 0.66rem;
+  color: var(--color-text-faint);
+  font-variant-numeric: tabular-nums;
 }
 
 .dot-photo {
-  fill: var(--color-pink);
+  background: var(--color-pink);
 }
 
 .dot-audio {
-  fill: var(--color-blue);
+  background: var(--color-blue);
+}
+
+.timeline-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 6px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-faint);
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
 }
 
 .tooltip {

@@ -8,7 +8,15 @@ export interface FeedPost {
   caption: string | null;
   imageUrl?: string;
   audioUrl?: string;
+  downloadUrl: string;
   uploadedByUsername: string;
+}
+
+function withDownload(url: string, caption: string | null, date: string): string {
+  const name = caption?.trim() || `ourspace-${date.slice(0, 10)}`;
+  const separator = url.includes('?') ? '&' : '?';
+
+  return `${url}${separator}download=1&name=${encodeURIComponent(name)}`;
 }
 
 export function buildFeedPosts(
@@ -18,22 +26,33 @@ export function buildFeedPosts(
   resolveAudioUrl: (path: string) => string,
   sortOrder: 'newest' | 'oldest' = 'newest',
 ): FeedPost[] {
-  const photoPosts: FeedPost[] = photos.map(p => ({
-    id: p.id,
-    type: 'photo',
-    date: p.takenAt,
-    caption: p.caption,
-    imageUrl: resolvePhotoUrl(p.thumbnailUrl),
-    uploadedByUsername: p.uploadedByUsername,
-  }));
-  const audioPosts: FeedPost[] = audioItems.map(a => ({
-    id: a.id,
-    type: 'audio',
-    date: a.recordedAt,
-    caption: a.caption,
-    audioUrl: resolveAudioUrl(a.url),
-    uploadedByUsername: a.uploadedByUsername,
-  }));
+  const photoPosts: FeedPost[] = photos.map(p => {
+    const url = resolvePhotoUrl(p.url);
+
+    return {
+      id: p.id,
+      type: 'photo',
+      date: p.takenAt,
+      caption: p.caption,
+      imageUrl: url,
+      downloadUrl: withDownload(url, p.caption, p.takenAt),
+      uploadedByUsername: p.uploadedByUsername,
+    };
+  });
+
+  const audioPosts: FeedPost[] = audioItems.map(a => {
+    const url = resolveAudioUrl(a.url);
+
+    return {
+      id: a.id,
+      type: 'audio',
+      date: a.recordedAt,
+      caption: a.caption,
+      audioUrl: url,
+      downloadUrl: withDownload(url, a.caption, a.recordedAt),
+      uploadedByUsername: a.uploadedByUsername,
+    };
+  });
 
   const all = [...photoPosts, ...audioPosts].sort((a, b) => a.date.localeCompare(b.date));
   return sortOrder === 'newest' ? all.reverse() : all;

@@ -12,7 +12,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<AudioMessage> AudioMessages => Set<AudioMessage>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
-    public DbSet<Invite> Invites => Set<Invite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,19 +21,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(u => u.Email).IsUnique();
             entity.HasIndex(u => u.PairingCode).IsUnique().HasFilter("[PairingCode] IS NOT NULL");
             entity.HasQueryFilter(u => !u.IsDeleted);
-        });
-
-        modelBuilder.Entity<Invite>(entity =>
-        {
-            entity.HasIndex(i => i.Code).IsUnique();
-
-            entity.HasOne(i => i.CreatedByUser)
-                .WithMany()
-                .HasForeignKey(i => i.CreatedByUserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.Ignore(i => i.IsUsable);
-            entity.HasQueryFilter(i => !i.CreatedByUser.IsDeleted);
         });
 
         modelBuilder.Entity<Couple>(entity =>

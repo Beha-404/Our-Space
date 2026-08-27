@@ -32,15 +32,17 @@
 						[value]="formData().description" (input)="updateField('description', $any($event.target).value)">
 				</div>
 
-				<span class="hint">{{ 'events.reminderNote' | translate }}</span>
-
 				@if (addErrorKey()) {
 					<div class="alert alert-error">{{ addErrorKey() | translate }}</div>
 				}
 
-				<button class="btn btn-primary" (click)="addEvent()" [disabled]="adding()">
-					{{ (adding() ? 'events.adding' : 'events.addButton') | translate }}
-				</button>
+				<div class="add-event-footer">
+					<span class="hint">{{ 'events.reminderNote' | translate }}</span>
+
+					<button class="btn btn-primary" (click)="addEvent()" [disabled]="adding()">
+						{{ (adding() ? 'events.adding' : 'events.addButton') | translate }}
+					</button>
+				</div>
 			</div>
 
 			<h2 class="section-title">{{ 'events.allTitle' | translate }}</h2>

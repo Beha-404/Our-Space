@@ -25,16 +25,18 @@
 
 		<div class="preview-row">
 			<div class="preview-shot-wrap">
-				<article class="mock" aria-hidden="true">
+				<article class="mock">
 					<header class="mock-head">
-						<span class="mock-icon">🖼</span>
+						<span class="mock-icon">📷</span>
 						<span class="mock-titles">
 							<strong>{{ 'landing.mockPhotoTitle' | translate }}</strong>
 							<small>{{ 'landing.mockPhotoMeta' | translate }}</small>
 						</span>
 					</header>
 					<div class="mock-body">
-						<div class="mock-photo"></div>
+						<button type="button" class="mock-photo"
+							(click)="previewOpen.set(true)"
+							[attr.aria-label]="'memories.openFullscreen' | translate"></button>
 					</div>
 				</article>
 				<p>{{ 'landing.memoryPhoto' | translate }}</p>
@@ -137,4 +139,11 @@
 	<footer class="landing-footer">
 		<p>{{ 'landing.footer' | translate }}</p>
 	</footer>
+
+	@if (previewOpen()) {
+		<app-lightbox
+			[imageUrl]="previewImageUrl"
+			[title]="'landing.mockPhotoTitle' | translate"
+			(closed)="previewOpen.set(false)" />
+	}
 </div>

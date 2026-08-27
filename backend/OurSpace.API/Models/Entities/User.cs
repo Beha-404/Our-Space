@@ -23,10 +23,6 @@ public class User
     public DateTime? LoginCodeExpiresAt { get; set; }
     public int LoginCodeAttempts { get; set; }
 
-    public bool IsApproved { get; set; } = true;
-    public string? ApprovalCode { get; set; }
-    public DateTime? ApprovalCodeExpiresAt { get; set; }
-
     public string PreferredLanguage { get; set; } = "bs";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -20,41 +20,37 @@ export interface TimelineItem {
 export class TimelineGraph {
   items = input.required<TimelineItem[]>();
 
-  readonly width = 900;
-  readonly height = 160;
-  readonly photoLaneY = 55;
-  readonly audioLaneY = 115;
-  private readonly padding = 30;
-
   hoveredItem = signal<TimelineItem | null>(null);
   hoverPos = signal<{ x: number; y: number }>({ x: 0, y: 0 });
 
   private minDate = computed(() => Math.min(...this.items().map(i => new Date(i.date).getTime())));
   private maxDate = computed(() => Math.max(...this.items().map(i => new Date(i.date).getTime())));
 
-  xFor(dateStr: string): number {
-    const t = new Date(dateStr).getTime();
+  percentFor(dateStr: string): number {
+    const time = new Date(dateStr).getTime();
     const min = this.minDate();
     const max = this.maxDate();
 
     if (!isFinite(min) || !isFinite(max) || min === max) {
-      return this.width / 2;
+      return 50;
     }
 
-    return this.padding + ((t - min) / (max - min)) * (this.width - this.padding * 2);
+    return ((time - min) / (max - min)) * 100;
   }
 
-  laneYFor(item: TimelineItem): number {
-    return item.type === 'photo' ? this.photoLaneY : this.audioLaneY;
-  }
-
-  onHover(item: TimelineItem, event: MouseEvent): void {
-    const target = event.currentTarget as SVGElement;
-    const wrap = target.closest('.timeline-wrap') as HTMLElement | null;
+  onHover(item: TimelineItem, event: Event): void {
+    const dot = event.currentTarget as HTMLElement;
+    const wrap = dot.closest('.timeline-wrap') as HTMLElement | null;
     if (!wrap) return;
 
-    const rect = wrap.getBoundingClientRect();
-    this.hoverPos.set({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    const wrapRect = wrap.getBoundingClientRect();
+    const dotRect = dot.getBoundingClientRect();
+
+    this.hoverPos.set({
+      x: dotRect.left + dotRect.width / 2 - wrapRect.left,
+      y: dotRect.top - wrapRect.top,
+    });
+
     this.hoveredItem.set(item);
   }
 

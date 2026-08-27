@@ -73,11 +73,16 @@
 									<h3 class="post-title">{{ post.caption || (post.type === 'photo' ? ('memories.untitledPhoto' | translate) : ('memories.untitledAudio' | translate)) }}</h3>
 									<span class="post-meta">{{ post.date | date:'longDate' }} · {{ 'events.addedBy' | translate }} {{ post.uploadedByUsername }}</span>
 								</div>
-								<button class="link-btn danger-link" (click)="confirmDeletePost(post)">{{ 'events.deleteButton' | translate }}</button>
+								<div class="post-actions">
+									<a class="btn btn-ghost btn-xs" [href]="post.downloadUrl">{{ 'memories.downloadButton' | translate }}</a>
+									<button class="btn btn-ghost-danger btn-xs" (click)="confirmDeletePost(post)">{{ 'events.deleteButton' | translate }}</button>
+								</div>
 							</div>
 
 							@if (post.type === 'photo') {
-								<img [src]="post.imageUrl" [alt]="post.caption || ''" class="post-image" loading="lazy">
+								<img [src]="post.imageUrl" [alt]="post.caption || ''" class="post-image" loading="lazy"
+									(click)="openLightbox(post)"
+									[title]="'memories.openFullscreen' | translate">
 							} @else {
 								<audio [src]="post.audioUrl" controls class="post-audio"></audio>
 							}
@@ -93,6 +98,14 @@
 					</div>
 				}
 			}
+		}
+
+		@if (lightboxPost(); as post) {
+			<app-lightbox
+				[imageUrl]="post.imageUrl!"
+				[title]="post.caption || (post.date | date:'longDate') || ''"
+				[downloadUrl]="post.downloadUrl"
+				(closed)="closeLightbox()" />
 		}
 
 		@if (postPendingDelete(); as post) {

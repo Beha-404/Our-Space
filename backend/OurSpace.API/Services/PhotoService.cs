@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OurSpace.API.Common.Exceptions;
 using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.Memory;
 using OurSpace.API.Models.Entities;
-using OurSpace.API.Options;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 
 namespace OurSpace.API.Services;
@@ -18,8 +15,7 @@ public class PhotoService(
     IFileStorageService fileStorage,
     ILocalizer localizer,
     IFileUrlSigner urlSigner,
-    IStorageQuotaService quota,
-    IOptions<StorageOptions> storageOptions) : IPhotoService
+    IStorageQuotaService quota) : IPhotoService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -38,19 +34,13 @@ public class PhotoService(
         var extension = Path.GetExtension(file.FileName);
         if (string.IsNullOrWhiteSpace(extension)) extension = ".jpg";
 
+        await quota.EnsureRoomAsync(coupleId, file.Length);
+
         string filePath;
 
         await using (var uploadStream = file.OpenReadStream())
         {
-            var (content, storedExtension) = await DownscaleAsync(uploadStream, extension);
-
-            await using (content)
-            {
-                await quota.EnsureRoomAsync(coupleId, content.Length);
-
-                content.Position = 0;
-                filePath = await fileStorage.SaveAsync(content, "photos", storedExtension);
-            }
+            filePath = await fileStorage.SaveAsync(uploadStream, "photos", extension);
         }
 
         var thumbnailPath = await GenerateThumbnailAsync(filePath);
@@ -123,49 +113,18 @@ public class PhotoService(
             throw new BadRequestException(localizer.T("Photo.UnsupportedFormat"));
     }
 
-    private async Task<(MemoryStream Content, string Extension)> DownscaleAsync(Stream source, string extension)
-    {
-        var output = new MemoryStream();
-
-        if (extension.Equals(".gif", StringComparison.OrdinalIgnoreCase))
-        {
-            await source.CopyToAsync(output);
-            return (output, extension);
-        }
-
-        var maxDimension = storageOptions.Value.MaxImageDimension;
-
-        using var image = await Image.LoadAsync(source);
-
-        image.Mutate(x =>
-        {
-            x.AutoOrient();
-
-            if (image.Width > maxDimension || image.Height > maxDimension)
-            {
-                x.Resize(new ResizeOptions
-                {
-                    Mode = ResizeMode.Max,
-                    Size = new Size(maxDimension, maxDimension),
-                });
-            }
-        });
-
-        await image.SaveAsJpegAsync(output, new JpegEncoder { Quality = storageOptions.Value.ImageQuality });
-
-        return (output, ".jpg");
-    }
-
     private async Task<string> GenerateThumbnailAsync(string originalUrl)
     {
         var originalPath = fileStorage.GetPhysicalPath(originalUrl);
         using var image = await Image.LoadAsync(originalPath);
 
-        image.Mutate(x => x.Resize(new ResizeOptions
-        {
-            Mode = ResizeMode.Max,
-            Size = new Size(ThumbnailWidth, ThumbnailWidth),
-        }));
+        image.Mutate(x => x
+            .AutoOrient()
+            .Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Max,
+                Size = new Size(ThumbnailWidth, ThumbnailWidth),
+            }));
 
         await using var thumbStream = new MemoryStream();
         await image.SaveAsJpegAsync(thumbStream);

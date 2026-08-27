@@ -145,12 +145,15 @@ builder.Services.AddHostedService<FileSizeBackfillBackgroundService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<IAudioService, AudioService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
-builder.Services.AddScoped<IInviteService, InviteService>();
 
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 var emailOptions = builder.Configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>() ?? new EmailOptions();
 
-if (!string.IsNullOrWhiteSpace(emailOptions.ApiKey))
+if (!string.IsNullOrWhiteSpace(emailOptions.SmtpHost))
+{
+    builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+}
+else if (!string.IsNullOrWhiteSpace(emailOptions.ApiKey))
 {
     builder.Services.AddHttpClient<ResendEmailService>(client =>
     {

@@ -24,38 +24,14 @@ public static class Messages
             "Pogrešno korisničko ime ili lozinka.",
             "Wrong username or password.",
             "Usuario o contraseña incorrectos."),
+        ["Auth.RegistrationClosed"] = Lang(
+            "Registracija je zatvorena.",
+            "Registration is closed.",
+            "El registro está cerrado."),
         ["Auth.InvalidResetCode"] = Lang(
             "Nevažeći ili istekao kod za resetovanje lozinke.",
             "Invalid or expired password reset code.",
             "Código de restablecimiento inválido o expirado."),
-        ["Auth.NotApproved"] = Lang(
-            "Tvoj nalog još čeka odobrenje osobe koja te je pozvala.",
-            "Your account is still waiting for approval from the person who invited you.",
-            "Tu cuenta aún espera la aprobación de quien te invitó."),
-        ["Invite.Required"] = Lang(
-            "Potreban je kod za pozivnicu.",
-            "An invite code is required.",
-            "Se requiere un código de invitación."),
-        ["Invite.Invalid"] = Lang(
-            "Nevažeći, iskorišten ili istekao kod za pozivnicu.",
-            "Invalid, already used or expired invite code.",
-            "Código de invitación inválido, ya usado o expirado."),
-        ["Invite.NotFound"] = Lang(
-            "Pozivnica nije pronađena.",
-            "Invite not found.",
-            "Invitación no encontrada."),
-        ["Invite.AlreadyUsed"] = Lang(
-            "Pozivnica je već iskorištena i ne može se poništiti.",
-            "This invite has already been used and cannot be revoked.",
-            "Esta invitación ya fue usada y no se puede revocar."),
-        ["Invite.TooMany"] = Lang(
-            "Imaš previše neiskorištenih pozivnica (najviše {0}). Poništi neku prije nego napraviš novu.",
-            "You have too many unused invites (max {0}). Revoke one before creating another.",
-            "Tienes demasiadas invitaciones sin usar (máx. {0}). Revoca una antes de crear otra."),
-        ["Invite.InvalidApprovalCode"] = Lang(
-            "Nevažeći ili istekao kod za odobrenje.",
-            "Invalid or expired approval code.",
-            "Código de aprobación inválido o expirado."),
         ["Auth.InvalidLoginCode"] = Lang(
             "Nevažeći ili istekao kod za prijavu.",
             "Invalid or expired sign-in code.",
@@ -210,15 +186,6 @@ public static class Messages
             "Previše pokušaja. Pokušaj ponovo kasnije.",
             "Too many attempts. Please try again later.",
             "Demasiados intentos. Inténtalo de nuevo más tarde."),
-
-        ["Email.AccountApproval.Subject"] = Lang(
-            "Neko traži nalog preko tvoje pozivnice",
-            "Someone requested an account with your invite",
-            "Alguien solicitó una cuenta con tu invitación"),
-        ["Email.AccountApproval.Body"] = Lang(
-            "{0} ({1}) je iskoristio/la tvoju pozivnicu i traži nalog.\n\nKod za odobrenje: {2}\n\nUpiši ovaj kod u aplikaciji da odobriš nalog. Kod ističe za {3} sati. Ako ovo ne očekuješ, jednostavno ignoriši poruku — nalog ostaje neaktivan.",
-            "{0} ({1}) used your invite and is requesting an account.\n\nApproval code: {2}\n\nEnter this code in the app to approve the account. It expires in {3} hours. If you weren't expecting this, just ignore this message — the account stays inactive.",
-            "{0} ({1}) usó tu invitación y solicita una cuenta.\n\nCódigo de aprobación: {2}\n\nIngresa este código en la aplicación para aprobar la cuenta. Expira en {3} horas. Si no lo esperabas, ignora este mensaje — la cuenta permanece inactiva."),
 
         ["Email.LoginCode.Subject"] = Lang(
             "Kod za prijavu",

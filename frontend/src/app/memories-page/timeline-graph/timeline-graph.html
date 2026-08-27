@@ -1,24 +1,35 @@
 <div class="timeline-wrap">
-	<svg [attr.viewBox]="'0 0 ' + width + ' ' + height" preserveAspectRatio="none" class="timeline-svg">
-		<line x1="0" [attr.y1]="photoLaneY" [attr.x2]="width" [attr.y2]="photoLaneY" class="lane-line" />
-		<line x1="0" [attr.y1]="audioLaneY" [attr.x2]="width" [attr.y2]="audioLaneY" class="lane-line" />
-
-		<text x="4" [attr.y]="photoLaneY - 14" class="lane-label">{{ 'landing.featurePhotosTitle' | translate }}</text>
-		<text x="4" [attr.y]="audioLaneY - 14" class="lane-label">{{ 'landing.featureAudioTitle' | translate }}</text>
+	<div class="timeline-track">
+		<div class="timeline-line"></div>
 
 		@for (item of items(); track item.id) {
-			<circle
-				[attr.cx]="xFor(item.date)"
-				[attr.cy]="laneYFor(item)"
-				r="7"
-				class="dot"
-				[class.dot-photo]="item.type === 'photo'"
-				[class.dot-audio]="item.type === 'audio'"
-				(mouseenter)="onHover(item, $event)"
-				(mouseleave)="onLeave()">
-			</circle>
+			<div class="timeline-item" [class.staggered]="$index % 2 === 1" [style.left.%]="percentFor(item.date)">
+				<button type="button"
+					class="timeline-dot"
+					[class.dot-photo]="item.type === 'photo'"
+					[class.dot-audio]="item.type === 'audio'"
+					(mouseenter)="onHover(item, $event)"
+					(mouseleave)="onLeave()"
+					(focus)="onHover(item, $event)"
+					(blur)="onLeave()">
+				</button>
+
+				<span class="timeline-label-title">
+					{{ item.caption || (item.type === 'photo' ? ('memories.untitledPhoto' | translate) : ('memories.untitledAudio' | translate)) }}
+				</span>
+				<span class="timeline-label-date">{{ item.date | date:'d.M.y.' }}</span>
+			</div>
 		}
-	</svg>
+	</div>
+
+	<div class="timeline-legend">
+		<span class="legend-item">
+			<span class="legend-dot dot-photo"></span>{{ 'landing.featurePhotosTitle' | translate }}
+		</span>
+		<span class="legend-item">
+			<span class="legend-dot dot-audio"></span>{{ 'landing.featureAudioTitle' | translate }}
+		</span>
+	</div>
 
 	@if (hoveredItem(); as item) {
 		<div class="tooltip" [style.left.px]="hoverPos().x" [style.top.px]="hoverPos().y">
@@ -27,7 +38,7 @@
 			} @else {
 				<div class="tooltip-audio-icon">🎧</div>
 			}
-			<p class="tooltip-caption">{{ item.caption || (item.type === 'photo' ? ('landing.featurePhotosTitle' | translate) : ('landing.featureAudioTitle' | translate)) }}</p>
+			<p class="tooltip-caption">{{ item.caption || (item.type === 'photo' ? ('memories.untitledPhoto' | translate) : ('memories.untitledAudio' | translate)) }}</p>
 			<p class="tooltip-date">{{ item.date | date:'longDate' }}</p>
 		</div>
 	}

@@ -4,7 +4,7 @@ namespace OurSpace.API.Services;
 
 public interface IAuthService
 {
-    Task<RegisterOutcome> RegisterAsync(RegisterRequest request);
+    Task<AuthResult> RegisterAsync(RegisterRequest request);
     Task<LoginOutcome> LoginAsync(LoginRequest request);
     Task<AuthResult> RefreshAsync(string refreshToken);
     Task LogoutAsync(string refreshToken);
