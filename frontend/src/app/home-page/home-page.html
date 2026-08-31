@@ -2,6 +2,10 @@
 	<app-navbar></app-navbar>
 
 	<div class="container fade-in home-content">
+		@if (!userService.currentUser()) {
+			<app-skeleton [count]="2" variant="post" />
+		}
+
 		@if (userService.currentUser(); as user) {
 			<h1>{{ 'home.greeting' | translate }} <span class="gradient-text">{{ user.username }}</span> 👋</h1>
 
@@ -10,7 +14,7 @@
 					<app-avatar [name]="partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="56"></app-avatar>
 					<div>
 						<p class="couple-label">{{ 'profile.partnerTitle' | translate }}</p>
-						<h3 class="couple-names"><span class="heart-inline">❤️</span> {{ partner.username }}</h3>
+						<h3 class="couple-names">{{ partner.username }}</h3>
 						@if (daysTogether() !== null) {
 							<p class="days-together">{{ 'home.togetherPrefix' | translate }} <strong>{{ daysTogether() }}</strong> {{ 'home.togetherSuffix' | translate }}</p>
 						}
@@ -63,13 +67,69 @@
 				</div>
 			}
 
-			@if (timelineItems().length > 0) {
-				<div class="graph-header">
-					<h2 class="section-title no-margin">{{ 'memories.timelineTitle' | translate }}</h2>
+			<div class="events-preview-row">
+				<h2 class="section-title no-margin">{{ 'wishlist.title' | translate }}</h2>
+				<a routerLink="/wishlist" class="link-btn">{{ 'home.viewAllWishes' | translate }}</a>
+			</div>
+			@if (recentWishes().length > 0) {
+				<div class="wish-preview-list">
+					@for (wish of recentWishes(); track wish.id) {
+						<div class="card wish-preview-row">
+							<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
+								{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
+							</span>
+							<h3 class="wish-preview-title">{{ wish.title }}</h3>
+						</div>
+					}
+				</div>
+			} @else {
+				<p class="muted-hint">{{ 'home.noWishes' | translate }} <a routerLink="/wishlist">{{ 'home.addWish' | translate }}</a></p>
+			}
+
+			@if (allFeedPosts().length > 0) {
+				<div class="feed-header">
+					<h2 class="section-title no-margin">{{ 'memories.feedTitle' | translate }}</h2>
 					<a routerLink="/memories" class="link-btn">{{ 'home.viewAllMemories' | translate }}</a>
 				</div>
-				<div class="card timeline-card">
-					<app-timeline-graph [items]="timelineItems()"></app-timeline-graph>
+
+				<div class="feed-type-toggle">
+					<button type="button" class="type-filter-btn" [class.active]="feedTypeFilter() === 'all'" (click)="setFeedTypeFilter('all')">{{ 'home.feedFilterAll' | translate }}</button>
+					<button type="button" class="type-filter-btn" [class.active]="feedTypeFilter() === 'photo'" (click)="setFeedTypeFilter('photo')">{{ 'home.feedFilterPhotos' | translate }}</button>
+					<button type="button" class="type-filter-btn" [class.active]="feedTypeFilter() === 'audio'" (click)="setFeedTypeFilter('audio')">{{ 'home.feedFilterAudio' | translate }}</button>
+				</div>
+
+				<div class="feed-filters">
+					<app-select-dropdown [options]="yearOptions()" [value]="feedYearFilter()" (selectionChange)="setFeedYearFilter($event)" />
+					<app-select-dropdown [options]="monthOptions()" [value]="feedMonthFilter()" (selectionChange)="setFeedMonthFilter($event)" />
+				</div>
+
+				@if (feed().length === 0) {
+					<p class="muted-hint">{{ 'home.feedFilterEmpty' | translate }}</p>
+				}
+
+				<div class="feed-grid">
+					@for (post of feed(); track post.id + post.type) {
+						<div class="post-tile-wrap">
+							<div class="card post-tile">
+								@if (post.type === 'photo') {
+									<img [src]="post.thumbnailUrl || post.imageUrl" [alt]="post.caption || ''" class="post-tile-image" loading="lazy"
+										(click)="openLightbox(post)"
+										[title]="'memories.openFullscreen' | translate">
+									<span class="post-tile-caption">{{ post.caption || ('memories.untitledPhoto' | translate) }}</span>
+								} @else {
+									<div class="post-tile-audio">
+										<app-audio-player [src]="post.audioUrl!" />
+									</div>
+									<span class="post-tile-caption">{{ post.caption || ('memories.untitledAudio' | translate) }}</span>
+								}
+								<div class="post-tile-actions">
+									<a class="tile-download-btn" [href]="post.downloadUrl" (click)="$event.stopPropagation()">{{ 'memories.downloadButton' | translate }}</a>
+									<button type="button" class="tile-action-btn tile-action-danger" [title]="'events.deleteButton' | translate" (click)="confirmDeletePost(post); $event.stopPropagation()">🗑️</button>
+								</div>
+							</div>
+							<span class="post-tile-date">{{ post.date | date:'dd.MM.yyyy.' }}</span>
+						</div>
+					}
 				</div>
 			} @else {
 				<h2 class="section-title">{{ 'home.emptyTitle' | translate }}</h2>
@@ -84,32 +144,27 @@
 					<a routerLink="/memories" class="btn btn-primary">{{ 'home.addFirstMemory' | translate }}</a>
 				</div>
 			}
-
-			@if (feed().length > 0) {
-				<div class="feed-header">
-					<h2 class="section-title no-margin">{{ 'memories.feedTitle' | translate }}</h2>
-					<a routerLink="/memories" class="link-btn">{{ 'home.viewAllMemories' | translate }}</a>
-				</div>
-				<div class="feed feed-scroll">
-					@for (post of feed(); track post.id + post.type) {
-						<div class="card post-card">
-							<div class="post-header">
-								<span class="post-type-badge">{{ post.type === 'photo' ? '🖼️' : '🎧' }}</span>
-								<div class="post-header-text">
-									<h3 class="post-title">{{ post.caption || (post.type === 'photo' ? ('memories.untitledPhoto' | translate) : ('memories.untitledAudio' | translate)) }}</h3>
-									<span class="post-meta">{{ post.date | date:'longDate' }} · {{ 'events.addedBy' | translate }} {{ post.uploadedByUsername }}</span>
-								</div>
-							</div>
-
-							@if (post.type === 'photo') {
-								<img [src]="post.imageUrl" [alt]="post.caption || ''" class="post-image" loading="lazy">
-							} @else {
-								<audio [src]="post.audioUrl" controls class="post-audio"></audio>
-							}
-						</div>
-					}
-				</div>
-			}
 		}
 	</div>
+
+	@if (lightboxPost(); as post) {
+		<app-lightbox
+			[imageUrl]="post.imageUrl!"
+			[title]="post.caption || (post.date | date:'longDate') || ''"
+			[downloadUrl]="post.downloadUrl"
+			(closed)="closeLightbox()" />
+	}
+
+	@if (postPendingDelete(); as post) {
+		<div class="modal-backdrop" (click)="cancelDeletePost()">
+			<div class="modal-card card" (click)="$event.stopPropagation()">
+				<h3>{{ 'profile.confirmDeleteTitle' | translate }}</h3>
+				<p>{{ 'profile.confirmDeleteDesc' | translate }}</p>
+				<div class="modal-actions">
+					<button class="btn btn-ghost btn-sm" (click)="cancelDeletePost()">{{ 'profile.cancelButton' | translate }}</button>
+					<button class="btn btn-danger btn-sm" (click)="deletePost()">{{ 'profile.confirmDeleteButton' | translate }}</button>
+				</div>
+			</div>
+		</div>
+	}
 </div>

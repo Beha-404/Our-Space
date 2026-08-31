@@ -41,10 +41,88 @@
 						</button>
 					</div>
 
+					<div class="subsection subsection-partner">
+						<div class="subsection-header">
+							<h4>{{ 'profile.partnerTitle' | translate }}</h4>
+						</div>
+
+						@if (user.partner; as partner) {
+							<div class="paired-row">
+								<app-avatar [name]="partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="48"></app-avatar>
+								<div class="paired-info">
+									<h3>{{ partner.username }}</h3>
+
+									@if (!editingRelationshipDate()) {
+										@if (partner.relationshipStartDate) {
+											<p>{{ 'profile.togetherSince' | translate }} {{ partner.relationshipStartDate | date:'longDate' }}
+												<button class="link-btn" (click)="startEditRelationshipDate()">{{ 'profile.editDate' | translate }}</button>
+											</p>
+										} @else {
+											<p>
+												{{ 'profile.dateNotAdded' | translate }}
+												<button class="link-btn" (click)="startEditRelationshipDate()">{{ 'profile.addDate' | translate }}</button>
+											</p>
+										}
+									} @else {
+										<div class="date-edit-row">
+											<input type="date" [value]="relationshipDateEdit()" (input)="relationshipDateEdit.set($any($event.target).value)">
+											<button class="btn btn-primary btn-sm" (click)="saveRelationshipDate()" [disabled]="relationshipDateSaving()">
+												{{ (relationshipDateSaving() ? 'profile.saving' : 'profile.saveDate') | translate }}
+											</button>
+											<button class="btn btn-ghost btn-sm" (click)="cancelEditRelationshipDate()">{{ 'profile.cancelDate' | translate }}</button>
+										</div>
+										@if (relationshipDateErrorKey()) {
+											<div class="alert alert-error">{{ relationshipDateErrorKey() | translate }}</div>
+										}
+									}
+								</div>
+							</div>
+						} @else {
+							<p class="pairing-intro">{{ 'profile.notPairedIntro' | translate }}</p>
+
+							<div class="pairing-grid">
+								<div class="pairing-block">
+									<h4>{{ 'profile.generateCodeTitle' | translate }}</h4>
+									@if (pairingCode(); as pc) {
+										<div class="code-display">
+											<span class="code-value">{{ pc.code }}</span>
+											<button class="btn btn-sm" [class.btn-ghost]="!codeCopied()" [class.btn-copied]="codeCopied()" (click)="copyCode()">
+												{{ (codeCopied() ? 'profile.copied' : 'profile.copyButton') | translate }}
+											</button>
+										</div>
+										<p class="code-expiry">{{ 'profile.expiresLabel' | translate }} {{ pc.expiresAt | date:'short' }}</p>
+									} @else {
+										<button class="btn btn-ghost" (click)="generateCode()" [disabled]="pairingLoading()">
+											{{ (pairingLoading() ? 'profile.generating' : 'profile.generateCodeButton') | translate }}
+										</button>
+									}
+								</div>
+
+								<div class="pairing-block">
+									<h4>{{ 'profile.enterCodeTitle' | translate }}</h4>
+									<div class="field">
+										<input type="text" [placeholder]="'profile.codePlaceholder' | translate" [value]="pairInput()"
+											(input)="pairInput.set($any($event.target).value)">
+									</div>
+									<div class="field">
+										<label for="relStart">{{ 'profile.dateOptionalLabel' | translate }}</label>
+										<input id="relStart" type="date" [value]="relationshipDateInput()"
+											(input)="relationshipDateInput.set($any($event.target).value)">
+										<span class="hint">{{ 'profile.dateHint' | translate }}</span>
+									</div>
+									<button class="btn btn-primary" (click)="submitPair()">{{ 'profile.connectButton' | translate }}</button>
+								</div>
+							</div>
+
+							@if (pairErrorKey()) {
+								<div class="alert alert-error">{{ pairErrorKey() | translate }}</div>
+							}
+						}
+					</div>
+
 					<div class="subsection subsection-editable">
 						<div class="subsection-header">
 							<h4>{{ 'profile.emailLabel' | translate }}</h4>
-							<span class="hint">{{ 'profile.emailChangeHint' | translate }}</span>
 						</div>
 
 						<div class="field">
@@ -53,6 +131,9 @@
 
 						@if (user.pendingEmail) {
 							<div class="pending-email">
+								@if (emailMessageKey()) {
+									<div class="alert alert-success">{{ emailMessageKey() | translate }}</div>
+								}
 								<p class="pending-email-line">
 									<span class="pending-dot"></span>
 									{{ 'profile.pendingEmailLabel' | translate }} <strong>{{ user.pendingEmail }}</strong>
@@ -102,82 +183,6 @@
 						}
 					</div>
 				</div>
-			</div>
-
-			<h2 class="section-title">{{ 'profile.partnerTitle' | translate }}</h2>
-			<div class="card pairing-card">
-				@if (user.partner; as partner) {
-					<div class="paired-row">
-						<app-avatar [name]="partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="48"></app-avatar>
-						<div class="paired-info">
-							<h3>{{ partner.username }}</h3>
-
-							@if (!editingRelationshipDate()) {
-								@if (partner.relationshipStartDate) {
-									<p>{{ 'profile.togetherSince' | translate }} {{ partner.relationshipStartDate | date:'longDate' }}
-										<button class="link-btn" (click)="startEditRelationshipDate()">{{ 'profile.editDate' | translate }}</button>
-									</p>
-								} @else {
-									<p>
-										{{ 'profile.dateNotAdded' | translate }}
-										<button class="link-btn" (click)="startEditRelationshipDate()">{{ 'profile.addDate' | translate }}</button>
-									</p>
-								}
-							} @else {
-								<div class="date-edit-row">
-									<input type="date" [value]="relationshipDateEdit()" (input)="relationshipDateEdit.set($any($event.target).value)">
-									<button class="btn btn-primary btn-sm" (click)="saveRelationshipDate()" [disabled]="relationshipDateSaving()">
-										{{ (relationshipDateSaving() ? 'profile.saving' : 'profile.saveDate') | translate }}
-									</button>
-									<button class="btn btn-ghost btn-sm" (click)="cancelEditRelationshipDate()">{{ 'profile.cancelDate' | translate }}</button>
-								</div>
-								@if (relationshipDateErrorKey()) {
-									<div class="alert alert-error">{{ relationshipDateErrorKey() | translate }}</div>
-								}
-							}
-						</div>
-					</div>
-				} @else {
-					<p class="pairing-intro">{{ 'profile.notPairedIntro' | translate }}</p>
-
-					<div class="pairing-grid">
-						<div class="pairing-block">
-							<h4>{{ 'profile.generateCodeTitle' | translate }}</h4>
-							@if (pairingCode(); as pc) {
-								<div class="code-display">
-									<span class="code-value">{{ pc.code }}</span>
-									<button class="btn btn-sm" [class.btn-ghost]="!codeCopied()" [class.btn-copied]="codeCopied()" (click)="copyCode()">
-										{{ (codeCopied() ? 'profile.copied' : 'profile.copyButton') | translate }}
-									</button>
-								</div>
-								<p class="code-expiry">{{ 'profile.expiresLabel' | translate }} {{ pc.expiresAt | date:'short' }}</p>
-							} @else {
-								<button class="btn btn-ghost" (click)="generateCode()" [disabled]="pairingLoading()">
-									{{ (pairingLoading() ? 'profile.generating' : 'profile.generateCodeButton') | translate }}
-								</button>
-							}
-						</div>
-
-						<div class="pairing-block">
-							<h4>{{ 'profile.enterCodeTitle' | translate }}</h4>
-							<div class="field">
-								<input type="text" [placeholder]="'profile.codePlaceholder' | translate" [value]="pairInput()"
-									(input)="pairInput.set($any($event.target).value)">
-							</div>
-							<div class="field">
-								<label for="relStart">{{ 'profile.dateOptionalLabel' | translate }}</label>
-								<input id="relStart" type="date" [value]="relationshipDateInput()"
-									(input)="relationshipDateInput.set($any($event.target).value)">
-								<span class="hint">{{ 'profile.dateHint' | translate }}</span>
-							</div>
-							<button class="btn btn-primary" (click)="submitPair()">{{ 'profile.connectButton' | translate }}</button>
-						</div>
-					</div>
-
-					@if (pairErrorKey()) {
-						<div class="alert alert-error">{{ pairErrorKey() | translate }}</div>
-					}
-				}
 			</div>
 
 			<h2 class="section-title">{{ 'profile.dangerZoneTitle' | translate }}</h2>

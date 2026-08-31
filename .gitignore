@@ -40,3 +40,6 @@ frontend/dist/
 
 # User-uploaded files (photos/audio) — local dev storage only
 backend/OurSpace.API/uploads/
+
+# Auto-downloaded FFmpeg binaries
+backend/OurSpace.API/ffmpeg/

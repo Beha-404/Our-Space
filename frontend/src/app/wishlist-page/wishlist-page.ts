@@ -6,9 +6,10 @@ import { Navbar } from '../navbar/navbar';
 import { Wish } from '../interfaces/wish';
 import { UserService } from '../services/user.service';
 import { WishlistService } from '../services/wishlist.service';
+import { Skeleton } from '../shared/skeleton/skeleton';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe],
+  imports: [Navbar, DatePipe, TranslatePipe, Skeleton],
   selector: 'app-wishlist-page',
   styleUrl: './wishlist-page.css',
   templateUrl: './wishlist-page.html',
@@ -17,10 +18,61 @@ export class WishlistPage {
   private wishlistService = inject(WishlistService);
   private userService = inject(UserService);
 
+  userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
 
   wishes = signal<Wish[]>([]);
   loading = signal(true);
+
+  private static readonly WISH_PER_PAGE = 5;
+
+  wishPage = signal(1);
+  statusFilter = signal<'all' | 'fulfilled' | 'ongoing'>('all');
+
+  filteredWishes = computed(() => {
+    const filter = this.statusFilter();
+    if (filter === 'all') return this.wishes();
+    return this.wishes().filter(w => filter === 'fulfilled' ? w.isFulfilled : !w.isFulfilled);
+  });
+
+  totalWishPages = computed(() => Math.max(1, Math.ceil(this.filteredWishes().length / WishlistPage.WISH_PER_PAGE)));
+
+  currentWishPage = computed(() => Math.min(this.wishPage(), this.totalWishPages()));
+
+  pagedWishes = computed(() => {
+    const start = (this.currentWishPage() - 1) * WishlistPage.WISH_PER_PAGE;
+    return this.filteredWishes().slice(start, start + WishlistPage.WISH_PER_PAGE);
+  });
+
+  goToWishPage(page: number): void {
+    this.wishPage.set(Math.min(Math.max(page, 1), this.totalWishPages()));
+  }
+
+  setStatusFilter(filter: 'all' | 'fulfilled' | 'ongoing'): void {
+    this.statusFilter.set(filter);
+    this.wishPage.set(1);
+  }
+
+  wishPageNumbers = computed<(number | '…')[]>(() => {
+    const total = this.totalWishPages();
+    const current = this.currentWishPage();
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const keep = new Set<number>([1, total, current - 1, current, current + 1]);
+    const sorted = [...keep].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+
+    const result: (number | '…')[] = [];
+    let previous = 0;
+    for (const page of sorted) {
+      if (previous && page - previous > 1) result.push('…');
+      result.push(page);
+      previous = page;
+    }
+    return result;
+  });
 
   newWish = signal('');
   adding = signal(false);
@@ -68,7 +120,9 @@ export class WishlistPage {
   }
 
   toggleFulfilled(wish: Wish): void {
-    this.wishlistService.toggleFulfilled(wish.id).subscribe(() => this.loadAll());
+    this.wishlistService.toggleFulfilled(wish.id).subscribe(updated => {
+      this.wishes.update(list => list.map(w => w.id === updated.id ? updated : w));
+    });
   }
 
   confirmDelete(wish: Wish): void {

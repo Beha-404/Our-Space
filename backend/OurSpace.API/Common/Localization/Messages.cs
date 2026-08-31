@@ -152,6 +152,10 @@ public static class Messages
             "Nepodržan format audio fajla.",
             "Unsupported audio format.",
             "Formato de audio no compatible."),
+        ["Audio.ConversionFailed"] = Lang(
+            "Konverzija video fajla u audio nije uspjela.",
+            "Converting the video file to audio failed.",
+            "No se pudo convertir el archivo de video a audio."),
         ["Audio.NeedPartner"] = Lang(
             "Moraš biti uparen/a sa partnerom da bi dodavao/la audio poruke.",
             "You need to be paired with a partner to add audio messages.",

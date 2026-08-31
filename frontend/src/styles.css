@@ -224,6 +224,16 @@ button {
   background: rgba(248, 113, 113, 0.12);
 }
 
+.btn-ghost-info {
+  background: transparent;
+  border-color: rgba(56, 189, 248, 0.4);
+  color: var(--color-blue);
+}
+
+.btn-ghost-info:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.12);
+}
+
 .btn-sm {
   padding: 8px 16px;
   font-size: 0.85rem;
@@ -383,4 +393,50 @@ button {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
+}
+
+.password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrap input {
+  flex: 1;
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  font-size: 0.95rem;
+  line-height: 1;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  opacity: 1;
+  background: var(--color-surface-strong);
+  outline: none;
+}
+
+.password-toggle.active {
+  opacity: 1;
+  color: var(--color-purple);
+  background: var(--color-surface-strong);
+}
+
+.password-toggle {
+  touch-action: none;
+  user-select: none;
 }

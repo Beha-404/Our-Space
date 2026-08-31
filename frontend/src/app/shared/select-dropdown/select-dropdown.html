@@ -1,0 +1,22 @@
+<div class="select-dropdown">
+	<button type="button" class="select-trigger" [class.open]="open()"
+		(click)="toggle()" aria-haspopup="listbox" [attr.aria-expanded]="open()">
+		<span class="select-current">{{ currentLabel() }}</span>
+		<span class="select-caret"></span>
+	</button>
+
+	@if (open()) {
+		<ul class="select-menu" role="listbox">
+			@for (opt of options(); track opt.value) {
+				<li>
+					<button type="button" class="select-option" role="option"
+						[class.selected]="opt.value === value()" [attr.aria-selected]="opt.value === value()"
+						(click)="select(opt.value)">
+						<span>{{ opt.label }}</span>
+						@if (opt.value === value()) { <span class="select-check">✓</span> }
+					</button>
+				</li>
+			}
+		</ul>
+	}
+</div>

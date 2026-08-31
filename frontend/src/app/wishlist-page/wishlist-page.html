@@ -5,7 +5,9 @@
 		<h1>{{ 'wishlist.title' | translate }}</h1>
 		<p class="subtitle">{{ 'wishlist.subtitle' | translate }}</p>
 
-		@if (!isPaired()) {
+		@if (!userLoaded()) {
+			<app-skeleton [count]="3" variant="row" />
+		} @else if (!isPaired()) {
 			<div class="card notice-card">
 				<p>{{ 'wishlist.needPartner' | translate }}</p>
 			</div>
@@ -24,18 +26,29 @@
 				}
 			</div>
 
+			@if (loading()) {
+				<app-skeleton [count]="3" variant="row" />
+			}
+
+			@if (!loading() && wishes().length > 0) {
+				<div class="status-filter">
+					<button type="button" class="status-filter-btn" [class.active]="statusFilter() === 'all'" (click)="setStatusFilter('all')">{{ 'wishlist.filterAll' | translate }}</button>
+					<button type="button" class="status-filter-btn" [class.active]="statusFilter() === 'ongoing'" (click)="setStatusFilter('ongoing')">{{ 'wishlist.filterOngoing' | translate }}</button>
+					<button type="button" class="status-filter-btn" [class.active]="statusFilter() === 'fulfilled'" (click)="setStatusFilter('fulfilled')">{{ 'wishlist.filterFulfilled' | translate }}</button>
+				</div>
+			}
+
 			@if (wishes().length === 0 && !loading()) {
 				<p class="muted-hint">{{ 'wishlist.empty' | translate }}</p>
+			} @else if (filteredWishes().length === 0 && !loading()) {
+				<p class="muted-hint">{{ 'wishlist.emptyFiltered' | translate }}</p>
 			} @else {
 				<div class="wish-list">
-					@for (wish of wishes(); track wish.id) {
+					@for (wish of pagedWishes(); track wish.id) {
 						<div class="card wish-row" [class.wish-done]="wish.isFulfilled">
-							<button class="wish-check" [class.checked]="wish.isFulfilled"
-								(click)="toggleFulfilled(wish)"
-								[attr.aria-label]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate"
-								[title]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate">
-								@if (wish.isFulfilled) { ✓ }
-							</button>
+							<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
+								{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
+							</span>
 
 							<div class="wish-info">
 								<h3 class="wish-title">{{ wish.title }}</h3>
@@ -48,14 +61,34 @@
 								</span>
 							</div>
 
-							@if (wish.isFulfilled) {
-								<span class="wish-badge">{{ 'wishlist.fulfilledBadge' | translate }}</span>
-							}
-
-							<button class="link-btn danger-link" (click)="confirmDelete(wish)">{{ 'events.deleteButton' | translate }}</button>
+							<div class="wish-row-actions">
+								<button type="button" class="btn btn-ghost-info btn-xs" (click)="toggleFulfilled(wish)">
+									{{ (wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate }}
+								</button>
+								<button class="link-btn danger-link" (click)="confirmDelete(wish)">{{ 'events.deleteButton' | translate }}</button>
+							</div>
 						</div>
 					}
 				</div>
+
+				@if (totalWishPages() > 1) {
+					<div class="feed-pager">
+						<button type="button" class="btn btn-ghost btn-xs" (click)="goToWishPage(currentWishPage() - 1)"
+							[disabled]="currentWishPage() === 1">‹</button>
+
+						@for (p of wishPageNumbers(); track $index) {
+							@if (p === '…') {
+								<span class="feed-pager-ellipsis">…</span>
+							} @else {
+								<button type="button" class="feed-pager-num" [class.active]="p === currentWishPage()"
+									(click)="goToWishPage(p)">{{ p }}</button>
+							}
+						}
+
+						<button type="button" class="btn btn-ghost btn-xs" (click)="goToWishPage(currentWishPage() + 1)"
+							[disabled]="currentWishPage() === totalWishPages()">›</button>
+					</div>
+				}
 			}
 		}
 

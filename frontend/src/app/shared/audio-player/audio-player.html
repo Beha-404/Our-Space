@@ -1,0 +1,19 @@
+<div class="audio-player">
+	<button type="button" class="player-play" (click)="togglePlay()"
+		[attr.aria-label]="(playing() ? 'memories.pauseAudio' : 'memories.playAudio') | translate">
+		@if (playing()) {
+			<span class="icon-pause"></span>
+		} @else {
+			<span class="icon-play"></span>
+		}
+	</button>
+
+	<div class="player-track" #trackEl (click)="seek($event)">
+		<div class="player-progress" [style.width.%]="progressPercent()"></div>
+	</div>
+
+	<span class="player-time">{{ timeLabel() }}</span>
+
+	<audio #audioEl [src]="src()" preload="metadata"
+		(timeupdate)="onTimeUpdate()" (loadedmetadata)="onLoadedMetadata()" (ended)="onEnded()"></audio>
+</div>

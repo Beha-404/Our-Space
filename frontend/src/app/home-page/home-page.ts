@@ -3,21 +3,26 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { TranslationService } from '../i18n/translation.service';
 import { Navbar } from '../navbar/navbar';
 import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { PhotoService } from '../services/photo.service';
 import { AudioService } from '../services/audio.service';
 import { UserService } from '../services/user.service';
+import { WishlistService } from '../services/wishlist.service';
+import { Wish } from '../interfaces/wish';
 import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
-import { buildTimelineItems } from '../shared/build-timeline-items';
-import { TimelineGraph } from '../memories-page/timeline-graph/timeline-graph';
 import { Photo } from '../interfaces/photo';
 import { AudioMessage } from '../interfaces/audio';
 import { Avatar } from '../shared/avatar/avatar';
+import { AudioPlayer } from '../shared/audio-player/audio-player';
+import { Lightbox } from '../shared/lightbox/lightbox';
+import { SelectDropdown, SelectOption } from '../shared/select-dropdown/select-dropdown';
+import { Skeleton } from '../shared/skeleton/skeleton';
 
 @Component({
-  imports: [Navbar, RouterLink, TranslatePipe, DatePipe, TimelineGraph, Avatar],
+  imports: [Navbar, RouterLink, TranslatePipe, DatePipe, SelectDropdown, Avatar, AudioPlayer, Lightbox, Skeleton],
   selector: 'app-home-page',
   styleUrl: './home-page.css',
   templateUrl: './home-page.html',
@@ -27,16 +32,31 @@ export class HomePage {
   private eventService = inject(EventService);
   private photoService = inject(PhotoService);
   private audioService = inject(AudioService);
+  private wishlistService = inject(WishlistService);
+  private i18n = inject(TranslationService);
 
   upcomingEvents = signal<EventItem[]>([]);
   photos = signal<Photo[]>([]);
   audioItems = signal<AudioMessage[]>([]);
+  wishes = signal<Wish[]>([]);
 
-  timelineItems = computed(() =>
-    buildTimelineItems(this.photos(), this.audioItems(), path => this.photoService.fullUrl(path))
+  recentWishes = computed(() =>
+    [...this.wishes()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
   );
 
-  feed = computed<FeedPost[]>(() =>
+  private static readonly FEED_PREVIEW_SIZE = 6;
+
+  private static readonly MONTH_KEYS = [
+    'memories.month1', 'memories.month2', 'memories.month3', 'memories.month4',
+    'memories.month5', 'memories.month6', 'memories.month7', 'memories.month8',
+    'memories.month9', 'memories.month10', 'memories.month11', 'memories.month12',
+  ];
+
+  feedTypeFilter = signal<'all' | 'photo' | 'audio'>('all');
+  feedYearFilter = signal<number | 'all'>('all');
+  feedMonthFilter = signal<number | 'all'>('all');
+
+  allFeedPosts = computed<FeedPost[]>(() =>
     buildFeedPosts(
       this.photos(),
       this.audioItems(),
@@ -44,6 +64,76 @@ export class HomePage {
       path => this.audioService.fullUrl(path),
     )
   );
+
+  yearOptions = computed<SelectOption[]>(() => {
+    const years = new Set(this.allFeedPosts().map(p => new Date(p.date).getFullYear()));
+    const sorted = [...years].sort((a, b) => b - a);
+    return [{ value: 'all', label: this.i18n.t('events.allYears') }, ...sorted.map(y => ({ value: y, label: String(y) }))];
+  });
+
+  monthOptions = computed<SelectOption[]>(() => [
+    { value: 'all', label: this.i18n.t('memories.allMonths') },
+    ...HomePage.MONTH_KEYS.map((key, i) => ({ value: i + 1, label: this.i18n.t(key) })),
+  ]);
+
+  feed = computed<FeedPost[]>(() => {
+    const typeFilter = this.feedTypeFilter();
+    const year = this.feedYearFilter();
+    const month = this.feedMonthFilter();
+
+    return this.allFeedPosts()
+      .filter(p => {
+        if (typeFilter !== 'all' && p.type !== typeFilter) return false;
+        const d = new Date(p.date);
+        if (year !== 'all' && d.getFullYear() !== year) return false;
+        if (month !== 'all' && d.getMonth() + 1 !== month) return false;
+        return true;
+      })
+      .slice(0, HomePage.FEED_PREVIEW_SIZE);
+  });
+
+  setFeedTypeFilter(type: 'all' | 'photo' | 'audio'): void {
+    this.feedTypeFilter.set(type);
+  }
+
+  setFeedYearFilter(year: number | 'all'): void {
+    this.feedYearFilter.set(year);
+  }
+
+  setFeedMonthFilter(month: number | 'all'): void {
+    this.feedMonthFilter.set(month);
+  }
+
+  lightboxPost = signal<FeedPost | null>(null);
+
+  openLightbox(post: FeedPost): void {
+    this.lightboxPost.set(post);
+  }
+
+  closeLightbox(): void {
+    this.lightboxPost.set(null);
+  }
+
+  postPendingDelete = signal<FeedPost | null>(null);
+
+  confirmDeletePost(post: FeedPost): void {
+    this.postPendingDelete.set(post);
+  }
+
+  cancelDeletePost(): void {
+    this.postPendingDelete.set(null);
+  }
+
+  deletePost(): void {
+    const post = this.postPendingDelete();
+    if (!post) return;
+
+    const request$ = post.type === 'photo' ? this.photoService.delete(post.id) : this.audioService.delete(post.id);
+    request$.subscribe(() => {
+      this.postPendingDelete.set(null);
+      this.loadMemories();
+    });
+  }
 
   daysUntil(eventDate: string): number {
     const diffMs = new Date(eventDate).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0);
@@ -63,14 +153,19 @@ export class HomePage {
     this.userService.refreshCurrentUser().subscribe(user => {
       if (user.partner) {
         this.eventService.getUpcoming().subscribe(events => this.upcomingEvents.set(events.slice(0, 3)));
-        forkJoin({
-          photos: this.photoService.getAll(1, 20),
-          audio: this.audioService.getAll(1, 20),
-        }).subscribe(({ photos, audio }) => {
-          this.photos.set(photos.items);
-          this.audioItems.set(audio.items);
-        });
+        this.wishlistService.getAll().subscribe(wishes => this.wishes.set(wishes));
+        this.loadMemories();
       }
+    });
+  }
+
+  private loadMemories(): void {
+    forkJoin({
+      photos: this.photoService.getAll(1, 500),
+      audio: this.audioService.getAll(1, 500),
+    }).subscribe(({ photos, audio }) => {
+      this.photos.set(photos.items);
+      this.audioItems.set(audio.items);
     });
   }
 }

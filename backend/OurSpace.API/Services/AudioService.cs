@@ -5,6 +5,7 @@ using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.Memory;
 using OurSpace.API.Models.Entities;
+using Xabe.FFmpeg;
 
 namespace OurSpace.API.Services;
 
@@ -17,24 +18,54 @@ public class AudioService(
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        "audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg", "audio/webm", "audio/mp4", "audio/x-m4a", "audio/aac"
+        "audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg", "audio/webm", "audio/mp4", "audio/x-m4a", "audio/aac",
+        "video/mp4"
+    };
+
+    private static readonly HashSet<string> VideoContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "video/mp4"
     };
 
     private const long MaxFileSizeBytes = 20 * 1024 * 1024;
-    private const int MaxPageSize = 50;
+    private const int MaxPageSize = 500;
 
     public async Task<AudioDto> UploadAsync(int userId, IFormFile file, DateOnly recordedAt, string? caption)
     {
         ValidateFile(file);
 
         var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
-        var extension = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(extension)) extension = ".mp3";
+        var isVideo = IsVideoUpload(file);
 
         await quota.EnsureRoomAsync(coupleId, file.Length);
 
-        await using var uploadStream = file.OpenReadStream();
-        var filePath = await fileStorage.SaveAsync(uploadStream, "audio", extension);
+        string filePath;
+
+        if (isVideo)
+        {
+            string videoUrl;
+            await using (var uploadStream = file.OpenReadStream())
+            {
+                videoUrl = await fileStorage.SaveAsync(uploadStream, "audio", ".mp4");
+            }
+
+            try
+            {
+                filePath = await ConvertToMp3Async(videoUrl);
+            }
+            finally
+            {
+                fileStorage.Delete(videoUrl);
+            }
+        }
+        else
+        {
+            var extension = Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(extension)) extension = ".mp3";
+
+            await using var uploadStream = file.OpenReadStream();
+            filePath = await fileStorage.SaveAsync(uploadStream, "audio", extension);
+        }
 
         var audio = new AudioMessage
         {
@@ -99,6 +130,35 @@ public class AudioService(
 
         if (!AllowedContentTypes.Contains(file.ContentType))
             throw new BadRequestException(localizer.T("Audio.UnsupportedFormat"));
+    }
+
+    private static bool IsVideoUpload(IFormFile file) =>
+        VideoContentTypes.Contains(file.ContentType) ||
+        string.Equals(Path.GetExtension(file.FileName), ".mp4", StringComparison.OrdinalIgnoreCase);
+
+    private async Task<string> ConvertToMp3Async(string videoUrl)
+    {
+        var videoPath = fileStorage.GetPhysicalPath(videoUrl);
+        var folder = Path.GetDirectoryName(videoPath)!;
+        var mp3FileName = $"{Guid.NewGuid():N}.mp3";
+        var mp3Path = Path.Combine(folder, mp3FileName);
+
+        try
+        {
+            var conversion = FFmpeg.Conversions.New()
+                .AddParameter($"-i \"{videoPath}\"")
+                .AddParameter("-vn -acodec libmp3lame -q:a 2")
+                .SetOutput(mp3Path);
+
+            await conversion.Start();
+        }
+        catch (Exception)
+        {
+            throw new BadRequestException(localizer.T("Audio.ConversionFailed"));
+        }
+
+        var subfolder = Path.GetFileName(folder);
+        return $"/uploads/{subfolder}/{mp3FileName}";
     }
 
     private async Task<int> GetCoupleIdOrThrow(int userId)

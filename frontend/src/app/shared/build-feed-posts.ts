@@ -7,6 +7,7 @@ export interface FeedPost {
   date: string;
   caption: string | null;
   imageUrl?: string;
+  thumbnailUrl?: string;
   audioUrl?: string;
   downloadUrl: string;
   uploadedByUsername: string;
@@ -35,6 +36,7 @@ export function buildFeedPosts(
       date: p.takenAt,
       caption: p.caption,
       imageUrl: url,
+      thumbnailUrl: resolvePhotoUrl(p.thumbnailUrl),
       downloadUrl: withDownload(url, p.caption, p.takenAt),
       uploadedByUsername: p.uploadedByUsername,
     };

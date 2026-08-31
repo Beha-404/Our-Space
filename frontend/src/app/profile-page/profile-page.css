@@ -124,16 +124,13 @@ h1 {
   color: var(--color-text);
 }
 
-.subsection-header .hint {
-  margin: 0;
-}
-
 .subsection:last-child {
   margin-bottom: 0;
 }
 
-.pairing-card {
-  padding: 28px 32px;
+.subsection-partner {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--color-border);
 }
 
 .pairing-intro {
@@ -263,7 +260,6 @@ h1 {
 
 @media (max-width: 480px) {
   .profile-card,
-  .pairing-card,
   .danger-card {
     padding: 24px 18px;
   }

@@ -5,54 +5,111 @@
 		<h1>{{ 'events.title' | translate }}</h1>
 		<p class="subtitle">{{ 'events.subtitle' | translate }}</p>
 
-		@if (!isPaired()) {
+		@if (!userLoaded()) {
+			<app-skeleton [count]="3" variant="row" />
+		} @else if (!isPaired()) {
 			<div class="card notice-card">
 				<p>{{ 'events.needPartner' | translate }}</p>
 			</div>
 		} @else {
-			<div class="card add-event-card">
-				<h4>{{ 'events.addTitle' | translate }}</h4>
-
-				<div class="field-row">
-					<div class="field">
-						<label for="title">{{ 'events.titleLabel' | translate }}</label>
-						<input id="title" type="text" [placeholder]="'events.titlePlaceholder' | translate"
-							[value]="formData().title" (input)="updateField('title', $any($event.target).value)">
+			@if (!showAddForm()) {
+				<button type="button" class="btn btn-primary add-event-btn" (click)="openAddForm()">
+					+ {{ 'events.addButton' | translate }}
+				</button>
+			} @else {
+				<div class="card add-event-card">
+					<div class="add-event-head">
+						<h4>{{ 'events.addTitle' | translate }}</h4>
+						<button type="button" class="link-btn" (click)="closeAddForm()">{{ 'profile.cancelButton' | translate }}</button>
 					</div>
+
+					<div class="field-row">
+						<div class="field">
+							<label for="title">{{ 'events.titleLabel' | translate }}</label>
+							<input id="title" type="text" [placeholder]="'events.titlePlaceholder' | translate"
+								[value]="formData().title" (input)="updateField('title', $any($event.target).value)">
+						</div>
+						<div class="field">
+							<label for="eventDate">{{ 'events.dateLabel' | translate }}</label>
+							<input id="eventDate" type="date" [value]="formData().eventDate"
+								(input)="updateField('eventDate', $any($event.target).value)">
+						</div>
+					</div>
+
 					<div class="field">
-						<label for="eventDate">{{ 'events.dateLabel' | translate }}</label>
-						<input id="eventDate" type="date" [value]="formData().eventDate"
-							(input)="updateField('eventDate', $any($event.target).value)">
+						<label for="description">{{ 'events.descLabel' | translate }}</label>
+						<input id="description" type="text" [placeholder]="'events.descPlaceholder' | translate"
+							[value]="formData().description" (input)="updateField('description', $any($event.target).value)">
+					</div>
+
+					@if (addErrorKey()) {
+						<div class="alert alert-error">{{ addErrorKey() | translate }}</div>
+					}
+
+					<div class="add-event-footer">
+						<span class="hint">{{ 'events.reminderNote' | translate }}</span>
+
+						<button class="btn btn-primary" (click)="addEvent()" [disabled]="adding()">
+							{{ (adding() ? 'events.adding' : 'events.addButton') | translate }}
+						</button>
 					</div>
 				</div>
+			}
 
-				<div class="field">
-					<label for="description">{{ 'events.descLabel' | translate }}</label>
-					<input id="description" type="text" [placeholder]="'events.descPlaceholder' | translate"
-						[value]="formData().description" (input)="updateField('description', $any($event.target).value)">
-				</div>
+			<div class="events-header">
+				<h2 class="section-title no-margin">{{ 'events.allTitle' | translate }}</h2>
 
-				@if (addErrorKey()) {
-					<div class="alert alert-error">{{ addErrorKey() | translate }}</div>
+				@if (events().length > 0) {
+					<div class="events-filters">
+						<div class="year-dropdown">
+							<button type="button" class="year-trigger" [class.open]="yearMenuOpen()"
+								(click)="toggleYearMenu()" aria-haspopup="listbox" [attr.aria-expanded]="yearMenuOpen()">
+								<span class="year-current">{{ yearFilter() === 'all' ? ('events.allYears' | translate) : yearFilter() }}</span>
+								<span class="year-caret"></span>
+							</button>
+
+							@if (yearMenuOpen()) {
+								<ul class="year-menu" role="listbox">
+									<li>
+										<button type="button" class="year-option" role="option"
+											[class.selected]="yearFilter() === 'all'" [attr.aria-selected]="yearFilter() === 'all'"
+											(click)="selectYear('all')">
+											<span>{{ 'events.allYears' | translate }}</span>
+											@if (yearFilter() === 'all') { <span class="year-check">✓</span> }
+										</button>
+									</li>
+									@for (year of availableYears(); track year) {
+										<li>
+											<button type="button" class="year-option" role="option"
+												[class.selected]="yearFilter() === year" [attr.aria-selected]="yearFilter() === year"
+												(click)="selectYear(year)">
+												<span>{{ year }}</span>
+												@if (yearFilter() === year) { <span class="year-check">✓</span> }
+											</button>
+										</li>
+									}
+								</ul>
+							}
+						</div>
+
+						<div class="sort-toggle">
+							<button type="button" class="sort-btn" [class.active]="sortOrder() === 'newest'" (click)="setSortOrder('newest')">{{ 'memories.sortNewest' | translate }}</button>
+							<button type="button" class="sort-btn" [class.active]="sortOrder() === 'oldest'" (click)="setSortOrder('oldest')">{{ 'memories.sortOldest' | translate }}</button>
+						</div>
+					</div>
 				}
-
-				<div class="add-event-footer">
-					<span class="hint">{{ 'events.reminderNote' | translate }}</span>
-
-					<button class="btn btn-primary" (click)="addEvent()" [disabled]="adding()">
-						{{ (adding() ? 'events.adding' : 'events.addButton') | translate }}
-					</button>
-				</div>
 			</div>
 
-			<h2 class="section-title">{{ 'events.allTitle' | translate }}</h2>
-
-			@if (events().length === 0 && !loading()) {
+			@if (loading()) {
+				<app-skeleton [count]="3" variant="row" />
+			} @else if (events().length === 0) {
 				<p class="muted-hint">{{ 'events.noEvents' | translate }}</p>
+			} @else if (filteredSortedEvents().length === 0) {
+				<p class="muted-hint">{{ 'events.noEventsFiltered' | translate }}</p>
 			}
 
 			<div class="events-list">
-				@for (event of events(); track event.id) {
+				@for (event of pagedEvents(); track event.id) {
 					@if (editingEventId() === event.id) {
 						<div class="card event-card event-card-editing">
 							<div class="field-row">
@@ -104,13 +161,32 @@
 								</span>
 							</div>
 							<div class="event-actions">
-								<button class="btn btn-ghost btn-sm" (click)="startEdit(event)">{{ 'profile.editDate' | translate }}</button>
-								<button class="btn btn-ghost btn-sm" (click)="deleteEvent(event.id)">{{ 'events.deleteButton' | translate }}</button>
+								<button class="btn btn-ghost-info btn-sm" (click)="startEdit(event)">{{ 'profile.editDate' | translate }}</button>
+								<button class="btn btn-ghost-danger btn-sm" (click)="deleteEvent(event.id)">{{ 'events.deleteButton' | translate }}</button>
 							</div>
 						</div>
 					}
 				}
 			</div>
+
+			@if (totalEventsPages() > 1) {
+				<div class="feed-pager">
+					<button type="button" class="btn btn-ghost btn-xs" (click)="goToEventsPage(currentEventsPage() - 1)"
+						[disabled]="currentEventsPage() === 1">‹</button>
+
+					@for (p of eventPageNumbers(); track $index) {
+						@if (p === '…') {
+							<span class="feed-pager-ellipsis">…</span>
+						} @else {
+							<button type="button" class="feed-pager-num" [class.active]="p === currentEventsPage()"
+								(click)="goToEventsPage(p)">{{ p }}</button>
+						}
+					}
+
+					<button type="button" class="btn btn-ghost btn-xs" (click)="goToEventsPage(currentEventsPage() + 1)"
+						[disabled]="currentEventsPage() === totalEventsPages()">›</button>
+				</div>
+			}
 		}
 	</div>
 </div>

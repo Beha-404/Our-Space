@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { TranslationService } from '../i18n/translation.service';
 import { Navbar } from '../navbar/navbar';
 import { AudioMessage } from '../interfaces/audio';
 import { Photo } from '../interfaces/photo';
@@ -10,15 +11,16 @@ import { AudioService } from '../services/audio.service';
 import { PhotoService } from '../services/photo.service';
 import { UserService } from '../services/user.service';
 import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
-import { buildTimelineItems } from '../shared/build-timeline-items';
+import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { Lightbox } from '../shared/lightbox/lightbox';
-import { TimelineGraph } from './timeline-graph/timeline-graph';
+import { SelectDropdown, SelectOption } from '../shared/select-dropdown/select-dropdown';
+import { Skeleton } from '../shared/skeleton/skeleton';
 
 type UploadType = 'photo' | 'audio';
 type SortOrder = 'newest' | 'oldest';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, TimelineGraph, Lightbox],
+  imports: [Navbar, DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',
@@ -27,12 +29,14 @@ export class MemoriesPage {
   private photoService = inject(PhotoService);
   private audioService = inject(AudioService);
   private userService = inject(UserService);
+  private i18n = inject(TranslationService);
 
   fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
+  userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
 
-  private static readonly PAGE_SIZE = 20;
+  private static readonly PAGE_SIZE = 500;
 
   photos = signal<Photo[]>([]);
   audioItems = signal<AudioMessage[]>([]);
@@ -45,6 +49,20 @@ export class MemoriesPage {
   private hasMoreAudio = signal(false);
   hasMore = computed(() => this.hasMorePhotos() || this.hasMoreAudio());
 
+  showUploadForm = signal(false);
+
+  openUploadForm(): void {
+    this.showUploadForm.set(true);
+  }
+
+  closeUploadForm(): void {
+    this.showUploadForm.set(false);
+    this.clearSelectedFile();
+    this.uploadDate.set('');
+    this.uploadCaption.set('');
+    this.uploadErrorKey.set('');
+  }
+
   uploadType = signal<UploadType>('photo');
   selectedFile = signal<File | null>(null);
   uploadDate = signal('');
@@ -54,11 +72,13 @@ export class MemoriesPage {
 
   sortOrder = signal<SortOrder>('newest');
 
-  timelineItems = computed(() =>
-    buildTimelineItems(this.photos(), this.audioItems(), path => this.photoService.fullUrl(path))
-  );
+  private static readonly MONTH_KEYS = [
+    'memories.month1', 'memories.month2', 'memories.month3', 'memories.month4',
+    'memories.month5', 'memories.month6', 'memories.month7', 'memories.month8',
+    'memories.month9', 'memories.month10', 'memories.month11', 'memories.month12',
+  ];
 
-  feed = computed<FeedPost[]>(() =>
+  allFeedPosts = computed<FeedPost[]>(() =>
     buildFeedPosts(
       this.photos(),
       this.audioItems(),
@@ -67,6 +87,85 @@ export class MemoriesPage {
       this.sortOrder(),
     )
   );
+
+  feedYearFilter = signal<number | 'all'>('all');
+  feedMonthFilter = signal<number | 'all'>('all');
+
+  yearOptions = computed<SelectOption[]>(() => {
+    const years = new Set(this.allFeedPosts().map(p => new Date(p.date).getFullYear()));
+    const sorted = [...years].sort((a, b) => b - a);
+    return [{ value: 'all', label: this.i18n.t('events.allYears') }, ...sorted.map(y => ({ value: y, label: String(y) }))];
+  });
+
+  monthOptions = computed<SelectOption[]>(() => [
+    { value: 'all', label: this.i18n.t('memories.allMonths') },
+    ...MemoriesPage.MONTH_KEYS.map((key, i) => ({ value: i + 1, label: this.i18n.t(key) })),
+  ]);
+
+  setFeedYearFilter(year: number | 'all'): void {
+    this.feedYearFilter.set(year);
+    this.feedPage.set(1);
+  }
+
+  setFeedMonthFilter(month: number | 'all'): void {
+    this.feedMonthFilter.set(month);
+    this.feedPage.set(1);
+  }
+
+  feed = computed<FeedPost[]>(() => {
+    const year = this.feedYearFilter();
+    const month = this.feedMonthFilter();
+
+    return this.allFeedPosts().filter(p => {
+      const d = new Date(p.date);
+      if (year !== 'all' && d.getFullYear() !== year) return false;
+      if (month !== 'all' && d.getMonth() + 1 !== month) return false;
+      return true;
+    });
+  });
+
+  private static readonly FEED_PER_PAGE = 5;
+
+  feedPage = signal(1);
+
+  totalFeedPages = computed(() => Math.max(1, Math.ceil(this.feed().length / MemoriesPage.FEED_PER_PAGE)));
+
+  currentFeedPage = computed(() => Math.min(this.feedPage(), this.totalFeedPages()));
+
+  pagedFeed = computed(() => {
+    const start = (this.currentFeedPage() - 1) * MemoriesPage.FEED_PER_PAGE;
+    return this.feed().slice(start, start + MemoriesPage.FEED_PER_PAGE);
+  });
+
+  goToFeedPage(page: number): void {
+    this.feedPage.set(Math.min(Math.max(page, 1), this.totalFeedPages()));
+  }
+
+  pageNumbers = computed<(number | '…')[]>(() => {
+    const total = this.totalFeedPages();
+    const current = this.currentFeedPage();
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const keep = new Set<number>([1, total, current - 1, current, current + 1]);
+    const sorted = [...keep].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+
+    const result: (number | '…')[] = [];
+    let previous = 0;
+    for (const page of sorted) {
+      if (previous && page - previous > 1) result.push('…');
+      result.push(page);
+      previous = page;
+    }
+    return result;
+  });
+
+  setSortOrder(order: SortOrder): void {
+    this.sortOrder.set(order);
+    this.feedPage.set(1);
+  }
 
   constructor() {
     this.userService.refreshCurrentUser().subscribe();
@@ -138,6 +237,7 @@ export class MemoriesPage {
   upload(): void {
     const file = this.selectedFile();
     const date = this.uploadDate();
+    const caption = this.uploadCaption().trim();
 
     if (!file || !date) {
       this.uploadErrorKey.set('memories.errFillAll');
@@ -147,12 +247,9 @@ export class MemoriesPage {
     this.uploading.set(true);
     this.uploadErrorKey.set('');
 
-    const caption = this.uploadCaption().trim() || null;
     const onSuccess = () => {
       this.uploading.set(false);
-      this.clearSelectedFile();
-      this.uploadDate.set('');
-      this.uploadCaption.set('');
+      this.closeUploadForm();
       this.loadAll();
     };
     const onError = (err: HttpErrorResponse) => {

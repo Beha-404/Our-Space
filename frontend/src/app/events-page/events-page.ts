@@ -1,30 +1,130 @@
 ﻿import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal } from '@angular/core';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Navbar } from '../navbar/navbar';
 import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { UserService } from '../services/user.service';
+import { Skeleton } from '../shared/skeleton/skeleton';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe],
+  imports: [Navbar, DatePipe, TranslatePipe, Skeleton],
   selector: 'app-events-page',
   styleUrl: './events-page.css',
   templateUrl: './events-page.html',
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+    '(document:keydown.escape)': 'yearMenuOpen.set(false)',
+  },
 })
 export class EventsPage {
   private eventService = inject(EventService);
   private userService = inject(UserService);
+  private host = inject(ElementRef<HTMLElement>);
 
+  userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
 
   events = signal<EventItem[]>([]);
   loading = signal(true);
 
+  private static readonly EVENTS_PER_PAGE = 5;
+
+  sortOrder = signal<'newest' | 'oldest'>('newest');
+  yearFilter = signal<number | 'all'>('all');
+  eventsPage = signal(1);
+
+  availableYears = computed(() => {
+    const years = new Set(this.events().map(e => new Date(e.eventDate).getFullYear()));
+    return [...years].sort((a, b) => b - a);
+  });
+
+  filteredSortedEvents = computed(() => {
+    const yearFilter = this.yearFilter();
+    const filtered = yearFilter === 'all'
+      ? this.events()
+      : this.events().filter(e => new Date(e.eventDate).getFullYear() === yearFilter);
+
+    const sorted = [...filtered].sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
+    return this.sortOrder() === 'newest' ? sorted.reverse() : sorted;
+  });
+
+  totalEventsPages = computed(() => Math.max(1, Math.ceil(this.filteredSortedEvents().length / EventsPage.EVENTS_PER_PAGE)));
+
+  currentEventsPage = computed(() => Math.min(this.eventsPage(), this.totalEventsPages()));
+
+  pagedEvents = computed(() => {
+    const start = (this.currentEventsPage() - 1) * EventsPage.EVENTS_PER_PAGE;
+    return this.filteredSortedEvents().slice(start, start + EventsPage.EVENTS_PER_PAGE);
+  });
+
+  eventPageNumbers = computed<(number | '…')[]>(() => {
+    const total = this.totalEventsPages();
+    const current = this.currentEventsPage();
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const keep = new Set<number>([1, total, current - 1, current, current + 1]);
+    const sorted = [...keep].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+
+    const result: (number | '…')[] = [];
+    let previous = 0;
+    for (const page of sorted) {
+      if (previous && page - previous > 1) result.push('…');
+      result.push(page);
+      previous = page;
+    }
+    return result;
+  });
+
+  goToEventsPage(page: number): void {
+    this.eventsPage.set(Math.min(Math.max(page, 1), this.totalEventsPages()));
+  }
+
+  setSortOrder(order: 'newest' | 'oldest'): void {
+    this.sortOrder.set(order);
+    this.eventsPage.set(1);
+  }
+
+  setYearFilter(year: number | 'all'): void {
+    this.yearFilter.set(year);
+    this.eventsPage.set(1);
+  }
+
+  yearMenuOpen = signal(false);
+
+  toggleYearMenu(): void {
+    this.yearMenuOpen.update(value => !value);
+  }
+
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.host.nativeElement.contains(event.target as Node)) {
+      this.yearMenuOpen.set(false);
+    }
+  }
+
+  selectYear(year: number | 'all'): void {
+    this.yearMenuOpen.set(false);
+    this.setYearFilter(year);
+  }
+
+  showAddForm = signal(false);
   formData = signal({ title: '', description: '', eventDate: '' });
   adding = signal(false);
   addErrorKey = signal('');
+
+  openAddForm(): void {
+    this.showAddForm.set(true);
+  }
+
+  closeAddForm(): void {
+    this.showAddForm.set(false);
+    this.formData.set({ title: '', description: '', eventDate: '' });
+    this.addErrorKey.set('');
+  }
 
   editingEventId = signal<number | null>(null);
   editFormData = signal({ title: '', description: '', eventDate: '' });
@@ -73,7 +173,7 @@ export class EventsPage {
     }).subscribe({
       next: () => {
         this.adding.set(false);
-        this.formData.set({ title: '', description: '', eventDate: '' });
+        this.closeAddForm();
         this.loadEvents();
       },
       error: (err: HttpErrorResponse) => {

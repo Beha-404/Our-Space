@@ -14,10 +14,15 @@ using OurSpace.API.Data;
 using OurSpace.API.Middleware;
 using OurSpace.API.Options;
 using OurSpace.API.Services;
+using Xabe.FFmpeg;
+using Xabe.FFmpeg.Downloader;
 
 var builder = WebApplication.CreateBuilder(args);
 
 const string AngularDevCorsPolicy = "AngularDev";
+
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:4200"];
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -55,7 +60,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(AngularDevCorsPolicy, policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -188,6 +193,19 @@ app.UseCors(AngularDevCorsPolicy);
 
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
 Directory.CreateDirectory(uploadsPath);
+
+var ffmpegPath = Path.Combine(app.Environment.ContentRootPath, "ffmpeg");
+Directory.CreateDirectory(ffmpegPath);
+FFmpeg.SetExecutablesPath(ffmpegPath);
+
+var exeSuffix = OperatingSystem.IsWindows() ? ".exe" : "";
+var ffmpegReady = File.Exists(Path.Combine(ffmpegPath, $"ffmpeg{exeSuffix}"))
+    && File.Exists(Path.Combine(ffmpegPath, $"ffprobe{exeSuffix}"));
+
+if (!ffmpegReady)
+{
+    await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Official, ffmpegPath);
+}
 
 app.UseMiddleware<SignedFileMiddleware>();
 

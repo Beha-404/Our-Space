@@ -24,7 +24,7 @@ public class PhotoService(
 
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
     private const int ThumbnailWidth = 480;
-    private const int MaxPageSize = 50;
+    private const int MaxPageSize = 500;
 
     public async Task<PhotoDto> UploadAsync(int userId, IFormFile file, DateOnly takenAt, string? caption)
     {

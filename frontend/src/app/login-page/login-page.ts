@@ -21,6 +21,7 @@ export class LoginPage {
 
   errorKey = signal('');
   infoKey = signal('');
+  showPassword = signal(false);
   step = signal<'credentials' | 'code'>('credentials');
   code = signal('');
   busy = signal(false);
@@ -60,9 +61,14 @@ export class LoginPage {
       },
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
-        this.errorKey.set(err.error?.title ?? 'auth.errLoginFailed');
+        this.errorKey.set(this.messageFor(err));
       }
     });
+  }
+
+  private messageFor(err: HttpErrorResponse): string {
+    if (err.status === 0) return 'auth.errNoConnection';
+    return err.error?.title ?? 'auth.errLoginFailed';
   }
 
   verify(): void {
@@ -80,7 +86,7 @@ export class LoginPage {
       next: () => this.router.navigate(['/home']),
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
-        this.errorKey.set(err.error?.title ?? 'auth.errLoginFailed');
+        this.errorKey.set(this.messageFor(err));
       }
     });
   }

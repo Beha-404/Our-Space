@@ -62,6 +62,33 @@ h1 {
   font-size: 0.9rem;
 }
 
+.status-filter {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 100px;
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-border);
+  margin-bottom: 18px;
+}
+
+.status-filter-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.status-filter-btn.active {
+  background: var(--gradient-primary);
+  color: #0a0c18;
+}
+
 .wish-list {
   display: flex;
   flex-direction: column;
@@ -80,32 +107,34 @@ h1 {
   opacity: 0.6;
 }
 
-.wish-check {
-  width: 26px;
-  height: 26px;
+.wish-label {
   flex-shrink: 0;
-  border-radius: 50%;
-  border: 2px solid var(--color-border-strong);
-  background: transparent;
-  color: #0a0c18;
-  font-size: 0.85rem;
+  min-width: 84px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
   font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-muted);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.wish-label.fulfilled {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: var(--color-success);
+}
+
+.wish-row-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-}
-
-.wish-check:hover {
-  border-color: var(--color-purple);
-  transform: scale(1.08);
-}
-
-.wish-check.checked {
-  background: var(--gradient-primary);
-  border-color: transparent;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .wish-info {
@@ -128,20 +157,49 @@ h1 {
   color: var(--color-text-faint);
 }
 
-.wish-badge {
-  flex-shrink: 0;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 100px;
-  background: rgba(74, 222, 128, 0.15);
-  border: 1px solid rgba(74, 222, 128, 0.35);
-  color: var(--color-success);
-}
-
 .danger-link {
   color: var(--color-danger) !important;
   flex-shrink: 0;
+}
+
+.feed-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.feed-pager-num {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.feed-pager-num:hover {
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+}
+
+.feed-pager-num.active {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: #0a0c18;
+}
+
+.feed-pager-ellipsis {
+  padding: 0 4px;
+  color: var(--color-text-faint);
+  font-size: 0.82rem;
 }
 
 @media (max-width: 560px) {
@@ -152,7 +210,11 @@ h1 {
     flex-wrap: wrap;
   }
   .wish-info {
-    flex-basis: calc(100% - 40px);
+    flex-basis: calc(100% - 100px);
+  }
+  .wish-row-actions {
+    flex-basis: 100%;
+    justify-content: flex-end;
   }
 }
 

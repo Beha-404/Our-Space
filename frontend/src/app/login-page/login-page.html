@@ -21,8 +21,21 @@
 
 				<div class="field">
 					<label for="password">{{ 'auth.passwordLabel' | translate }}</label>
-					<input id="password" type="password" autocomplete="current-password" [value]="loginData().password"
-						(input)="updateField('password', $any($event.target).value)">
+					<div class="password-wrap">
+						<input id="password" [type]="showPassword() ? 'text' : 'password'"
+							autocomplete="current-password" [value]="loginData().password"
+							(input)="updateField('password', $any($event.target).value)">
+						<button type="button" class="password-toggle" [class.active]="showPassword()"
+							(pointerdown)="showPassword.set(true)"
+							(pointerup)="showPassword.set(false)"
+							(pointerleave)="showPassword.set(false)"
+							(pointercancel)="showPassword.set(false)"
+							(keydown.space)="showPassword.set(true); $event.preventDefault()"
+							(keyup.space)="showPassword.set(false)"
+							(blur)="showPassword.set(false)"
+							[attr.aria-label]="'auth.showPassword' | translate"
+							[title]="'auth.showPassword' | translate">👁</button>
+					</div>
 				</div>
 
 				@if (errorKey()) {
