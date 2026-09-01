@@ -81,8 +81,10 @@ export class WishlistPage {
   wishPendingDelete = signal<Wish | null>(null);
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe();
-    this.loadAll();
+    this.userService.refreshCurrentUser().subscribe(user => {
+      if (user.partner) this.loadAll();
+      else this.loading.set(false);
+    });
   }
 
   loadAll(): void {
