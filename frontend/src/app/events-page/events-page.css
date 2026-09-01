@@ -220,6 +220,8 @@ h1 {
 
 .add-event-card {
   padding: 28px 32px;
+  position: relative;
+  z-index: 5;
 }
 
 .add-event-card h4 {
@@ -337,6 +339,8 @@ h1 {
 .event-card-editing {
   display: block;
   padding: 20px 22px;
+  position: relative;
+  z-index: 5;
 }
 
 .edit-actions {

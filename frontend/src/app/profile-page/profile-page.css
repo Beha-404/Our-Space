@@ -20,6 +20,8 @@ h1 {
   gap: 28px;
   padding: 32px;
   align-items: flex-start;
+  position: relative;
+  z-index: 5;
 }
 
 .avatar-col {

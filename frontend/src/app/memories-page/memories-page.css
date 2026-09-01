@@ -38,6 +38,8 @@ h1 {
 .upload-card {
   padding: 28px 32px;
   max-width: 640px;
+  position: relative;
+  z-index: 5;
 }
 
 .upload-card-head {
