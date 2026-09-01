@@ -15,6 +15,7 @@ import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { SelectDropdown, SelectOption } from '../shared/select-dropdown/select-dropdown';
 import { Skeleton } from '../shared/skeleton/skeleton';
+import { ToastService } from '../shared/toast/toast.service';
 
 type UploadType = 'photo' | 'audio';
 type SortOrder = 'newest' | 'oldest';
@@ -30,6 +31,7 @@ export class MemoriesPage {
   private audioService = inject(AudioService);
   private userService = inject(UserService);
   private i18n = inject(TranslationService);
+  private toast = inject(ToastService);
 
   fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
@@ -231,9 +233,20 @@ export class MemoriesPage {
     this.uploadErrorKey.set('');
   }
 
+  previewUrl = signal<string | null>(null);
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.selectedFile.set(input.files?.[0] ?? null);
+    const file = input.files?.[0] ?? null;
+    this.selectedFile.set(file);
+
+    this.revokePreviewUrl();
+    this.previewUrl.set(file && this.uploadType() === 'photo' ? URL.createObjectURL(file) : null);
+  }
+
+  private revokePreviewUrl(): void {
+    const url = this.previewUrl();
+    if (url) URL.revokeObjectURL(url);
   }
 
   upload(): void {
@@ -241,7 +254,7 @@ export class MemoriesPage {
     const date = this.uploadDate();
     const caption = this.uploadCaption().trim();
 
-    if (!file || !date) {
+    if (!file || !date || !caption) {
       this.uploadErrorKey.set('memories.errFillAll');
       return;
     }
@@ -253,10 +266,13 @@ export class MemoriesPage {
       this.uploading.set(false);
       this.closeUploadForm();
       this.loadAll();
+      this.toast.success('toast.memoryAdded');
     };
     const onError = (err: HttpErrorResponse) => {
       this.uploading.set(false);
-      this.uploadErrorKey.set(err.error?.title ?? 'memories.uploadError');
+      const key = err.error?.title ?? 'memories.uploadError';
+      this.uploadErrorKey.set(key);
+      this.toast.error(key);
     };
 
     if (this.uploadType() === 'photo') {
@@ -268,6 +284,8 @@ export class MemoriesPage {
 
   private clearSelectedFile(): void {
     this.selectedFile.set(null);
+    this.revokePreviewUrl();
+    this.previewUrl.set(null);
     const input = this.fileInputRef()?.nativeElement;
     if (input) input.value = '';
   }
@@ -297,9 +315,13 @@ export class MemoriesPage {
     if (!post) return;
 
     const request$ = post.type === 'photo' ? this.photoService.delete(post.id) : this.audioService.delete(post.id);
-    request$.subscribe(() => {
-      this.postPendingDelete.set(null);
-      this.loadAll();
+    request$.subscribe({
+      next: () => {
+        this.postPendingDelete.set(null);
+        this.loadAll();
+        this.toast.success('toast.memoryDeleted');
+      },
+      error: () => this.toast.error('toast.actionFailed')
     });
   }
 }

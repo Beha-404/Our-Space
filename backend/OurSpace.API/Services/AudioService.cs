@@ -34,6 +34,9 @@ public class AudioService(
     {
         ValidateFile(file);
 
+        if (string.IsNullOrWhiteSpace(caption))
+            throw new BadRequestException(localizer.T("Audio.TitleRequired"));
+
         var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
         var isVideo = IsVideoUpload(file);
 
@@ -73,7 +76,7 @@ public class AudioService(
             UploadedByUserId = userId,
             FilePath = filePath,
             SizeBytes = fileStorage.GetSizeBytes(filePath),
-            Caption = string.IsNullOrWhiteSpace(caption) ? null : caption.Trim(),
+            Caption = caption.Trim(),
             RecordedAt = recordedAt,
         };
 

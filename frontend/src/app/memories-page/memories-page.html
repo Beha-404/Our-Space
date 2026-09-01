@@ -34,6 +34,9 @@
 						<div class="field">
 							<label for="file">{{ uploadType() === 'photo' ? ('memories.pickPhoto' | translate) : ('memories.pickAudio' | translate) }}</label>
 							<input id="file" #fileInput type="file" [accept]="uploadType() === 'photo' ? 'image/*' : 'audio/*,video/mp4'" (change)="onFileSelected($event)">
+							@if (previewUrl()) {
+								<img [src]="previewUrl()" alt="" class="upload-preview">
+							}
 						</div>
 						<div class="field">
 							<label for="uploadDate">{{ uploadType() === 'photo' ? ('memories.takenAt' | translate) : ('memories.recordedAt' | translate) }}</label>

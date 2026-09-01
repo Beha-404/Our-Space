@@ -30,6 +30,9 @@ public class PhotoService(
     {
         ValidateFile(file);
 
+        if (string.IsNullOrWhiteSpace(caption))
+            throw new BadRequestException(localizer.T("Photo.TitleRequired"));
+
         var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
         var extension = Path.GetExtension(file.FileName);
         if (string.IsNullOrWhiteSpace(extension)) extension = ".jpg";
@@ -53,7 +56,7 @@ public class PhotoService(
             FilePath = filePath,
             ThumbnailPath = thumbnailPath,
             SizeBytes = sizeBytes,
-            Caption = string.IsNullOrWhiteSpace(caption) ? null : caption.Trim(),
+            Caption = caption.Trim(),
             TakenAt = takenAt,
         };
 

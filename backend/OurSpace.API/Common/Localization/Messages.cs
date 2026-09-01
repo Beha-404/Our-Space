@@ -139,6 +139,10 @@ public static class Messages
             "Fajl je obavezan.",
             "A file is required.",
             "Se requiere un archivo."),
+        ["Photo.TitleRequired"] = Lang(
+            "Naslov je obavezan.",
+            "A title is required.",
+            "Se requiere un título."),
 
         ["Audio.FileEmpty"] = Lang(
             "Fajl je prazan.",
@@ -156,6 +160,10 @@ public static class Messages
             "Konverzija video fajla u audio nije uspjela.",
             "Converting the video file to audio failed.",
             "No se pudo convertir el archivo de video a audio."),
+        ["Audio.TitleRequired"] = Lang(
+            "Naslov je obavezan.",
+            "A title is required.",
+            "Se requiere un título."),
         ["Audio.NeedPartner"] = Lang(
             "Moraš biti uparen/a sa partnerom da bi dodavao/la audio poruke.",
             "You need to be paired with a partner to add audio messages.",
