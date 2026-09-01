@@ -57,6 +57,25 @@
 				} @else {
 					<p class="muted-hint">{{ 'home.noUpcomingEvents' | translate }} <a routerLink="/events">{{ 'home.addEvent' | translate }}</a></p>
 				}
+
+				<div class="events-preview-row">
+					<h2 class="section-title no-margin">{{ 'wishlist.title' | translate }}</h2>
+					<a routerLink="/wishlist" class="link-btn">{{ 'home.viewAllWishes' | translate }}</a>
+				</div>
+				@if (recentWishes().length > 0) {
+					<div class="wish-preview-list">
+						@for (wish of recentWishes(); track wish.id) {
+							<div class="card wish-preview-row">
+								<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
+									{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
+								</span>
+								<h3 class="wish-preview-title">{{ wish.title }}</h3>
+							</div>
+						}
+					</div>
+				} @else {
+					<p class="muted-hint">{{ 'home.noWishes' | translate }} <a routerLink="/wishlist">{{ 'home.addWish' | translate }}</a></p>
+				}
 			} @else {
 				<div class="card couple-card couple-card-empty">
 					<div>
@@ -65,25 +84,6 @@
 					</div>
 					<a routerLink="/profile" class="btn btn-primary">{{ 'home.connectCta' | translate }}</a>
 				</div>
-			}
-
-			<div class="events-preview-row">
-				<h2 class="section-title no-margin">{{ 'wishlist.title' | translate }}</h2>
-				<a routerLink="/wishlist" class="link-btn">{{ 'home.viewAllWishes' | translate }}</a>
-			</div>
-			@if (recentWishes().length > 0) {
-				<div class="wish-preview-list">
-					@for (wish of recentWishes(); track wish.id) {
-						<div class="card wish-preview-row">
-							<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
-								{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
-							</span>
-							<h3 class="wish-preview-title">{{ wish.title }}</h3>
-						</div>
-					}
-				</div>
-			} @else {
-				<p class="muted-hint">{{ 'home.noWishes' | translate }} <a routerLink="/wishlist">{{ 'home.addWish' | translate }}</a></p>
 			}
 
 			@if (allFeedPosts().length > 0) {
