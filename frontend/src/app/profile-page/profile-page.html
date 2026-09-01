@@ -6,39 +6,43 @@
 
 		@if (currentUser(); as user) {
 			<div class="card profile-card">
-				<div class="avatar-col">
-					<app-avatar [name]="user.username" [pictureUrl]="user.profilePictureUrl" [size]="84"></app-avatar>
-					<input #pictureFileInput type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)">
-					<label for="pictureFile" class="btn btn-ghost btn-sm">
-						{{ (uploadingPicture() ? 'profile.uploadingPicture' : 'profile.changePicture') | translate }}
-					</label>
-					@if (pictureErrorKey()) {
-						<span class="picture-error">{{ pictureErrorKey() | translate }}</span>
-					}
-				</div>
-
 				<div class="profile-form">
 					<div class="subsection">
 						<div class="subsection-header">
 							<h4>{{ 'profile.basicInfoTitle' | translate }}</h4>
 						</div>
 
-						<div class="field">
-							<label for="username">{{ 'profile.usernameLabel' | translate }}</label>
-							<input id="username" type="text" [value]="formData().username"
-								(input)="updateField('username', $any($event.target).value)">
+						<div class="basic-info-row">
+							<div class="avatar-col">
+								<app-avatar [name]="user.username" [pictureUrl]="user.profilePictureUrl" [size]="84"></app-avatar>
+								<input #pictureFileInput type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)">
+								<label for="pictureFile" class="btn btn-ghost btn-sm">
+									{{ (uploadingPicture() ? 'profile.uploadingPicture' : 'profile.changePicture') | translate }}
+								</label>
+								@if (pictureErrorKey()) {
+									<span class="picture-error">{{ pictureErrorKey() | translate }}</span>
+								}
+							</div>
+
+							<div class="basic-info-fields">
+								<div class="field">
+									<label for="username">{{ 'profile.usernameLabel' | translate }}</label>
+									<input id="username" type="text" [value]="formData().username"
+										(input)="updateField('username', $any($event.target).value)">
+								</div>
+
+								@if (saveMessageKey()) {
+									<div class="alert alert-success">{{ saveMessageKey() | translate }}</div>
+								}
+								@if (saveErrorKey()) {
+									<div class="alert alert-error">{{ saveErrorKey() | translate }}</div>
+								}
+
+								<button class="btn btn-primary" (click)="saveProfile()" [disabled]="saving()">
+									{{ (saving() ? 'profile.saving' : 'profile.saveButton') | translate }}
+								</button>
+							</div>
 						</div>
-
-						@if (saveMessageKey()) {
-							<div class="alert alert-success">{{ saveMessageKey() | translate }}</div>
-						}
-						@if (saveErrorKey()) {
-							<div class="alert alert-error">{{ saveErrorKey() | translate }}</div>
-						}
-
-						<button class="btn btn-primary" (click)="saveProfile()" [disabled]="saving()">
-							{{ (saving() ? 'profile.saving' : 'profile.saveButton') | translate }}
-						</button>
 					</div>
 
 					<div class="subsection subsection-partner">
