@@ -151,9 +151,8 @@
 								</p>
 								<div class="field">
 									<label for="confirmCode">{{ 'profile.confirmCodeLabel' | translate }}</label>
-									<input id="confirmCode" type="text" inputmode="numeric"
-										[placeholder]="'profile.confirmCodePlaceholder' | translate" [class.invalid]="confirmCodeError()"
-										[value]="confirmCode()" (input)="confirmCode.set($any($event.target).value)" (blur)="confirmCodeTouched.set(true)">
+									<app-otp-input fieldId="confirmCode" [value]="confirmCode()" [invalid]="!!confirmCodeError()"
+										(valueChange)="confirmCode.set($event)" (blurred)="confirmCodeTouched.set(true)" />
 									@if (confirmCodeError()) {
 										<span class="field-error">{{ confirmCodeError() | translate }}</span>
 									}

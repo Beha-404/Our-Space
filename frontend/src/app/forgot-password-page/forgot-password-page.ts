@@ -4,11 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { LanguageSwitcher } from '../i18n/language-switcher/language-switcher';
 import { AuthService } from '../services/auth.service';
+import { OtpInput } from '../shared/otp-input/otp-input';
 import { ToastService } from '../shared/toast/toast.service';
 import { isStrongPassword, isValidEmail } from '../shared/validators';
 
 @Component({
-  imports: [RouterLink, TranslatePipe, LanguageSwitcher],
+  imports: [RouterLink, TranslatePipe, LanguageSwitcher, OtpInput],
   selector: 'app-forgot-password-page',
   styleUrl: './forgot-password-page.css',
   templateUrl: './forgot-password-page.html',

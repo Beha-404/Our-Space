@@ -3,10 +3,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthService } from '../services/auth.service';
+import { OtpInput } from '../shared/otp-input/otp-input';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
-  imports: [RouterLink, TranslatePipe],
+  imports: [RouterLink, TranslatePipe, OtpInput],
   selector: 'app-login-page',
   styleUrl: './login-page.css',
   templateUrl: './login-page.html',

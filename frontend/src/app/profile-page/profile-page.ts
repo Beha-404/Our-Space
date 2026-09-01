@@ -6,13 +6,14 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { Navbar } from '../navbar/navbar';
 import { Avatar } from '../shared/avatar/avatar';
 import { DatePicker } from '../shared/date-picker/date-picker';
+import { OtpInput } from '../shared/otp-input/otp-input';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ToastService } from '../shared/toast/toast.service';
 import { isValidEmail } from '../shared/validators';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, Avatar, DatePicker],
+  imports: [Navbar, DatePipe, TranslatePipe, Avatar, DatePicker, OtpInput],
   selector: 'app-profile-page',
   styleUrl: './profile-page.css',
   templateUrl: './profile-page.html',

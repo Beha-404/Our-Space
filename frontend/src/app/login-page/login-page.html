@@ -62,10 +62,8 @@
 			<form (submit)="verify(); $event.preventDefault()">
 				<div class="field">
 					<label for="loginCode">{{ 'auth.codeLabel' | translate }}</label>
-					<input id="loginCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
-						[value]="code()" [class.invalid]="codeError()"
-						(input)="code.set($any($event.target).value)" (blur)="codeTouched.set(true)"
-						[placeholder]="'auth.codePlaceholder' | translate">
+					<app-otp-input fieldId="loginCode" [value]="code()" [invalid]="!!codeError()"
+						(valueChange)="code.set($event)" (blurred)="codeTouched.set(true)" />
 					@if (codeError()) {
 						<span class="field-error">{{ codeError() | translate }}</span>
 					}

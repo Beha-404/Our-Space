@@ -1,0 +1,19 @@
+<div class="otp-group" [class.invalid]="invalid()">
+	@for (i of indices(); track i) {
+		<input
+			#boxRef
+			type="text"
+			inputmode="numeric"
+			autocomplete="one-time-code"
+			maxlength="1"
+			class="otp-box"
+			[id]="i === 0 ? fieldId() : null"
+			[value]="digits()[i]"
+			[disabled]="disabled()"
+			(input)="onInput(i, $event)"
+			(keydown)="onKeydown(i, $event)"
+			(paste)="onPaste($event)"
+			(focus)="onFocus($event)"
+			(blur)="onBlur($event)">
+	}
+</div>
