@@ -1,4 +1,6 @@
+import { environment } from '../environments/environment';
+
 export const config = {
-    apiUrl: 'http://localhost:5011/api',
-    mediaUrl: 'http://localhost:5011',
+    apiUrl: environment.apiUrl,
+    mediaUrl: environment.mediaUrl,
 };
