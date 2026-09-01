@@ -145,6 +145,10 @@ h1 {
   gap: 28px;
 }
 
+.pairing-block {
+  min-width: 0;
+}
+
 .pairing-block h4 {
   margin: 0 0 14px;
   font-family: var(--font-display);
@@ -156,6 +160,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .code-value {
