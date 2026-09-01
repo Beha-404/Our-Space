@@ -7,6 +7,7 @@ import { Navbar } from '../navbar/navbar';
 import { Avatar } from '../shared/avatar/avatar';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   imports: [Navbar, DatePipe, TranslatePipe, Avatar],
@@ -18,6 +19,7 @@ export class ProfilePage {
   private userService = inject(UserService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   currentUser = this.userService.currentUser;
 
@@ -81,10 +83,13 @@ export class ProfilePage {
       next: () => {
         this.saving.set(false);
         this.saveMessageKey.set('profile.saved');
+        this.toast.success('profile.saved');
       },
       error: (err: HttpErrorResponse) => {
         this.saving.set(false);
-        this.saveErrorKey.set(err.error?.title ?? 'profile.saveError');
+        const key = err.error?.title ?? 'profile.saveError';
+        this.saveErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -116,11 +121,14 @@ export class ProfilePage {
         this.emailSending.set(false);
         this.editingEmail.set(false);
         this.emailMessageKey.set('profile.emailCodeSent');
+        this.toast.success('profile.emailCodeSent');
         this.userService.refreshCurrentUser().subscribe();
       },
       error: (err: HttpErrorResponse) => {
         this.emailSending.set(false);
-        this.emailErrorKey.set(err.error?.title ?? 'profile.emailChangeError');
+        const key = err.error?.title ?? 'profile.emailChangeError';
+        this.emailErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -140,19 +148,26 @@ export class ProfilePage {
         this.confirmingEmail.set(false);
         this.confirmCode.set('');
         this.emailMessageKey.set('profile.emailChanged');
+        this.toast.success('profile.emailChanged');
       },
       error: (err: HttpErrorResponse) => {
         this.confirmingEmail.set(false);
-        this.confirmErrorKey.set(err.error?.title ?? 'profile.emailConfirmError');
+        const key = err.error?.title ?? 'profile.emailConfirmError';
+        this.confirmErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
 
   cancelEmailChange(): void {
-    this.userService.cancelEmailChange().subscribe(() => {
-      this.confirmCode.set('');
-      this.confirmErrorKey.set('');
-      this.emailMessageKey.set('');
+    this.userService.cancelEmailChange().subscribe({
+      next: () => {
+        this.confirmCode.set('');
+        this.confirmErrorKey.set('');
+        this.emailMessageKey.set('');
+        this.toast.success('toast.emailChangeCancelled');
+      },
+      error: () => this.toast.error('toast.actionFailed')
     });
   }
 
@@ -169,10 +184,13 @@ export class ProfilePage {
         this.uploadingPicture.set(false);
         const fileInput = this.pictureFileInput()?.nativeElement;
         if (fileInput) fileInput.value = '';
+        this.toast.success('toast.pictureUpdated');
       },
       error: (err: HttpErrorResponse) => {
         this.uploadingPicture.set(false);
-        this.pictureErrorKey.set(err.error?.title ?? 'profile.pictureUploadError');
+        const key = err.error?.title ?? 'profile.pictureUploadError';
+        this.pictureErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -185,10 +203,13 @@ export class ProfilePage {
       next: (res) => {
         this.pairingLoading.set(false);
         this.pairingCode.set(res);
+        this.toast.success('toast.pairingCodeGenerated');
       },
       error: (err: HttpErrorResponse) => {
         this.pairingLoading.set(false);
-        this.pairErrorKey.set(err.error?.title ?? 'profile.pairingCodeError');
+        const key = err.error?.title ?? 'profile.pairingCodeError';
+        this.pairErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -218,8 +239,13 @@ export class ProfilePage {
       next: () => {
         this.pairingCode.set(null);
         this.pairInput.set('');
+        this.toast.success('toast.pairSuccess');
       },
-      error: (err: HttpErrorResponse) => this.pairErrorKey.set(err.error?.title ?? 'profile.pairError')
+      error: (err: HttpErrorResponse) => {
+        const key = err.error?.title ?? 'profile.pairError';
+        this.pairErrorKey.set(key);
+        this.toast.error(key);
+      }
     });
   }
 
@@ -247,10 +273,13 @@ export class ProfilePage {
       next: () => {
         this.relationshipDateSaving.set(false);
         this.editingRelationshipDate.set(false);
+        this.toast.success('toast.relationshipDateSaved');
       },
       error: (err: HttpErrorResponse) => {
         this.relationshipDateSaving.set(false);
-        this.relationshipDateErrorKey.set(err.error?.title ?? 'profile.dateError');
+        const key = err.error?.title ?? 'profile.dateError';
+        this.relationshipDateErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -271,10 +300,13 @@ export class ProfilePage {
       next: () => {
         this.unpairing.set(false);
         this.unpairConfirming.set(false);
+        this.toast.success('toast.unpairSuccess');
       },
       error: (err: HttpErrorResponse) => {
         this.unpairing.set(false);
-        this.unpairErrorKey.set(err.error?.title ?? 'profile.unpairError');
+        const key = err.error?.title ?? 'profile.unpairError';
+        this.unpairErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -294,9 +326,14 @@ export class ProfilePage {
     this.deleteErrorKey.set('');
     this.userService.deleteUser(user.id).subscribe({
       next: () => {
+        this.toast.success('toast.accountDeleted');
         this.authService.logout().subscribe(() => this.router.navigate(['/login']));
       },
-      error: (err: HttpErrorResponse) => this.deleteErrorKey.set(err.error?.title ?? 'profile.deleteError')
+      error: (err: HttpErrorResponse) => {
+        const key = err.error?.title ?? 'profile.deleteError';
+        this.deleteErrorKey.set(key);
+        this.toast.error(key);
+      }
     });
   }
 }

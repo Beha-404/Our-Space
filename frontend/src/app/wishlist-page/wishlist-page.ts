@@ -7,6 +7,7 @@ import { Wish } from '../interfaces/wish';
 import { UserService } from '../services/user.service';
 import { WishlistService } from '../services/wishlist.service';
 import { Skeleton } from '../shared/skeleton/skeleton';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   imports: [Navbar, DatePipe, TranslatePipe, Skeleton],
@@ -17,6 +18,7 @@ import { Skeleton } from '../shared/skeleton/skeleton';
 export class WishlistPage {
   private wishlistService = inject(WishlistService);
   private userService = inject(UserService);
+  private toast = inject(ToastService);
 
   userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
@@ -113,17 +115,24 @@ export class WishlistPage {
         this.adding.set(false);
         this.newWish.set('');
         this.loadAll();
+        this.toast.success('toast.wishAdded');
       },
       error: (err: HttpErrorResponse) => {
         this.adding.set(false);
-        this.addErrorKey.set(err.error?.title ?? 'wishlist.addError');
+        const key = err.error?.title ?? 'wishlist.addError';
+        this.addErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
 
   toggleFulfilled(wish: Wish): void {
-    this.wishlistService.toggleFulfilled(wish.id).subscribe(updated => {
-      this.wishes.update(list => list.map(w => w.id === updated.id ? updated : w));
+    this.wishlistService.toggleFulfilled(wish.id).subscribe({
+      next: updated => {
+        this.wishes.update(list => list.map(w => w.id === updated.id ? updated : w));
+        this.toast.success('toast.wishUpdated');
+      },
+      error: () => this.toast.error('toast.actionFailed')
     });
   }
 
@@ -139,9 +148,13 @@ export class WishlistPage {
     const wish = this.wishPendingDelete();
     if (!wish) return;
 
-    this.wishlistService.delete(wish.id).subscribe(() => {
-      this.wishPendingDelete.set(null);
-      this.loadAll();
+    this.wishlistService.delete(wish.id).subscribe({
+      next: () => {
+        this.wishPendingDelete.set(null);
+        this.loadAll();
+        this.toast.success('toast.wishDeleted');
+      },
+      error: () => this.toast.error('toast.actionFailed')
     });
   }
 }

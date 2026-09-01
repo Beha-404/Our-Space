@@ -7,6 +7,7 @@ import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { UserService } from '../services/user.service';
 import { Skeleton } from '../shared/skeleton/skeleton';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   imports: [Navbar, DatePipe, TranslatePipe, Skeleton],
@@ -22,6 +23,7 @@ export class EventsPage {
   private eventService = inject(EventService);
   private userService = inject(UserService);
   private host = inject(ElementRef<HTMLElement>);
+  private toast = inject(ToastService);
 
   userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
@@ -177,16 +179,25 @@ export class EventsPage {
         this.adding.set(false);
         this.closeAddForm();
         this.loadEvents();
+        this.toast.success('toast.eventAdded');
       },
       error: (err: HttpErrorResponse) => {
         this.adding.set(false);
-        this.addErrorKey.set(err.error?.title ?? 'events.addError');
+        const key = err.error?.title ?? 'events.addError';
+        this.addErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
 
   deleteEvent(id: number): void {
-    this.eventService.delete(id).subscribe(() => this.loadEvents());
+    this.eventService.delete(id).subscribe({
+      next: () => {
+        this.loadEvents();
+        this.toast.success('toast.eventDeleted');
+      },
+      error: () => this.toast.error('toast.actionFailed')
+    });
   }
 
   startEdit(event: EventItem): void {
@@ -226,10 +237,13 @@ export class EventsPage {
         this.saving.set(false);
         this.editingEventId.set(null);
         this.loadEvents();
+        this.toast.success('toast.eventUpdated');
       },
       error: (err: HttpErrorResponse) => {
         this.saving.set(false);
-        this.editErrorKey.set(err.error?.title ?? 'events.addError');
+        const key = err.error?.title ?? 'events.addError';
+        this.editErrorKey.set(key);
+        this.toast.error(key);
       }
     });
   }

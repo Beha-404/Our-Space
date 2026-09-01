@@ -4,6 +4,7 @@ import { form, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,}$/;
@@ -17,6 +18,7 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,}$/;
 export class RegisterPage {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   registerData = signal({
     username: '',
@@ -67,8 +69,15 @@ export class RegisterPage {
       email: data.email,
       password: data.password
     }).subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: (err: HttpErrorResponse) => this.errorKey.set(err.error?.title ?? 'auth.errRegisterFailed')
+      next: () => {
+        this.toast.success('toast.registerSuccess');
+        this.router.navigate(['/login']);
+      },
+      error: (err: HttpErrorResponse) => {
+        const key = err.error?.title ?? 'auth.errRegisterFailed';
+        this.errorKey.set(key);
+        this.toast.error(key);
+      }
     });
   }
 }

@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { LanguageSwitcher } from '../i18n/language-switcher/language-switcher';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,}$/;
 
@@ -16,6 +17,7 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,}$/;
 export class ForgotPasswordPage {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   step = signal<'request' | 'confirm'>('request');
 
@@ -43,10 +45,13 @@ export class ForgotPasswordPage {
         this.busy.set(false);
         this.infoKey.set('auth.codeSentInfo');
         this.step.set('confirm');
+        this.toast.success('auth.codeSentInfo');
       },
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
-        this.errorKey.set(err.error?.title ?? 'auth.errResetFailed');
+        const key = err.error?.title ?? 'auth.errResetFailed';
+        this.errorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -74,11 +79,14 @@ export class ForgotPasswordPage {
     this.authService.resetPassword(this.email().trim(), code, password).subscribe({
       next: () => {
         this.busy.set(false);
+        this.toast.success('auth.resetSuccess');
         this.router.navigate(['/login'], { queryParams: { reset: '1' } });
       },
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
-        this.errorKey.set(err.error?.title ?? 'auth.errResetFailed');
+        const key = err.error?.title ?? 'auth.errResetFailed';
+        this.errorKey.set(key);
+        this.toast.error(key);
       }
     });
   }

@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   imports: [RouterLink, TranslatePipe],
@@ -13,6 +14,7 @@ import { AuthService } from '../services/auth.service';
 export class LoginPage {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   loginData = signal({
     username: '',
@@ -57,11 +59,14 @@ export class LoginPage {
           return;
         }
 
+        this.toast.success('toast.loginSuccess');
         this.router.navigate(['/home']);
       },
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
-        this.errorKey.set(this.messageFor(err));
+        const key = this.messageFor(err);
+        this.errorKey.set(key);
+        this.toast.error(key);
       }
     });
   }
@@ -83,10 +88,15 @@ export class LoginPage {
     this.busy.set(true);
 
     this.authService.verifyLogin(this.loginData().username, code).subscribe({
-      next: () => this.router.navigate(['/home']),
+      next: () => {
+        this.toast.success('toast.loginSuccess');
+        this.router.navigate(['/home']);
+      },
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
-        this.errorKey.set(this.messageFor(err));
+        const key = this.messageFor(err);
+        this.errorKey.set(key);
+        this.toast.error(key);
       }
     });
   }

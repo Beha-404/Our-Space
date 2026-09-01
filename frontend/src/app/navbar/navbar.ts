@@ -5,6 +5,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { Avatar } from '../shared/avatar/avatar';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   imports: [RouterLink, RouterLinkActive, TranslatePipe, LanguageSwitcher, Avatar],
@@ -15,6 +16,7 @@ import { UserService } from '../services/user.service';
 export class Navbar {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toast = inject(ToastService);
   userService = inject(UserService);
 
   constructor() {
@@ -22,6 +24,9 @@ export class Navbar {
   }
 
   logout(): void {
-    this.authService.logout().subscribe(() => this.router.navigate(['/']));
+    this.authService.logout().subscribe(() => {
+      this.toast.success('toast.logoutSuccess');
+      this.router.navigate(['/']);
+    });
   }
 }
