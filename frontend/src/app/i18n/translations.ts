@@ -16,8 +16,8 @@ export const translations: Record<Lang, Dict> = {
     landing: {
       navLogin: 'Prijava',
       navRegister: 'Registracija',
-      heroTitle: 'Vaš privatni prostor',
-      heroHighlight: 'samo za vas dvoje',
+      heroTitle: 'Privatni prostor',
+      heroHighlight: 'za vaše uspomene',
       heroSubtitle: 'OurSpace je jednostavna aplikacija za parove — čuvajte zajedničke slike, audio poruke i uspomene na jednom mjestu. Bez grupa, bez javnih profila, bez buke. Samo vas dvoje.',
       ctaCreate: 'Dodaj vašu prvu uspomenu',
       ctaLogin: 'Već imam nalog',
@@ -297,8 +297,8 @@ export const translations: Record<Lang, Dict> = {
     landing: {
       navLogin: 'Log in',
       navRegister: 'Sign up',
-      heroTitle: 'Your private space',
-      heroHighlight: 'just for the two of you',
+      heroTitle: 'A private space',
+      heroHighlight: 'for your memories',
       heroSubtitle: "OurSpace is a simple app for couples — keep your shared photos, audio messages and memories in one place. No groups, no public profiles, no noise. Just the two of you.",
       ctaCreate: 'Add your first memory',
       ctaLogin: 'I already have an account',
@@ -578,8 +578,8 @@ export const translations: Record<Lang, Dict> = {
     landing: {
       navLogin: 'Iniciar sesión',
       navRegister: 'Registrarse',
-      heroTitle: 'Tu espacio privado',
-      heroHighlight: 'solo para ustedes dos',
+      heroTitle: 'Un espacio privado',
+      heroHighlight: 'para sus recuerdos',
       heroSubtitle: 'OurSpace es una aplicación sencilla para parejas — guarda fotos, mensajes de audio y recuerdos compartidos en un solo lugar. Sin grupos, sin perfiles públicos, sin ruido. Solo ustedes dos.',
       ctaCreate: 'Agrega tu primer recuerdo',
       ctaLogin: 'Ya tengo una cuenta',
