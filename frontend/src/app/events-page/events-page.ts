@@ -6,11 +6,12 @@ import { Navbar } from '../navbar/navbar';
 import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { UserService } from '../services/user.service';
+import { DatePicker } from '../shared/date-picker/date-picker';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, Skeleton],
+  imports: [Navbar, DatePipe, TranslatePipe, Skeleton, DatePicker],
   selector: 'app-events-page',
   styleUrl: './events-page.css',
   templateUrl: './events-page.html',

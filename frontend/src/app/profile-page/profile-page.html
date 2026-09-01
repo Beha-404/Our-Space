@@ -65,7 +65,7 @@
 										}
 									} @else {
 										<div class="date-edit-row">
-											<input type="date" [value]="relationshipDateEdit()" (input)="relationshipDateEdit.set($any($event.target).value)">
+											<app-date-picker [value]="relationshipDateEdit()" (valueChange)="relationshipDateEdit.set($event)" />
 											<button class="btn btn-primary btn-sm" (click)="saveRelationshipDate()" [disabled]="relationshipDateSaving()">
 												{{ (relationshipDateSaving() ? 'profile.saving' : 'profile.saveDate') | translate }}
 											</button>
@@ -106,8 +106,8 @@
 									</div>
 									<div class="field">
 										<label for="relStart">{{ 'profile.dateOptionalLabel' | translate }}</label>
-										<input id="relStart" type="date" [value]="relationshipDateInput()"
-											(input)="relationshipDateInput.set($any($event.target).value)">
+										<app-date-picker fieldId="relStart" [value]="relationshipDateInput()"
+											(valueChange)="relationshipDateInput.set($event)" />
 										<span class="hint">{{ 'profile.dateHint' | translate }}</span>
 									</div>
 									<button class="btn btn-primary" (click)="submitPair()">{{ 'profile.connectButton' | translate }}</button>

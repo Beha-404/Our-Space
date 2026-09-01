@@ -12,6 +12,7 @@ import { PhotoService } from '../services/photo.service';
 import { UserService } from '../services/user.service';
 import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
+import { DatePicker } from '../shared/date-picker/date-picker';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { SelectDropdown, SelectOption } from '../shared/select-dropdown/select-dropdown';
 import { Skeleton } from '../shared/skeleton/skeleton';
@@ -21,7 +22,7 @@ type UploadType = 'photo' | 'audio';
 type SortOrder = 'newest' | 'oldest';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer],
+  imports: [Navbar, DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',

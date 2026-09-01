@@ -116,6 +116,13 @@ export const translations: Record<Lang, Dict> = {
       memoryDeleted: 'Uspomena je obrisana.',
       actionFailed: 'Akcija nije uspjela. Pokušaj ponovo.',
     },
+    datePicker: {
+      placeholder: 'Izaberi datum...',
+      today: 'Danas',
+      clear: 'Obriši',
+      weekday1: 'Po', weekday2: 'Ut', weekday3: 'Sr', weekday4: 'Če',
+      weekday5: 'Pe', weekday6: 'Su', weekday7: 'Ne',
+    },
     home: {
       greeting: 'Zdravo,',
       notConnectedTitle: 'Još niste povezani',
@@ -397,6 +404,13 @@ export const translations: Record<Lang, Dict> = {
       memoryDeleted: 'Memory deleted.',
       actionFailed: 'The action failed. Please try again.',
     },
+    datePicker: {
+      placeholder: 'Pick a date...',
+      today: 'Today',
+      clear: 'Clear',
+      weekday1: 'Mo', weekday2: 'Tu', weekday3: 'We', weekday4: 'Th',
+      weekday5: 'Fr', weekday6: 'Sa', weekday7: 'Su',
+    },
     home: {
       greeting: 'Hello,',
       notConnectedTitle: 'Not connected yet',
@@ -677,6 +691,13 @@ export const translations: Record<Lang, Dict> = {
       memoryAdded: 'Recuerdo agregado.',
       memoryDeleted: 'Recuerdo eliminado.',
       actionFailed: 'La acción falló. Inténtalo de nuevo.',
+    },
+    datePicker: {
+      placeholder: 'Elige una fecha...',
+      today: 'Hoy',
+      clear: 'Borrar',
+      weekday1: 'Lu', weekday2: 'Ma', weekday3: 'Mi', weekday4: 'Ju',
+      weekday5: 'Vi', weekday6: 'Sá', weekday7: 'Do',
     },
     home: {
       greeting: 'Hola,',

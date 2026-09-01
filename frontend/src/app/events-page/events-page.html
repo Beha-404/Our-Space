@@ -31,8 +31,8 @@
 						</div>
 						<div class="field">
 							<label for="eventDate">{{ 'events.dateLabel' | translate }}</label>
-							<input id="eventDate" type="date" [value]="formData().eventDate"
-								(input)="updateField('eventDate', $any($event.target).value)">
+							<app-date-picker fieldId="eventDate" [value]="formData().eventDate"
+								(valueChange)="updateField('eventDate', $event)" />
 						</div>
 					</div>
 
@@ -119,7 +119,7 @@
 								</div>
 								<div class="field">
 									<label>{{ 'events.dateLabel' | translate }}</label>
-									<input type="date" [value]="editFormData().eventDate" (input)="updateEditField('eventDate', $any($event.target).value)">
+									<app-date-picker [value]="editFormData().eventDate" (valueChange)="updateEditField('eventDate', $event)" />
 								</div>
 							</div>
 							<div class="field">

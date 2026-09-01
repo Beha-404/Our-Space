@@ -1,0 +1,194 @@
+:host {
+  display: block;
+}
+
+.date-picker {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.date-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  text-align: left;
+  color: var(--color-text-faint);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-trigger.has-value {
+  color: var(--color-text);
+}
+
+.date-trigger:hover,
+.date-trigger.open {
+  border-color: var(--color-border-strong);
+}
+
+.date-trigger:focus-visible,
+.date-trigger.open {
+  border-color: var(--color-purple);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+.date-current {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date-icon {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+.date-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+  width: 280px;
+  padding: 14px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  animation: datePanelIn 0.14s ease;
+}
+
+@keyframes datePanelIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.date-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.date-month-label {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-transform: capitalize;
+}
+
+.date-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.date-nav:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.date-weekdays,
+.date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.date-weekdays {
+  margin-bottom: 4px;
+}
+
+.date-weekdays span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+}
+
+.date-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--color-text);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.date-cell:hover {
+  background: var(--color-surface-strong);
+}
+
+.date-cell.outside {
+  color: var(--color-text-faint);
+}
+
+.date-cell.today {
+  color: var(--color-purple);
+  font-weight: 700;
+}
+
+.date-cell.selected {
+  background: var(--gradient-primary);
+  color: #0a0c18;
+  font-weight: 700;
+}
+
+.date-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.date-footer-btn {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: color 0.12s ease, background 0.12s ease;
+}
+
+.date-footer-btn:hover {
+  color: var(--color-text);
+  background: var(--color-surface-strong);
+}

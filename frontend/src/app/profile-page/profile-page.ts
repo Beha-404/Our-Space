@@ -5,12 +5,13 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Navbar } from '../navbar/navbar';
 import { Avatar } from '../shared/avatar/avatar';
+import { DatePicker } from '../shared/date-picker/date-picker';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, Avatar],
+  imports: [Navbar, DatePipe, TranslatePipe, Avatar, DatePicker],
   selector: 'app-profile-page',
   styleUrl: './profile-page.css',
   templateUrl: './profile-page.html',

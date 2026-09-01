@@ -40,7 +40,7 @@
 						</div>
 						<div class="field">
 							<label for="uploadDate">{{ uploadType() === 'photo' ? ('memories.takenAt' | translate) : ('memories.recordedAt' | translate) }}</label>
-							<input id="uploadDate" type="date" [value]="uploadDate()" (input)="uploadDate.set($any($event.target).value)">
+							<app-date-picker fieldId="uploadDate" [value]="uploadDate()" (valueChange)="uploadDate.set($event)" />
 						</div>
 					</div>
 

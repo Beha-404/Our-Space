@@ -1,0 +1,42 @@
+<div class="date-picker">
+	<button type="button" class="date-trigger" [id]="fieldId()" [class.open]="open()" [class.has-value]="value()"
+		(click)="toggle()" aria-haspopup="dialog" [attr.aria-expanded]="open()">
+		<span class="date-current">{{ displayLabel() || ('datePicker.placeholder' | translate) }}</span>
+		<span class="date-icon">📅</span>
+	</button>
+
+	@if (open()) {
+		<div class="date-panel" role="dialog">
+			<div class="date-panel-header">
+				<button type="button" class="date-nav" (click)="prevMonth()" aria-label="Previous month">‹</button>
+				<span class="date-month-label">{{ monthLabel() }}</span>
+				<button type="button" class="date-nav" (click)="nextMonth()" aria-label="Next month">›</button>
+			</div>
+
+			<div class="date-weekdays">
+				@for (label of weekdayLabels(); track $index) {
+					<span>{{ label }}</span>
+				}
+			</div>
+
+			<div class="date-grid">
+				@for (week of weeks(); track $index) {
+					@for (cell of week; track cell.iso) {
+						<button type="button" class="date-cell"
+							[class.outside]="!cell.inMonth"
+							[class.today]="cell.isToday"
+							[class.selected]="cell.isSelected"
+							(click)="selectDay(cell)">
+							{{ cell.day }}
+						</button>
+					}
+				}
+			</div>
+
+			<div class="date-panel-footer">
+				<button type="button" class="date-footer-btn" (click)="clear()">{{ 'datePicker.clear' | translate }}</button>
+				<button type="button" class="date-footer-btn" (click)="selectToday()">{{ 'datePicker.today' | translate }}</button>
+			</div>
+		</div>
+	}
+</div>
