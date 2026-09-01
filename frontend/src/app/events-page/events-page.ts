@@ -132,8 +132,10 @@ export class EventsPage {
   editErrorKey = signal('');
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe();
-    this.loadEvents();
+    this.userService.refreshCurrentUser().subscribe(user => {
+      if (user.partner) this.loadEvents();
+      else this.loading.set(false);
+    });
   }
 
   updateField(field: 'title' | 'description' | 'eventDate', value: string): void {
