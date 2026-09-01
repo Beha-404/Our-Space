@@ -149,6 +149,18 @@ button {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
 }
 
+.field input.invalid,
+.field textarea.invalid {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-danger);
+  margin-top: 4px;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

@@ -63,6 +63,7 @@ export class MemoriesPage {
     this.clearSelectedFile();
     this.uploadDate.set('');
     this.uploadCaption.set('');
+    this.uploadCaptionTouched.set(false);
     this.uploadErrorKey.set('');
   }
 
@@ -70,8 +71,12 @@ export class MemoriesPage {
   selectedFile = signal<File | null>(null);
   uploadDate = signal('');
   uploadCaption = signal('');
+  uploadCaptionTouched = signal(false);
   uploading = signal(false);
   uploadErrorKey = signal('');
+
+  uploadCaptionError = computed(() =>
+    this.uploadCaptionTouched() && !this.uploadCaption().trim() ? 'memories.errTitleRequired' : '');
 
   sortOrder = signal<SortOrder>('newest');
 
@@ -251,11 +256,13 @@ export class MemoriesPage {
   }
 
   upload(): void {
+    this.uploadCaptionTouched.set(true);
+
     const file = this.selectedFile();
     const date = this.uploadDate();
     const caption = this.uploadCaption().trim();
 
-    if (!file || !date || !caption) {
+    if (!file || !date || this.uploadCaptionError()) {
       this.uploadErrorKey.set('memories.errFillAll');
       return;
     }

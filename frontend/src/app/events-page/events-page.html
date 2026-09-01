@@ -26,8 +26,11 @@
 					<div class="field-row">
 						<div class="field">
 							<label for="title">{{ 'events.titleLabel' | translate }}</label>
-							<input id="title" type="text" [placeholder]="'events.titlePlaceholder' | translate"
-								[value]="formData().title" (input)="updateField('title', $any($event.target).value)">
+							<input id="title" type="text" [placeholder]="'events.titlePlaceholder' | translate" [class.invalid]="titleError()"
+								[value]="formData().title" (input)="updateField('title', $any($event.target).value)" (blur)="titleTouched.set(true)">
+							@if (titleError()) {
+								<span class="field-error">{{ titleError() | translate }}</span>
+							}
 						</div>
 						<div class="field">
 							<label for="eventDate">{{ 'events.dateLabel' | translate }}</label>
@@ -115,7 +118,11 @@
 							<div class="field-row">
 								<div class="field">
 									<label>{{ 'events.titleLabel' | translate }}</label>
-									<input type="text" [value]="editFormData().title" (input)="updateEditField('title', $any($event.target).value)">
+									<input type="text" [value]="editFormData().title" [class.invalid]="editTitleError()"
+									(input)="updateEditField('title', $any($event.target).value)" (blur)="editTitleTouched.set(true)">
+								@if (editTitleError()) {
+									<span class="field-error">{{ editTitleError() | translate }}</span>
+								}
 								</div>
 								<div class="field">
 									<label>{{ 'events.dateLabel' | translate }}</label>

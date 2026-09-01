@@ -77,8 +77,12 @@ export class WishlistPage {
   });
 
   newWish = signal('');
+  newWishTouched = signal(false);
   adding = signal(false);
   addErrorKey = signal('');
+
+  newWishError = computed(() =>
+    this.newWishTouched() && !this.newWish().trim() ? 'wishlist.errEmpty' : '');
 
   wishPendingDelete = signal<Wish | null>(null);
 
@@ -101,6 +105,7 @@ export class WishlistPage {
   }
 
   addWish(): void {
+    this.newWishTouched.set(true);
     const title = this.newWish().trim();
     if (!title) {
       this.addErrorKey.set('wishlist.errEmpty');
@@ -114,6 +119,7 @@ export class WishlistPage {
       next: () => {
         this.adding.set(false);
         this.newWish.set('');
+        this.newWishTouched.set(false);
         this.loadAll();
         this.toast.success('toast.wishAdded');
       },

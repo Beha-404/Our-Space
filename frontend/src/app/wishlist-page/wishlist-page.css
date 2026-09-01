@@ -53,6 +53,14 @@ h1 {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
 }
 
+.add-wish-row input.invalid {
+  border-color: var(--color-danger);
+}
+
+.add-wish-card .field-error {
+  margin: 14px 0 0;
+}
+
 .add-wish-card .alert {
   margin: 14px 0 0;
 }

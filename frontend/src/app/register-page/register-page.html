@@ -11,26 +11,43 @@
 			<div class="field">
 				<label for="username">{{ 'auth.usernameLabel' | translate }}</label>
 				<input id="username" type="text" autocomplete="username" [value]="registerData().username"
-					(input)="updateField('username', $any($event.target).value)">
+					[class.invalid]="usernameError()"
+					(input)="updateField('username', $any($event.target).value)" (blur)="markTouched('username')">
+				@if (usernameError()) {
+					<span class="field-error">{{ usernameError() | translate }}</span>
+				}
 			</div>
 
 			<div class="field">
 				<label for="email">{{ 'auth.emailLabel' | translate }}</label>
 				<input id="email" type="email" autocomplete="email" [value]="registerData().email"
-					(input)="updateField('email', $any($event.target).value)">
+					[class.invalid]="emailError()"
+					(input)="updateField('email', $any($event.target).value)" (blur)="markTouched('email')">
+				@if (emailError()) {
+					<span class="field-error">{{ emailError() | translate }}</span>
+				}
 			</div>
 
 			<div class="field">
 				<label for="password">{{ 'auth.passwordLabel' | translate }}</label>
 				<input id="password" type="password" autocomplete="new-password" [value]="registerData().password"
-					(input)="updateField('password', $any($event.target).value)">
-				<span class="hint">{{ 'auth.passwordHint' | translate }}</span>
+					[class.invalid]="passwordError()"
+					(input)="updateField('password', $any($event.target).value)" (blur)="markTouched('password')">
+				@if (passwordError()) {
+					<span class="field-error">{{ passwordError() | translate }}</span>
+				} @else {
+					<span class="hint">{{ 'auth.passwordHint' | translate }}</span>
+				}
 			</div>
 
 			<div class="field">
 				<label for="confirmPassword">{{ 'auth.confirmPasswordLabel' | translate }}</label>
 				<input id="confirmPassword" type="password" autocomplete="new-password" [value]="registerData().confirmPassword"
-					(input)="updateField('confirmPassword', $any($event.target).value)">
+					[class.invalid]="confirmPasswordError()"
+					(input)="updateField('confirmPassword', $any($event.target).value)" (blur)="markTouched('confirmPassword')">
+				@if (confirmPasswordError()) {
+					<span class="field-error">{{ confirmPasswordError() | translate }}</span>
+				}
 			</div>
 
 			@if (errorKey()) {

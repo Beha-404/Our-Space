@@ -46,8 +46,11 @@
 
 					<div class="field">
 						<label for="caption">{{ 'memories.captionLabel' | translate }}</label>
-						<input id="caption" type="text" [placeholder]="'memories.captionPlaceholder' | translate"
-							[value]="uploadCaption()" (input)="uploadCaption.set($any($event.target).value)">
+						<input id="caption" type="text" [placeholder]="'memories.captionPlaceholder' | translate" [class.invalid]="uploadCaptionError()"
+							[value]="uploadCaption()" (input)="uploadCaption.set($any($event.target).value)" (blur)="uploadCaptionTouched.set(true)">
+						@if (uploadCaptionError()) {
+							<span class="field-error">{{ uploadCaptionError() | translate }}</span>
+						}
 					</div>
 
 					@if (uploadErrorKey()) {

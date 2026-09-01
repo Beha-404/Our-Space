@@ -1,13 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
-import { form, required } from '@angular/forms/signals';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../shared/toast/toast.service';
+import { isStrongPassword, isValidEmail } from '../shared/validators';
 
-const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,}$/;
+type Field = 'username' | 'email' | 'password' | 'confirmPassword';
 
 @Component({
   imports: [RouterLink, TranslatePipe],
@@ -27,42 +26,59 @@ export class RegisterPage {
     confirmPassword: ''
   });
 
-  registerForm = form(this.registerData, schema => {
-    required(schema.username);
-    required(schema.email);
-    required(schema.password);
-    required(schema.confirmPassword);
+  touched = signal<Record<Field, boolean>>({
+    username: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
   });
 
   errorKey = signal('');
 
-  updateField(field: 'username' | 'email' | 'password' | 'confirmPassword', value: string): void {
+  usernameError = computed(() => {
+    if (!this.touched().username) return '';
+    return this.registerData().username.trim() ? '' : 'auth.errUsernameRequired';
+  });
+
+  emailError = computed(() => {
+    if (!this.touched().email) return '';
+    const email = this.registerData().email.trim();
+    if (!email) return 'auth.errEmailRequired';
+    return isValidEmail(email) ? '' : 'auth.errInvalidEmail';
+  });
+
+  passwordError = computed(() => {
+    if (!this.touched().password) return '';
+    const password = this.registerData().password;
+    if (!password) return 'auth.errPasswordRequired';
+    return isStrongPassword(password) ? '' : 'auth.errPasswordWeak';
+  });
+
+  confirmPasswordError = computed(() => {
+    if (!this.touched().confirmPassword) return '';
+    const { password, confirmPassword } = this.registerData();
+    if (!confirmPassword) return 'auth.errConfirmPasswordRequired';
+    return password === confirmPassword ? '' : 'auth.errPasswordMismatch';
+  });
+
+  updateField(field: Field, value: string): void {
     this.registerData.update(data => ({ ...data, [field]: value }));
+  }
+
+  markTouched(field: Field): void {
+    this.touched.update(t => ({ ...t, [field]: true }));
   }
 
   register(): void {
     this.errorKey.set('');
-    const data = this.registerData();
+    this.touched.set({ username: true, email: true, password: true, confirmPassword: true });
 
-    if (!this.registerForm().valid()) {
+    if (this.usernameError() || this.emailError() || this.passwordError() || this.confirmPasswordError()) {
       this.errorKey.set('auth.errFillAll');
       return;
     }
 
-    if (!EMAIL_REGEX.test(data.email)) {
-      this.errorKey.set('auth.errInvalidEmail');
-      return;
-    }
-
-    if (!PASSWORD_REGEX.test(data.password)) {
-      this.errorKey.set('auth.errPasswordWeak');
-      return;
-    }
-
-    if (data.password !== data.confirmPassword) {
-      this.errorKey.set('auth.errPasswordMismatch');
-      return;
-    }
+    const data = this.registerData();
 
     this.authService.register({
       username: data.username,

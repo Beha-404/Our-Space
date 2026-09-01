@@ -27,8 +27,11 @@
 							<div class="basic-info-fields">
 								<div class="field">
 									<label for="username">{{ 'profile.usernameLabel' | translate }}</label>
-									<input id="username" type="text" [value]="formData().username"
-										(input)="updateField('username', $any($event.target).value)">
+									<input id="username" type="text" [value]="formData().username" [class.invalid]="usernameError()"
+										(input)="updateField('username', $any($event.target).value)" (blur)="usernameTouched.set(true)">
+									@if (usernameError()) {
+										<span class="field-error">{{ usernameError() | translate }}</span>
+									}
 								</div>
 
 								@if (saveMessageKey()) {
@@ -106,7 +109,11 @@
 									<h4>{{ 'profile.enterCodeTitle' | translate }}</h4>
 									<div class="field">
 										<input type="text" [placeholder]="'profile.codePlaceholder' | translate" [value]="pairInput()"
-											(input)="pairInput.set($any($event.target).value)">
+											[class.invalid]="pairInputError()"
+											(input)="pairInput.set($any($event.target).value)" (blur)="pairInputTouched.set(true)">
+										@if (pairInputError()) {
+											<span class="field-error">{{ pairInputError() | translate }}</span>
+										}
 									</div>
 									<div class="field">
 										<label for="relStart">{{ 'profile.dateOptionalLabel' | translate }}</label>
@@ -145,8 +152,11 @@
 								<div class="field">
 									<label for="confirmCode">{{ 'profile.confirmCodeLabel' | translate }}</label>
 									<input id="confirmCode" type="text" inputmode="numeric"
-										[placeholder]="'profile.confirmCodePlaceholder' | translate"
-										[value]="confirmCode()" (input)="confirmCode.set($any($event.target).value)">
+										[placeholder]="'profile.confirmCodePlaceholder' | translate" [class.invalid]="confirmCodeError()"
+										[value]="confirmCode()" (input)="confirmCode.set($any($event.target).value)" (blur)="confirmCodeTouched.set(true)">
+									@if (confirmCodeError()) {
+										<span class="field-error">{{ confirmCodeError() | translate }}</span>
+									}
 								</div>
 								@if (confirmErrorKey()) {
 									<div class="alert alert-error">{{ confirmErrorKey() | translate }}</div>
@@ -163,8 +173,11 @@
 						} @else if (editingEmail()) {
 							<div class="field">
 								<label for="newEmail">{{ 'profile.newEmailLabel' | translate }}</label>
-								<input id="newEmail" type="email" [placeholder]="'profile.newEmailPlaceholder' | translate"
-									[value]="newEmail()" (input)="newEmail.set($any($event.target).value)">
+								<input id="newEmail" type="email" [placeholder]="'profile.newEmailPlaceholder' | translate" [class.invalid]="newEmailError()"
+									[value]="newEmail()" (input)="newEmail.set($any($event.target).value)" (blur)="newEmailTouched.set(true)">
+								@if (newEmailError()) {
+									<span class="field-error">{{ newEmailError() | translate }}</span>
+								}
 							</div>
 							@if (emailErrorKey()) {
 								<div class="alert alert-error">{{ emailErrorKey() | translate }}</div>

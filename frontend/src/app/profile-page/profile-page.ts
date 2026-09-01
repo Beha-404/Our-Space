@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Navbar } from '../navbar/navbar';
@@ -9,6 +9,7 @@ import { DatePicker } from '../shared/date-picker/date-picker';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ToastService } from '../shared/toast/toast.service';
+import { isValidEmail } from '../shared/validators';
 
 @Component({
   imports: [Navbar, DatePipe, TranslatePipe, Avatar, DatePicker],
@@ -32,22 +33,42 @@ export class ProfilePage {
   saving = signal(false);
   saveMessageKey = signal('');
   saveErrorKey = signal('');
+  usernameTouched = signal(false);
+
+  usernameError = computed(() =>
+    this.usernameTouched() && !this.formData().username.trim() ? 'profile.errUsernameRequired' : '');
 
   editingEmail = signal(false);
   newEmail = signal('');
   emailSending = signal(false);
   emailMessageKey = signal('');
   emailErrorKey = signal('');
+  newEmailTouched = signal(false);
+
+  newEmailError = computed(() => {
+    if (!this.newEmailTouched()) return '';
+    const value = this.newEmail().trim();
+    if (!value) return 'auth.errEmailRequired';
+    return isValidEmail(value) ? '' : 'auth.errInvalidEmail';
+  });
 
   confirmCode = signal('');
   confirmingEmail = signal(false);
   confirmErrorKey = signal('');
+  confirmCodeTouched = signal(false);
+
+  confirmCodeError = computed(() =>
+    this.confirmCodeTouched() && !this.confirmCode().trim() ? 'profile.emailConfirmError' : '');
 
   pairingCode = signal<{ code: string; expiresAt: string } | null>(null);
   pairingLoading = signal(false);
   pairInput = signal('');
   relationshipDateInput = signal('');
   pairErrorKey = signal('');
+  pairInputTouched = signal(false);
+
+  pairInputError = computed(() =>
+    this.pairInputTouched() && !this.pairInput().trim() ? 'profile.pairErrorEmpty' : '');
 
   deleteConfirming = signal(false);
   deleteErrorKey = signal('');
@@ -74,6 +95,9 @@ export class ProfilePage {
   }
 
   saveProfile(): void {
+    this.usernameTouched.set(true);
+    if (this.usernameError()) return;
+
     this.saving.set(true);
     this.saveMessageKey.set('');
     this.saveErrorKey.set('');
@@ -99,6 +123,7 @@ export class ProfilePage {
     this.emailErrorKey.set('');
     this.emailMessageKey.set('');
     this.newEmail.set('');
+    this.newEmailTouched.set(false);
     this.editingEmail.set(true);
   }
 
@@ -107,11 +132,10 @@ export class ProfilePage {
   }
 
   requestEmailChange(): void {
+    this.newEmailTouched.set(true);
+    if (this.newEmailError()) return;
+
     const email = this.newEmail().trim();
-    if (!email) {
-      this.emailErrorKey.set('auth.errInvalidEmail');
-      return;
-    }
 
     this.emailSending.set(true);
     this.emailErrorKey.set('');
@@ -135,11 +159,10 @@ export class ProfilePage {
   }
 
   confirmEmailChange(): void {
+    this.confirmCodeTouched.set(true);
+    if (this.confirmCodeError()) return;
+
     const code = this.confirmCode().trim();
-    if (!code) {
-      this.confirmErrorKey.set('profile.emailConfirmError');
-      return;
-    }
 
     this.confirmingEmail.set(true);
     this.confirmErrorKey.set('');
@@ -226,12 +249,11 @@ export class ProfilePage {
 
   submitPair(): void {
     this.pairErrorKey.set('');
-    const code = this.pairInput().trim();
+    this.pairInputTouched.set(true);
 
-    if (!code) {
-      this.pairErrorKey.set('profile.pairErrorEmpty');
-      return;
-    }
+    if (this.pairInputError()) return;
+
+    const code = this.pairInput().trim();
 
     this.userService.pair({
       code,

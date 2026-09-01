@@ -16,7 +16,11 @@
 				<div class="field">
 					<label for="username">{{ 'auth.usernameLabel' | translate }}</label>
 					<input id="username" type="text" autocomplete="username" [value]="loginData().username"
-						(input)="updateField('username', $any($event.target).value)">
+						[class.invalid]="usernameError()"
+						(input)="updateField('username', $any($event.target).value)" (blur)="usernameTouched.set(true)">
+					@if (usernameError()) {
+						<span class="field-error">{{ usernameError() | translate }}</span>
+					}
 				</div>
 
 				<div class="field">
@@ -24,7 +28,8 @@
 					<div class="password-wrap">
 						<input id="password" [type]="showPassword() ? 'text' : 'password'"
 							autocomplete="current-password" [value]="loginData().password"
-							(input)="updateField('password', $any($event.target).value)">
+							[class.invalid]="passwordError()"
+							(input)="updateField('password', $any($event.target).value)" (blur)="passwordTouched.set(true)">
 						<button type="button" class="password-toggle" [class.active]="showPassword()"
 							(pointerdown)="showPassword.set(true)"
 							(pointerup)="showPassword.set(false)"
@@ -36,6 +41,9 @@
 							[attr.aria-label]="'auth.showPassword' | translate"
 							[title]="'auth.showPassword' | translate">👁</button>
 					</div>
+					@if (passwordError()) {
+						<span class="field-error">{{ passwordError() | translate }}</span>
+					}
 				</div>
 
 				@if (errorKey()) {
@@ -55,8 +63,12 @@
 				<div class="field">
 					<label for="loginCode">{{ 'auth.codeLabel' | translate }}</label>
 					<input id="loginCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
-						[value]="code()" (input)="code.set($any($event.target).value)"
+						[value]="code()" [class.invalid]="codeError()"
+						(input)="code.set($any($event.target).value)" (blur)="codeTouched.set(true)"
 						[placeholder]="'auth.codePlaceholder' | translate">
+					@if (codeError()) {
+						<span class="field-error">{{ codeError() | translate }}</span>
+					}
 				</div>
 
 				@if (errorKey()) {

@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AuthService } from '../services/auth.service';
@@ -28,6 +28,19 @@ export class LoginPage {
   code = signal('');
   busy = signal(false);
 
+  usernameTouched = signal(false);
+  passwordTouched = signal(false);
+  codeTouched = signal(false);
+
+  usernameError = computed(() =>
+    this.usernameTouched() && !this.loginData().username.trim() ? 'auth.errUsernameRequired' : '');
+
+  passwordError = computed(() =>
+    this.passwordTouched() && !this.loginData().password ? 'auth.errPasswordRequired' : '');
+
+  codeError = computed(() =>
+    this.codeTouched() && !this.code().trim() ? 'auth.errResetCodeEmpty' : '');
+
   constructor() {
     if (inject(ActivatedRoute).snapshot.queryParamMap.get('reset') === '1') {
       this.infoKey.set('auth.resetSuccess');
@@ -39,12 +52,15 @@ export class LoginPage {
   }
 
   login(): void {
-    const data = this.loginData();
+    this.usernameTouched.set(true);
+    this.passwordTouched.set(true);
 
-    if (!data.username || !data.password) {
+    if (this.usernameError() || this.passwordError()) {
       this.errorKey.set('auth.errFillAll');
       return;
     }
+
+    const data = this.loginData();
 
     this.errorKey.set('');
     this.busy.set(true);
@@ -77,12 +93,13 @@ export class LoginPage {
   }
 
   verify(): void {
-    const code = this.code().trim();
+    this.codeTouched.set(true);
 
-    if (!code) {
-      this.errorKey.set('auth.errResetCodeEmpty');
+    if (this.codeError()) {
       return;
     }
+
+    const code = this.code().trim();
 
     this.errorKey.set('');
     this.busy.set(true);
@@ -104,6 +121,7 @@ export class LoginPage {
   backToCredentials(): void {
     this.step.set('credentials');
     this.code.set('');
+    this.codeTouched.set(false);
     this.errorKey.set('');
     this.infoKey.set('');
   }

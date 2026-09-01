@@ -1,12 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { LanguageSwitcher } from '../i18n/language-switcher/language-switcher';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../shared/toast/toast.service';
-
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,}$/;
+import { isStrongPassword, isValidEmail } from '../shared/validators';
 
 @Component({
   imports: [RouterLink, TranslatePipe, LanguageSwitcher],
@@ -30,17 +29,45 @@ export class ForgotPasswordPage {
   errorKey = signal('');
   infoKey = signal('');
 
+  emailTouched = signal(false);
+  codeTouched = signal(false);
+  newPasswordTouched = signal(false);
+  confirmPasswordTouched = signal(false);
+
+  emailError = computed(() => {
+    if (!this.emailTouched()) return '';
+    const value = this.email().trim();
+    if (!value) return 'auth.errEmailRequired';
+    return isValidEmail(value) ? '' : 'auth.errInvalidEmail';
+  });
+
+  codeError = computed(() =>
+    this.codeTouched() && !this.code().trim() ? 'auth.errResetCodeEmpty' : '');
+
+  newPasswordError = computed(() => {
+    if (!this.newPasswordTouched()) return '';
+    const value = this.newPassword();
+    if (!value) return 'auth.errPasswordRequired';
+    return isStrongPassword(value) ? '' : 'auth.errPasswordWeak';
+  });
+
+  confirmPasswordError = computed(() => {
+    if (!this.confirmPasswordTouched()) return '';
+    if (!this.confirmPassword()) return 'auth.errConfirmPasswordRequired';
+    return this.newPassword() === this.confirmPassword() ? '' : 'auth.errPasswordMismatch';
+  });
+
   requestCode(): void {
-    const email = this.email().trim();
-    if (!email) {
-      this.errorKey.set('auth.errInvalidEmail');
+    this.emailTouched.set(true);
+
+    if (this.emailError()) {
       return;
     }
 
     this.busy.set(true);
     this.errorKey.set('');
 
-    this.authService.forgotPassword(email).subscribe({
+    this.authService.forgotPassword(this.email().trim()).subscribe({
       next: () => {
         this.busy.set(false);
         this.infoKey.set('auth.codeSentInfo');
@@ -57,21 +84,16 @@ export class ForgotPasswordPage {
   }
 
   resetPassword(): void {
+    this.codeTouched.set(true);
+    this.newPasswordTouched.set(true);
+    this.confirmPasswordTouched.set(true);
+
+    if (this.codeError() || this.newPasswordError() || this.confirmPasswordError()) {
+      return;
+    }
+
     const code = this.code().trim();
     const password = this.newPassword();
-
-    if (!code) {
-      this.errorKey.set('auth.errResetCodeEmpty');
-      return;
-    }
-    if (!PASSWORD_REGEX.test(password)) {
-      this.errorKey.set('auth.errPasswordWeak');
-      return;
-    }
-    if (password !== this.confirmPassword()) {
-      this.errorKey.set('auth.errPasswordMismatch');
-      return;
-    }
 
     this.busy.set(true);
     this.errorKey.set('');
@@ -96,5 +118,8 @@ export class ForgotPasswordPage {
     this.errorKey.set('');
     this.infoKey.set('');
     this.code.set('');
+    this.codeTouched.set(false);
+    this.newPasswordTouched.set(false);
+    this.confirmPasswordTouched.set(false);
   }
 }

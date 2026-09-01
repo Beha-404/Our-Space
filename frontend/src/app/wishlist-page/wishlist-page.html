@@ -14,14 +14,16 @@
 		} @else {
 			<div class="card add-wish-card">
 				<div class="add-wish-row">
-					<input type="text" [placeholder]="'wishlist.addPlaceholder' | translate"
+					<input type="text" [placeholder]="'wishlist.addPlaceholder' | translate" [class.invalid]="newWishError()"
 						[value]="newWish()" (input)="newWish.set($any($event.target).value)"
-						(keyup.enter)="addWish()">
+						(blur)="newWishTouched.set(true)" (keyup.enter)="addWish()">
 					<button class="btn btn-primary" (click)="addWish()" [disabled]="adding()">
 						{{ (adding() ? 'wishlist.adding' : 'wishlist.addButton') | translate }}
 					</button>
 				</div>
-				@if (addErrorKey()) {
+				@if (newWishError()) {
+					<span class="field-error">{{ newWishError() | translate }}</span>
+				} @else if (addErrorKey()) {
 					<div class="alert alert-error">{{ addErrorKey() | translate }}</div>
 				}
 			</div>

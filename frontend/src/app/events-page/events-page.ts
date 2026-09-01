@@ -118,6 +118,10 @@ export class EventsPage {
   formData = signal({ title: '', description: '', eventDate: '' });
   adding = signal(false);
   addErrorKey = signal('');
+  titleTouched = signal(false);
+
+  titleError = computed(() =>
+    this.titleTouched() && !this.formData().title.trim() ? 'events.errTitleRequired' : '');
 
   openAddForm(): void {
     this.showAddForm.set(true);
@@ -126,6 +130,7 @@ export class EventsPage {
   closeAddForm(): void {
     this.showAddForm.set(false);
     this.formData.set({ title: '', description: '', eventDate: '' });
+    this.titleTouched.set(false);
     this.addErrorKey.set('');
   }
 
@@ -133,6 +138,10 @@ export class EventsPage {
   editFormData = signal({ title: '', description: '', eventDate: '' });
   saving = signal(false);
   editErrorKey = signal('');
+  editTitleTouched = signal(false);
+
+  editTitleError = computed(() =>
+    this.editTitleTouched() && !this.editFormData().title.trim() ? 'events.errTitleRequired' : '');
 
   constructor() {
     this.userService.refreshCurrentUser().subscribe(user => {
@@ -162,8 +171,9 @@ export class EventsPage {
   }
 
   addEvent(): void {
+    this.titleTouched.set(true);
     const data = this.formData();
-    if (!data.title.trim() || !data.eventDate) {
+    if (this.titleError() || !data.eventDate) {
       this.addErrorKey.set('auth.errFillAll');
       return;
     }
@@ -217,6 +227,7 @@ export class EventsPage {
 
   startEdit(event: EventItem): void {
     this.editErrorKey.set('');
+    this.editTitleTouched.set(false);
     this.editFormData.set({
       title: event.title,
       description: event.description ?? '',
@@ -234,8 +245,9 @@ export class EventsPage {
   }
 
   saveEdit(id: number): void {
+    this.editTitleTouched.set(true);
     const data = this.editFormData();
-    if (!data.title.trim() || !data.eventDate) {
+    if (this.editTitleError() || !data.eventDate) {
       this.editErrorKey.set('auth.errFillAll');
       return;
     }
