@@ -115,8 +115,8 @@ public class PhotoService(
 
     private async Task<string> GenerateThumbnailAsync(string originalUrl)
     {
-        var originalPath = fileStorage.GetPhysicalPath(originalUrl);
-        using var image = await Image.LoadAsync(originalPath);
+        await using var originalStream = await fileStorage.OpenReadAsync(originalUrl);
+        using var image = await Image.LoadAsync(originalStream);
 
         image.Mutate(x => x
             .AutoOrient()

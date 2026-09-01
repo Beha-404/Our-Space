@@ -138,27 +138,41 @@ public class AudioService(
 
     private async Task<string> ConvertToMp3Async(string videoUrl)
     {
-        var videoPath = fileStorage.GetPhysicalPath(videoUrl);
-        var folder = Path.GetDirectoryName(videoPath)!;
-        var mp3FileName = $"{Guid.NewGuid():N}.mp3";
-        var mp3Path = Path.Combine(folder, mp3FileName);
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
 
         try
         {
-            var conversion = FFmpeg.Conversions.New()
-                .AddParameter($"-i \"{videoPath}\"")
-                .AddParameter("-vn -acodec libmp3lame -q:a 2")
-                .SetOutput(mp3Path);
+            var videoPath = Path.Combine(tempDir, "input.mp4");
+            var mp3Path = Path.Combine(tempDir, "output.mp3");
 
-            await conversion.Start();
+            await using (var videoStream = await fileStorage.OpenReadAsync(videoUrl))
+            await using (var videoFile = File.Create(videoPath))
+            {
+                await videoStream.CopyToAsync(videoFile);
+            }
+
+            try
+            {
+                var conversion = FFmpeg.Conversions.New()
+                    .AddParameter($"-i \"{videoPath}\"")
+                    .AddParameter("-vn -acodec libmp3lame -q:a 2")
+                    .SetOutput(mp3Path);
+
+                await conversion.Start();
+            }
+            catch (Exception)
+            {
+                throw new BadRequestException(localizer.T("Audio.ConversionFailed"));
+            }
+
+            await using var mp3Stream = File.OpenRead(mp3Path);
+            return await fileStorage.SaveAsync(mp3Stream, "audio", ".mp3");
         }
-        catch (Exception)
+        finally
         {
-            throw new BadRequestException(localizer.T("Audio.ConversionFailed"));
+            Directory.Delete(tempDir, recursive: true);
         }
-
-        var subfolder = Path.GetFileName(folder);
-        return $"/uploads/{subfolder}/{mp3FileName}";
     }
 
     private async Task<int> GetCoupleIdOrThrow(int userId)

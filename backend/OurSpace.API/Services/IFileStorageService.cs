@@ -4,9 +4,9 @@ public interface IFileStorageService
 {
     Task<string> SaveAsync(Stream content, string subfolder, string fileExtension);
 
-    void Delete(string url);
+    Task<Stream> OpenReadAsync(string url);
 
-    string GetPhysicalPath(string url);
+    void Delete(string url);
 
     long GetSizeBytes(string url);
 }

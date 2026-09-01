@@ -20,6 +20,12 @@ public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageServ
         return $"/uploads/{subfolder}/{fileName}";
     }
 
+    public Task<Stream> OpenReadAsync(string url)
+    {
+        Stream stream = File.OpenRead(GetPhysicalPath(url));
+        return Task.FromResult(stream);
+    }
+
     public void Delete(string url)
     {
         var path = GetPhysicalPath(url);
@@ -33,7 +39,7 @@ public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageServ
         return file.Exists ? file.Length : 0;
     }
 
-    public string GetPhysicalPath(string url)
+    private string GetPhysicalPath(string url)
     {
         var relative = url.TrimStart('/').Replace("uploads/", "", StringComparison.OrdinalIgnoreCase).TrimStart('/');
         return Path.Combine(_uploadsRoot, relative);

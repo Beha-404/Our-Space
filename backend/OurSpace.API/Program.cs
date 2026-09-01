@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -142,7 +143,15 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+var blobConnectionString = builder.Configuration["Storage:BlobConnectionString"];
+if (!string.IsNullOrWhiteSpace(blobConnectionString))
+{
+    builder.Services.AddSingleton<IFileStorageService>(new AzureBlobFileStorageService(blobConnectionString));
+}
+else
+{
+    builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+}
 builder.Services.AddSingleton<IFileUrlSigner, FileUrlSigner>();
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
 builder.Services.AddScoped<IStorageQuotaService, StorageQuotaService>();
@@ -209,11 +218,34 @@ if (!ffmpegReady)
 
 app.UseMiddleware<SignedFileMiddleware>();
 
-app.UseStaticFiles(new StaticFileOptions
+if (!string.IsNullOrWhiteSpace(blobConnectionString))
 {
-    FileProvider = new PhysicalFileProvider(uploadsPath),
-    RequestPath = "/uploads",
-});
+    var contentTypeProvider = new FileExtensionContentTypeProvider();
+
+    app.MapGet("/uploads/{**path}", async (string path, IFileStorageService storage) =>
+    {
+        if (!contentTypeProvider.TryGetContentType(path, out var contentType))
+            contentType = "application/octet-stream";
+
+        try
+        {
+            var stream = await storage.OpenReadAsync($"/uploads/{path}");
+            return Results.Stream(stream, contentType);
+        }
+        catch (Azure.RequestFailedException ex) when (ex.Status == 404)
+        {
+            return Results.NotFound();
+        }
+    });
+}
+else
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(uploadsPath),
+        RequestPath = "/uploads",
+    });
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
