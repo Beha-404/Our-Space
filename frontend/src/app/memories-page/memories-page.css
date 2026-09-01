@@ -24,6 +24,7 @@ h1 {
 
 .notice-card {
   padding: 24px 28px;
+  width: fit-content;
   max-width: 640px;
   margin: 0 auto;
 }
