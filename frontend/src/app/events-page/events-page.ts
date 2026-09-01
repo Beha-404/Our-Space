@@ -191,9 +191,23 @@ export class EventsPage {
     });
   }
 
-  deleteEvent(id: number): void {
-    this.eventService.delete(id).subscribe({
+  eventPendingDelete = signal<EventItem | null>(null);
+
+  confirmDelete(event: EventItem): void {
+    this.eventPendingDelete.set(event);
+  }
+
+  cancelDelete(): void {
+    this.eventPendingDelete.set(null);
+  }
+
+  deleteEvent(): void {
+    const event = this.eventPendingDelete();
+    if (!event) return;
+
+    this.eventService.delete(event.id).subscribe({
       next: () => {
+        this.eventPendingDelete.set(null);
         this.loadEvents();
         this.toast.success('toast.eventDeleted');
       },

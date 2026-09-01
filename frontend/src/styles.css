@@ -239,6 +239,29 @@ button {
   font-size: 0.85rem;
 }
 
+.btn-icon-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.btn-icon-danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: var(--color-danger);
+}
+
+.btn-icon-danger svg {
+  width: 16px;
+  height: 16px;
+}
+
 .btn-xs {
   padding: 5px 12px;
   font-size: 0.78rem;

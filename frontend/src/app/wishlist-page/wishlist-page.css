@@ -157,11 +157,6 @@ h1 {
   color: var(--color-text-faint);
 }
 
-.danger-link {
-  color: var(--color-danger) !important;
-  flex-shrink: 0;
-}
-
 .feed-pager {
   display: flex;
   align-items: center;
