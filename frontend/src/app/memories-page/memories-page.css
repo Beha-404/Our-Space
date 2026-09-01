@@ -25,6 +25,7 @@ h1 {
 .notice-card {
   padding: 24px 28px;
   max-width: 640px;
+  margin: 0 auto;
 }
 
 .notice-card p {
@@ -104,6 +105,9 @@ h1 {
 
 .muted-hint {
   font-size: 0.9rem;
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .danger-link {
