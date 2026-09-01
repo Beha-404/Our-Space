@@ -187,6 +187,35 @@
 
 			<h2 class="section-title">{{ 'profile.dangerZoneTitle' | translate }}</h2>
 			<div class="card danger-card">
+				@if (user.partner) {
+					@if (!unpairConfirming()) {
+						<div class="danger-row">
+							<div>
+								<h3>{{ 'profile.unpairTitle' | translate }}</h3>
+								<p>{{ 'profile.unpairDesc' | translate }}</p>
+							</div>
+							<button class="btn btn-danger" (click)="confirmUnpair()">{{ 'profile.unpairButton' | translate }}</button>
+						</div>
+					} @else {
+						<div class="danger-row">
+							<div>
+								<h3>{{ 'profile.confirmUnpairTitle' | translate }}</h3>
+								<p>{{ 'profile.confirmUnpairDesc' | translate }}</p>
+								@if (unpairErrorKey()) {
+									<div class="alert alert-error">{{ unpairErrorKey() | translate }}</div>
+								}
+							</div>
+							<div class="danger-actions">
+								<button class="btn btn-ghost" (click)="cancelUnpair()">{{ 'profile.cancelButton' | translate }}</button>
+								<button class="btn btn-danger" (click)="unpair()" [disabled]="unpairing()">
+									{{ (unpairing() ? 'profile.unpairing' : 'profile.confirmUnpairButton') | translate }}
+								</button>
+							</div>
+						</div>
+					}
+					<hr class="danger-divider">
+				}
+
 				@if (!deleteConfirming()) {
 					<div class="danger-row">
 						<div>

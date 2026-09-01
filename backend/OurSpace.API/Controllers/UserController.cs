@@ -63,6 +63,13 @@ public class UserController(IUserService userService, ILocalizer localizer) : Co
         return Ok(dto);
     }
 
+    [HttpPost("unpair")]
+    public async Task<ActionResult<UserDto>> Unpair()
+    {
+        var dto = await userService.UnpairAsync(this.GetUserId());
+        return Ok(dto);
+    }
+
     [HttpPut("relationship-date")]
     public async Task<ActionResult<UserDto>> SetRelationshipDate(SetRelationshipDateRequest request)
     {

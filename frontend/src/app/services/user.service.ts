@@ -54,6 +54,12 @@ export class UserService {
         );
     }
 
+    unpair() {
+        return this.http.post<User>(`${this.apiUrl}/user/unpair`, {}).pipe(
+            tap(user => this.currentUser.set(user))
+        );
+    }
+
     setRelationshipDate(relationshipStartDate: string) {
         return this.http.put<User>(`${this.apiUrl}/user/relationship-date`, { relationshipStartDate }).pipe(
             tap(user => this.currentUser.set(user))

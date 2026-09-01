@@ -212,6 +212,32 @@ public partial class UserService(
         return await ToDto(user);
     }
 
+    public async Task<UserDto> UnpairAsync(int userId)
+    {
+        var user = await GetUserOrThrow(userId);
+
+        var couple = await db.Couples.SingleOrDefaultAsync(c => c.User1Id == userId || c.User2Id == userId)
+            ?? throw new BadRequestException(localizer.T("User.NotPaired"));
+
+        var photos = await db.Photos.Where(p => p.CoupleId == couple.Id).ToListAsync();
+        foreach (var photo in photos)
+        {
+            fileStorage.Delete(photo.FilePath);
+            fileStorage.Delete(photo.ThumbnailPath);
+        }
+
+        var audioMessages = await db.AudioMessages.Where(a => a.CoupleId == couple.Id).ToListAsync();
+        foreach (var audio in audioMessages)
+        {
+            fileStorage.Delete(audio.FilePath);
+        }
+
+        db.Couples.Remove(couple);
+        await db.SaveChangesAsync();
+
+        return await ToDto(user);
+    }
+
     public async Task<UserDto> SetRelationshipDateAsync(int userId, SetRelationshipDateRequest request)
     {
         var user = await GetUserOrThrow(userId);

@@ -49,6 +49,10 @@ export class ProfilePage {
   deleteConfirming = signal(false);
   deleteErrorKey = signal('');
 
+  unpairConfirming = signal(false);
+  unpairing = signal(false);
+  unpairErrorKey = signal('');
+
   codeCopied = signal(false);
 
   editingRelationshipDate = signal(false);
@@ -247,6 +251,30 @@ export class ProfilePage {
       error: (err: HttpErrorResponse) => {
         this.relationshipDateSaving.set(false);
         this.relationshipDateErrorKey.set(err.error?.title ?? 'profile.dateError');
+      }
+    });
+  }
+
+  confirmUnpair(): void {
+    this.unpairConfirming.set(true);
+  }
+
+  cancelUnpair(): void {
+    this.unpairConfirming.set(false);
+  }
+
+  unpair(): void {
+    this.unpairing.set(true);
+    this.unpairErrorKey.set('');
+
+    this.userService.unpair().subscribe({
+      next: () => {
+        this.unpairing.set(false);
+        this.unpairConfirming.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.unpairing.set(false);
+        this.unpairErrorKey.set(err.error?.title ?? 'profile.unpairError');
       }
     });
   }
