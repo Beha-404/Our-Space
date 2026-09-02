@@ -14,7 +14,8 @@ public class AudioService(
     IFileStorageService fileStorage,
     ILocalizer localizer,
     IFileUrlSigner urlSigner,
-    IStorageQuotaService quota) : IAudioService
+    IStorageQuotaService quota,
+    IFFmpegReadiness ffmpeg) : IAudioService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -39,6 +40,9 @@ public class AudioService(
 
         var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
         var isVideo = IsVideoUpload(file);
+
+        if (isVideo && !ffmpeg.IsReady)
+            throw new BadRequestException(localizer.T("Audio.ConverterNotReady"));
 
         await quota.EnsureRoomAsync(coupleId, file.Length);
 

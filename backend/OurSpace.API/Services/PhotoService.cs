@@ -17,11 +17,6 @@ public class PhotoService(
     IFileUrlSigner urlSigner,
     IStorageQuotaService quota) : IPhotoService
 {
-    private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "image/jpeg", "image/png", "image/webp", "image/gif"
-    };
-
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
     private const int ThumbnailWidth = 480;
     private const int MaxPageSize = 500;
@@ -33,9 +28,10 @@ public class PhotoService(
         if (string.IsNullOrWhiteSpace(caption))
             throw new BadRequestException(localizer.T("Photo.TitleRequired"));
 
+        var extension = await ImageFormats.ResolveExtensionAsync(file)
+            ?? throw new BadRequestException(localizer.T("Photo.UnsupportedFormat"));
+
         var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
-        var extension = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(extension)) extension = ".jpg";
 
         await quota.EnsureRoomAsync(coupleId, file.Length);
 
@@ -46,24 +42,34 @@ public class PhotoService(
             filePath = await fileStorage.SaveAsync(uploadStream, "photos", extension);
         }
 
-        var thumbnailPath = await GenerateThumbnailAsync(filePath);
-        var sizeBytes = fileStorage.GetSizeBytes(filePath) + fileStorage.GetSizeBytes(thumbnailPath);
+        string? thumbnailPath = null;
 
-        var photo = new Photo
+        try
         {
-            CoupleId = coupleId,
-            UploadedByUserId = userId,
-            FilePath = filePath,
-            ThumbnailPath = thumbnailPath,
-            SizeBytes = sizeBytes,
-            Caption = caption.Trim(),
-            TakenAt = takenAt,
-        };
+            thumbnailPath = await GenerateThumbnailAsync(filePath);
 
-        db.Photos.Add(photo);
-        await db.SaveChangesAsync();
+            var photo = new Photo
+            {
+                CoupleId = coupleId,
+                UploadedByUserId = userId,
+                FilePath = filePath,
+                ThumbnailPath = thumbnailPath,
+                SizeBytes = fileStorage.GetSizeBytes(filePath) + fileStorage.GetSizeBytes(thumbnailPath),
+                Caption = caption.Trim(),
+                TakenAt = takenAt,
+            };
 
-        return ToDto(photo, username);
+            db.Photos.Add(photo);
+            await db.SaveChangesAsync();
+
+            return ToDto(photo, username);
+        }
+        catch (Exception)
+        {
+            fileStorage.Delete(filePath);
+            if (thumbnailPath is not null) fileStorage.Delete(thumbnailPath);
+            throw;
+        }
     }
 
     public async Task<PagedResult<PhotoDto>> GetAllAsync(int userId, int page, int pageSize)
@@ -111,9 +117,6 @@ public class PhotoService(
 
         if (file.Length > MaxFileSizeBytes)
             throw new BadRequestException(localizer.T("Photo.TooLarge"));
-
-        if (!AllowedContentTypes.Contains(file.ContentType))
-            throw new BadRequestException(localizer.T("Photo.UnsupportedFormat"));
     }
 
     private async Task<string> GenerateThumbnailAsync(string originalUrl)

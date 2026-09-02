@@ -15,8 +15,6 @@ using OurSpace.API.Data;
 using OurSpace.API.Middleware;
 using OurSpace.API.Options;
 using OurSpace.API.Services;
-using Xabe.FFmpeg;
-using Xabe.FFmpeg.Downloader;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +30,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is missing.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure(
+        maxRetryCount: 5,
+        maxRetryDelay: TimeSpan.FromSeconds(10),
+        errorNumbersToAdd: null)));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
@@ -130,6 +131,20 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromHours(1),
         }));
 
+    options.AddPolicy(RateLimitPolicies.Pair, http =>
+        RateLimitPartition.GetFixedWindowLimiter(ClientKey(http), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromHours(1),
+        }));
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
+        RateLimitPartition.GetFixedWindowLimiter(ClientKey(http), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 300,
+            Window = TimeSpan.FromMinutes(1),
+        }));
+
     static string ClientKey(HttpContext http) =>
         http.User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
         ?? http.Connection.RemoteIpAddress?.ToString()
@@ -155,7 +170,8 @@ else
 builder.Services.AddSingleton<IFileUrlSigner, FileUrlSigner>();
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
 builder.Services.AddScoped<IStorageQuotaService, StorageQuotaService>();
-builder.Services.AddHostedService<FileSizeBackfillBackgroundService>();
+builder.Services.AddSingleton<IFFmpegReadiness, FFmpegReadiness>();
+builder.Services.AddHostedService<FFmpegSetupBackgroundService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<IAudioService, AudioService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
@@ -203,18 +219,8 @@ app.UseCors(AngularDevCorsPolicy);
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
 Directory.CreateDirectory(uploadsPath);
 
-var ffmpegPath = Path.Combine(app.Environment.ContentRootPath, "ffmpeg");
-Directory.CreateDirectory(ffmpegPath);
-FFmpeg.SetExecutablesPath(ffmpegPath);
-
-var exeSuffix = OperatingSystem.IsWindows() ? ".exe" : "";
-var ffmpegReady = File.Exists(Path.Combine(ffmpegPath, $"ffmpeg{exeSuffix}"))
-    && File.Exists(Path.Combine(ffmpegPath, $"ffprobe{exeSuffix}"));
-
-if (!ffmpegReady)
-{
-    await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Official, ffmpegPath);
-}
+// Signed upload URLs carry an hour-bucketed expiry, so a cached copy can never outlive its signature.
+const string UploadsCacheControl = "public, max-age=3600, immutable";
 
 app.UseMiddleware<SignedFileMiddleware>();
 
@@ -222,7 +228,7 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
 {
     var contentTypeProvider = new FileExtensionContentTypeProvider();
 
-    app.MapGet("/uploads/{**path}", async (string path, IFileStorageService storage) =>
+    app.MapGet("/uploads/{**path}", async (string path, HttpContext http, IFileStorageService storage) =>
     {
         if (!contentTypeProvider.TryGetContentType(path, out var contentType))
             contentType = "application/octet-stream";
@@ -230,6 +236,8 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
         try
         {
             var stream = await storage.OpenReadAsync($"/uploads/{path}");
+            http.Response.Headers.CacheControl = UploadsCacheControl;
+            http.Response.Headers.XContentTypeOptions = "nosniff";
             return Results.Stream(stream, contentType);
         }
         catch (Azure.RequestFailedException ex) when (ex.Status == 404)
@@ -244,6 +252,11 @@ else
     {
         FileProvider = new PhysicalFileProvider(uploadsPath),
         RequestPath = "/uploads",
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.CacheControl = UploadsCacheControl;
+            ctx.Context.Response.Headers.XContentTypeOptions = "nosniff";
+        },
     });
 }
 

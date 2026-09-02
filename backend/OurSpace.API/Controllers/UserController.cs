@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OurSpace.API.Common;
 using OurSpace.API.Common.Exceptions;
 using OurSpace.API.Common.Localization;
@@ -57,6 +58,7 @@ public class UserController(IUserService userService, ILocalizer localizer) : Co
     }
 
     [HttpPost("pair")]
+    [EnableRateLimiting(RateLimitPolicies.Pair)]
     public async Task<ActionResult<UserDto>> Pair(PairRequest request)
     {
         var dto = await userService.PairAsync(this.GetUserId(), request);

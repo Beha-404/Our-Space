@@ -17,11 +17,6 @@ public partial class UserService(
     IEmailQueue emailQueue,
     IFileUrlSigner urlSigner) : IUserService
 {
-    private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "image/jpeg", "image/png", "image/webp", "image/gif"
-    };
-
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
 
     public async Task<UserDto> GetCurrentAsync(int userId)
@@ -134,14 +129,11 @@ public partial class UserService(
         if (file.Length > MaxFileSizeBytes)
             throw new BadRequestException(localizer.T("User.PictureTooLarge"));
 
-        if (!AllowedContentTypes.Contains(file.ContentType))
-            throw new BadRequestException(localizer.T("User.PictureUnsupportedFormat"));
+        var extension = await ImageFormats.ResolveExtensionAsync(file)
+            ?? throw new BadRequestException(localizer.T("User.PictureUnsupportedFormat"));
 
         var user = await GetUserOrThrow(userId);
         var oldPictureUrl = user.ProfilePictureUrl;
-
-        var extension = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(extension)) extension = ".jpg";
 
         await using var uploadStream = file.OpenReadStream();
         var newUrl = await fileStorage.SaveAsync(uploadStream, "avatars", extension);
@@ -181,13 +173,17 @@ public partial class UserService(
 
     public async Task<UserDto> PairAsync(int userId, PairRequest request)
     {
+        var code = request.Code?.Trim();
+        if (string.IsNullOrEmpty(code) || !PairingCodeRegex().IsMatch(code))
+            throw new BadRequestException(localizer.T("User.InvalidPairingCode"));
+
         var user = await GetUserOrThrow(userId);
 
         var alreadyPaired = await db.Couples.AnyAsync(c => c.User1Id == userId || c.User2Id == userId);
         if (alreadyPaired)
             throw new ConflictException(localizer.T("User.AlreadyPaired"));
 
-        var partner = await db.Users.SingleOrDefaultAsync(u => u.PairingCode == request.Code);
+        var partner = await db.Users.FirstOrDefaultAsync(u => u.PairingCode == code);
         if (partner is null || partner.PairingCodeExpiresAt < DateTime.UtcNow)
             throw new BadRequestException(localizer.T("User.InvalidPairingCode"));
 
@@ -288,4 +284,7 @@ public partial class UserService(
 
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
     private static partial Regex EmailRegex();
+
+    [GeneratedRegex(@"^\d{6}$")]
+    private static partial Regex PairingCodeRegex();
 }

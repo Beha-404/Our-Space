@@ -7,4 +7,5 @@ public static class RateLimitPolicies
     public const string ResetPassword = "reset-password";
     public const string VerifyLogin = "verify-login";
     public const string Writes = "writes";
+    public const string Pair = "pair";
 }

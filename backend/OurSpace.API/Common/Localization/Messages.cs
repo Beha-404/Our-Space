@@ -160,6 +160,10 @@ public static class Messages
             "Konverzija video fajla u audio nije uspjela.",
             "Converting the video file to audio failed.",
             "No se pudo convertir el archivo de video a audio."),
+        ["Audio.ConverterNotReady"] = Lang(
+            "Video konverzija još nije spremna. Pokušaj ponovo za koji minut.",
+            "Video conversion is not ready yet. Try again in a minute.",
+            "La conversión de video aún no está lista. Inténtalo de nuevo en un minuto."),
         ["Audio.TitleRequired"] = Lang(
             "Naslov je obavezan.",
             "A title is required.",
