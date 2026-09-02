@@ -181,18 +181,8 @@ public partial class UserService(
             db.Couples.Remove(couple);
         }
 
-        user.IsDeleted = true;
-        user.ProfilePictureUrl = null;
-        user.PairingCode = null;
-        user.PairingCodeExpiresAt = null;
-        user.UpdatedAt = DateTime.UtcNow;
-
+        db.Users.Remove(user);
         await db.SaveChangesAsync();
-
-        await db.RefreshTokens
-            .IgnoreQueryFilters()
-            .Where(r => r.UserId == userId)
-            .ExecuteDeleteAsync();
 
         foreach (var path in storedPaths)
             fileStorage.Delete(path);

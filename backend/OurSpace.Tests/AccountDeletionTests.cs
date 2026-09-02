@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,6 +29,24 @@ public class AccountDeletionTests
         Assert.Contains("/uploads/photos/seed.jpg", spy.Deleted);
         Assert.Contains("/uploads/photos/seed-thumb.jpg", spy.Deleted);
         Assert.Contains("/uploads/audio/seed.webm", spy.Deleted);
+    }
+
+    [Fact]
+    public async Task Username_And_Email_Are_Free_To_Reuse_After_Deletion()
+    {
+        using var factory = new OurSpaceFactory(registrationOpen: true);
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = ClientWith(factory, new RecordingFileStorage(), world.AnaToken);
+        var userId = await UserIdAsync(factory, "ana");
+        var email = await EmailAsync(factory, userId);
+
+        (await client.DeleteAsync($"/api/user/{userId}")).EnsureSuccessStatusCode();
+
+        var registerResponse = await factory.CreateClient().PostAsJsonAsync("/api/auth/register",
+            new { username = "ana", email, password = "NovaSifra123" });
+
+        Assert.Equal(System.Net.HttpStatusCode.Created, registerResponse.StatusCode);
     }
 
     [Fact]
@@ -126,6 +145,14 @@ public class AccountDeletionTests
 
         return await scope.ServiceProvider.GetRequiredService<AppDbContext>()
             .Users.Where(u => u.Username == username).Select(u => u.Id).SingleAsync();
+    }
+
+    private static async Task<string> EmailAsync(OurSpaceFactory factory, int userId)
+    {
+        using var scope = factory.Services.CreateScope();
+
+        return await scope.ServiceProvider.GetRequiredService<AppDbContext>()
+            .Users.Where(u => u.Id == userId).Select(u => u.Email).SingleAsync();
     }
 
     private static async Task AddRefreshTokenAsync(OurSpaceFactory factory, int userId)
