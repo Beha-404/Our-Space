@@ -229,13 +229,6 @@ h1 {
   margin: 36px 0 14px;
 }
 
-.feed-filters {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
 .feed-type-toggle {
   display: inline-flex;
   gap: 4px;

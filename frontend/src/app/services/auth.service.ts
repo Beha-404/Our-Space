@@ -55,9 +55,13 @@ export class AuthService {
         return this.refreshSession().pipe(tap(() => this.sessionRestored.set(true)));
     }
 
+    ensureSessionRestored(): Observable<boolean> {
+        return this.sessionRestored() ? of(this.isLoggedIn()) : this.restoreSession();
+    }
+
     refreshSession(): Observable<boolean> {
         this.refreshInFlight ??= this.http
-            .post<AuthResponse>(`${this.apiUrl}/auth/refresh`, {}, { withCredentials: true })
+            .post<AuthResponse>(`${this.apiUrl}/auth/refresh`, null, { withCredentials: true })
             .pipe(
                 tap(response => this.accessToken = response.token),
                 map(() => true),

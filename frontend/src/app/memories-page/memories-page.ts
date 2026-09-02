@@ -4,7 +4,6 @@ import { Component, computed, ElementRef, inject, signal, viewChild } from '@ang
 import { forkJoin, of } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
-import { Navbar } from '../navbar/navbar';
 import { AudioMessage } from '../interfaces/audio';
 import { Photo } from '../interfaces/photo';
 import { AudioService } from '../services/audio.service';
@@ -22,7 +21,7 @@ type UploadType = 'photo' | 'audio';
 type SortOrder = 'newest' | 'oldest';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker],
+  imports: [DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',
@@ -176,7 +175,7 @@ export class MemoriesPage {
   }
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe(user => {
+    this.userService.ensureCurrentUser().subscribe(user => {
       if (user.partner) this.loadAll();
       else this.loading.set(false);
     });

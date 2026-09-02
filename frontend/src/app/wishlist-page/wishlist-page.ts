@@ -2,7 +2,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { TranslatePipe } from '../i18n/translate.pipe';
-import { Navbar } from '../navbar/navbar';
 import { Wish } from '../interfaces/wish';
 import { UserService } from '../services/user.service';
 import { WishlistService } from '../services/wishlist.service';
@@ -10,7 +9,7 @@ import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, Skeleton],
+  imports: [DatePipe, TranslatePipe, Skeleton],
   selector: 'app-wishlist-page',
   styleUrl: './wishlist-page.css',
   templateUrl: './wishlist-page.html',
@@ -87,7 +86,7 @@ export class WishlistPage {
   wishPendingDelete = signal<Wish | null>(null);
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe(user => {
+    this.userService.ensureCurrentUser().subscribe(user => {
       if (user.partner) this.loadAll();
       else this.loading.set(false);
     });

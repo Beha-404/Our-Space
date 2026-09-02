@@ -1,6 +1,6 @@
 ﻿import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { finalize, Observable, shareReplay, tap } from 'rxjs';
+import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
 import { config } from '../config';
 import { PairingCodeResponse, PairRequest } from '../interfaces/pairing';
 import { UpdateUserRequest } from '../interfaces/updateUserRequest';
@@ -17,6 +17,11 @@ export class UserService {
 
     getCurrentUser() {
         return this.http.get<User>(`${this.apiUrl}/user/current`);
+    }
+
+    ensureCurrentUser(): Observable<User> {
+        const cached = this.currentUser();
+        return cached ? of(cached) : this.refreshCurrentUser();
     }
 
     refreshCurrentUser(): Observable<User> {

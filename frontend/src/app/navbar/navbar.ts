@@ -15,6 +15,6 @@ export class Navbar {
   userService = inject(UserService);
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe();
+    this.userService.ensureCurrentUser().subscribe();
   }
 }

@@ -2,7 +2,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal } from '@angular/core';
 import { TranslatePipe } from '../i18n/translate.pipe';
-import { Navbar } from '../navbar/navbar';
 import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { UserService } from '../services/user.service';
@@ -11,7 +10,7 @@ import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
-  imports: [Navbar, DatePipe, TranslatePipe, Skeleton, DatePicker],
+  imports: [DatePipe, TranslatePipe, Skeleton, DatePicker],
   selector: 'app-events-page',
   styleUrl: './events-page.css',
   templateUrl: './events-page.html',
@@ -144,7 +143,7 @@ export class EventsPage {
     this.editTitleTouched() && !this.editFormData().title.trim() ? 'events.errTitleRequired' : '');
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe(user => {
+    this.userService.ensureCurrentUser().subscribe(user => {
       if (user.partner) this.loadEvents();
       else this.loading.set(false);
     });

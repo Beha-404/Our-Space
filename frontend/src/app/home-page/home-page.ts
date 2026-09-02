@@ -3,8 +3,6 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
-import { TranslationService } from '../i18n/translation.service';
-import { Navbar } from '../navbar/navbar';
 import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { PhotoService } from '../services/photo.service';
@@ -18,11 +16,10 @@ import { AudioMessage } from '../interfaces/audio';
 import { Avatar } from '../shared/avatar/avatar';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { Lightbox } from '../shared/lightbox/lightbox';
-import { SelectDropdown, SelectOption } from '../shared/select-dropdown/select-dropdown';
 import { Skeleton } from '../shared/skeleton/skeleton';
 
 @Component({
-  imports: [Navbar, RouterLink, TranslatePipe, DatePipe, SelectDropdown, Avatar, AudioPlayer, Lightbox, Skeleton],
+  imports: [RouterLink, TranslatePipe, DatePipe, Avatar, AudioPlayer, Lightbox, Skeleton],
   selector: 'app-home-page',
   styleUrl: './home-page.css',
   templateUrl: './home-page.html',
@@ -33,7 +30,6 @@ export class HomePage {
   private photoService = inject(PhotoService);
   private audioService = inject(AudioService);
   private wishlistService = inject(WishlistService);
-  private i18n = inject(TranslationService);
 
   upcomingEvents = signal<EventItem[]>([]);
   photos = signal<Photo[]>([]);
@@ -45,16 +41,9 @@ export class HomePage {
   );
 
   private static readonly FEED_PREVIEW_SIZE = 6;
-
-  private static readonly MONTH_KEYS = [
-    'memories.month1', 'memories.month2', 'memories.month3', 'memories.month4',
-    'memories.month5', 'memories.month6', 'memories.month7', 'memories.month8',
-    'memories.month9', 'memories.month10', 'memories.month11', 'memories.month12',
-  ];
+  private static readonly PREVIEW_FETCH_SIZE = 10;
 
   feedTypeFilter = signal<'all' | 'photo' | 'audio'>('all');
-  feedYearFilter = signal<number | 'all'>('all');
-  feedMonthFilter = signal<number | 'all'>('all');
 
   allFeedPosts = computed<FeedPost[]>(() =>
     buildFeedPosts(
@@ -65,43 +54,16 @@ export class HomePage {
     )
   );
 
-  yearOptions = computed<SelectOption[]>(() => {
-    const years = new Set(this.allFeedPosts().map(p => new Date(p.date).getFullYear()));
-    const sorted = [...years].sort((a, b) => b - a);
-    return [{ value: 'all', label: this.i18n.t('events.allYears') }, ...sorted.map(y => ({ value: y, label: String(y) }))];
-  });
-
-  monthOptions = computed<SelectOption[]>(() => [
-    { value: 'all', label: this.i18n.t('memories.allMonths') },
-    ...HomePage.MONTH_KEYS.map((key, i) => ({ value: i + 1, label: this.i18n.t(key) })),
-  ]);
-
   feed = computed<FeedPost[]>(() => {
     const typeFilter = this.feedTypeFilter();
-    const year = this.feedYearFilter();
-    const month = this.feedMonthFilter();
 
     return this.allFeedPosts()
-      .filter(p => {
-        if (typeFilter !== 'all' && p.type !== typeFilter) return false;
-        const d = new Date(p.date);
-        if (year !== 'all' && d.getFullYear() !== year) return false;
-        if (month !== 'all' && d.getMonth() + 1 !== month) return false;
-        return true;
-      })
+      .filter(p => typeFilter === 'all' || p.type === typeFilter)
       .slice(0, HomePage.FEED_PREVIEW_SIZE);
   });
 
   setFeedTypeFilter(type: 'all' | 'photo' | 'audio'): void {
     this.feedTypeFilter.set(type);
-  }
-
-  setFeedYearFilter(year: number | 'all'): void {
-    this.feedYearFilter.set(year);
-  }
-
-  setFeedMonthFilter(month: number | 'all'): void {
-    this.feedMonthFilter.set(month);
   }
 
   lightboxPost = signal<FeedPost | null>(null);
@@ -150,7 +112,7 @@ export class HomePage {
   });
 
   constructor() {
-    this.userService.refreshCurrentUser().subscribe(user => {
+    this.userService.ensureCurrentUser().subscribe(user => {
       if (user.partner) {
         this.eventService.getUpcoming().subscribe(events => this.upcomingEvents.set(events.slice(0, 3)));
         this.wishlistService.getAll().subscribe(wishes => this.wishes.set(wishes));
@@ -161,8 +123,8 @@ export class HomePage {
 
   private loadMemories(): void {
     forkJoin({
-      photos: this.photoService.getAll(1, 500),
-      audio: this.audioService.getAll(1, 500),
+      photos: this.photoService.getAll(1, HomePage.PREVIEW_FETCH_SIZE),
+      audio: this.audioService.getAll(1, HomePage.PREVIEW_FETCH_SIZE),
     }).subscribe(({ photos, audio }) => {
       this.photos.set(photos.items);
       this.audioItems.set(audio.items);

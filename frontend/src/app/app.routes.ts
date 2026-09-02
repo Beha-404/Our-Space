@@ -25,29 +25,31 @@ export const routes: Routes = [
         loadComponent: () => import('./forgot-password-page/forgot-password-page').then(m => m.ForgotPasswordPage)
     },
     {
-        path: 'home',
+        path: '',
         canActivate: [authGuard],
-        loadComponent: () => import('./home-page/home-page').then(m => m.HomePage)
-    },
-    {
-        path: 'profile',
-        canActivate: [authGuard],
-        loadComponent: () => import('./profile-page/profile-page').then(m => m.ProfilePage)
-    },
-    {
-        path: 'events',
-        canActivate: [authGuard],
-        loadComponent: () => import('./events-page/events-page').then(m => m.EventsPage)
-    },
-    {
-        path: 'memories',
-        canActivate: [authGuard],
-        loadComponent: () => import('./memories-page/memories-page').then(m => m.MemoriesPage)
-    },
-    {
-        path: 'wishlist',
-        canActivate: [authGuard],
-        loadComponent: () => import('./wishlist-page/wishlist-page').then(m => m.WishlistPage)
+        loadComponent: () => import('./shell/shell').then(m => m.Shell),
+        children: [
+            {
+                path: 'home',
+                loadComponent: () => import('./home-page/home-page').then(m => m.HomePage)
+            },
+            {
+                path: 'profile',
+                loadComponent: () => import('./profile-page/profile-page').then(m => m.ProfilePage)
+            },
+            {
+                path: 'events',
+                loadComponent: () => import('./events-page/events-page').then(m => m.EventsPage)
+            },
+            {
+                path: 'memories',
+                loadComponent: () => import('./memories-page/memories-page').then(m => m.MemoriesPage)
+            },
+            {
+                path: 'wishlist',
+                loadComponent: () => import('./wishlist-page/wishlist-page').then(m => m.WishlistPage)
+            },
+        ]
     },
     {
         path: '**',

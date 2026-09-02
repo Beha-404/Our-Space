@@ -1,7 +1,4 @@
-<div class="page">
-	<app-navbar></app-navbar>
-
-	<div class="container fade-in home-content">
+<div class="container fade-in home-content">
 		@if (!userService.currentUser()) {
 			<app-skeleton [count]="2" variant="post" />
 		}
@@ -98,11 +95,6 @@
 					<button type="button" class="type-filter-btn" [class.active]="feedTypeFilter() === 'audio'" (click)="setFeedTypeFilter('audio')">{{ 'home.feedFilterAudio' | translate }}</button>
 				</div>
 
-				<div class="feed-filters">
-					<app-select-dropdown [options]="yearOptions()" [value]="feedYearFilter()" (selectionChange)="setFeedYearFilter($event)" />
-					<app-select-dropdown [options]="monthOptions()" [value]="feedMonthFilter()" (selectionChange)="setFeedMonthFilter($event)" />
-				</div>
-
 				@if (feed().length === 0) {
 					<p class="muted-hint">{{ 'home.feedFilterEmpty' | translate }}</p>
 				}
@@ -175,4 +167,3 @@
 			</div>
 		</div>
 	}
-</div>
