@@ -215,21 +215,27 @@ public partial class UserService(
         var couple = await db.Couples.SingleOrDefaultAsync(c => c.User1Id == userId || c.User2Id == userId)
             ?? throw new BadRequestException(localizer.T("User.NotPaired"));
 
-        var photos = await db.Photos.Where(p => p.CoupleId == couple.Id).ToListAsync();
-        foreach (var photo in photos)
+        var photoPaths = await db.Photos
+            .Where(p => p.CoupleId == couple.Id)
+            .Select(p => new { p.FilePath, p.ThumbnailPath })
+            .ToListAsync();
+
+        var audioPaths = await db.AudioMessages
+            .Where(a => a.CoupleId == couple.Id)
+            .Select(a => a.FilePath)
+            .ToListAsync();
+
+        db.Couples.Remove(couple);
+        await db.SaveChangesAsync();
+
+        foreach (var photo in photoPaths)
         {
             fileStorage.Delete(photo.FilePath);
             fileStorage.Delete(photo.ThumbnailPath);
         }
 
-        var audioMessages = await db.AudioMessages.Where(a => a.CoupleId == couple.Id).ToListAsync();
-        foreach (var audio in audioMessages)
-        {
-            fileStorage.Delete(audio.FilePath);
-        }
-
-        db.Couples.Remove(couple);
-        await db.SaveChangesAsync();
+        foreach (var path in audioPaths)
+            fileStorage.Delete(path);
 
         return await ToDto(user);
     }

@@ -103,11 +103,11 @@ public class PhotoService(
         if (photo.CoupleId != coupleId)
             throw new NotFoundException(localizer.T("Photo.NotFound"));
 
-        fileStorage.Delete(photo.FilePath);
-        fileStorage.Delete(photo.ThumbnailPath);
-
         db.Photos.Remove(photo);
         await db.SaveChangesAsync();
+
+        fileStorage.Delete(photo.FilePath);
+        fileStorage.Delete(photo.ThumbnailPath);
     }
 
     private void ValidateFile(IFormFile file)

@@ -121,10 +121,10 @@ public class AudioService(
         if (audio.CoupleId != coupleId)
             throw new NotFoundException(localizer.T("Audio.NotFound"));
 
-        fileStorage.Delete(audio.FilePath);
-
         db.AudioMessages.Remove(audio);
         await db.SaveChangesAsync();
+
+        fileStorage.Delete(audio.FilePath);
     }
 
     private void ValidateFile(IFormFile file)
