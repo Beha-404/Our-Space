@@ -36,10 +36,19 @@ export class AuthService {
         return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, registerData, { withCredentials: true });
     }
 
-    logout(): Observable<void> {
+    clearSession(): boolean {
+        const hadSession = this.accessToken !== null || this.userService.currentUser() !== null;
+
         this.accessToken = null;
         this.refreshInFlight = null;
+        this.sessionRestored.set(true);
         this.userService.clearCurrentUser();
+
+        return hadSession;
+    }
+
+    logout(): Observable<void> {
+        this.clearSession();
 
         return this.http.post<void>(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true }).pipe(
             catchError(() => of(void 0)),
