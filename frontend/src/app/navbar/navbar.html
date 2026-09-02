@@ -19,6 +19,32 @@
 				<app-avatar [name]="user.username" [pictureUrl]="user.profilePictureUrl" [size]="36"></app-avatar>
 			</a>
 		}
-		<button class="btn btn-ghost btn-sm" (click)="logout()">{{ 'nav.logout' | translate }}</button>
 	</div>
+</nav>
+
+<nav class="bottom-nav">
+	<a routerLink="/home" routerLinkActive="active">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M3 11l9-8 9 8" /><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10" />
+		</svg>
+		<span>{{ 'nav.home' | translate }}</span>
+	</a>
+	<a routerLink="/memories" routerLinkActive="active">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" />
+		</svg>
+		<span>{{ 'nav.memories' | translate }}</span>
+	</a>
+	<a routerLink="/events" routerLinkActive="active">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+		</svg>
+		<span>{{ 'nav.events' | translate }}</span>
+	</a>
+	<a routerLink="/wishlist" routerLinkActive="active">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><line x1="12" y1="22" x2="12" y2="7" /><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+		</svg>
+		<span>{{ 'nav.wishlist' | translate }}</span>
+	</a>
 </nav>

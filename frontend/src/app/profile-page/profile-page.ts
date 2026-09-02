@@ -360,4 +360,11 @@ export class ProfilePage {
       }
     });
   }
+
+  logout(): void {
+    this.authService.logout().subscribe(() => {
+      this.toast.success('toast.logoutSuccess');
+      this.router.navigate(['/']);
+    });
+  }
 }

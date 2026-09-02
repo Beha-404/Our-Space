@@ -77,6 +77,12 @@ button {
   flex-direction: column;
 }
 
+@media (max-width: 640px) {
+  .page {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+}
+
 .container {
   width: 100%;
   max-width: 1080px;
