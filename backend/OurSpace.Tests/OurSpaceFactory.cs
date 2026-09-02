@@ -9,7 +9,10 @@ using OurSpace.API.Data;
 
 namespace OurSpace.Tests;
 
-public class OurSpaceFactory(long? quotaBytes = null, bool registrationOpen = true) : WebApplicationFactory<Program>
+public class OurSpaceFactory(
+    long? quotaBytes = null,
+    bool registrationOpen = true,
+    bool twoFactorEnabled = true) : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection connection = new("Filename=:memory:");
 
@@ -26,7 +29,7 @@ public class OurSpaceFactory(long? quotaBytes = null, bool registrationOpen = tr
         builder.UseSetting("Jwt:Audience", "OurSpace.Client");
         builder.UseSetting("Jwt:AccessTokenMinutes", "15");
         builder.UseSetting("Jwt:RefreshTokenDays", "30");
-        builder.UseSetting("Auth:TwoFactorEnabled", "true");
+        builder.UseSetting("Auth:TwoFactorEnabled", twoFactorEnabled ? "true" : "false");
         builder.UseSetting("Auth:RegistrationOpen", registrationOpen ? "true" : "false");
 
         connection.Open();

@@ -15,7 +15,9 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         }
         catch (ApiException ex)
         {
-            logger.LogWarning(ex, "Handled API exception: {Message}", ex.Message);
+            logger.LogInformation("{Status} {Method} {Path}: {Message}",
+                (int)ex.StatusCode, context.Request.Method, context.Request.Path, ex.Message);
+
             await WriteProblem(context, ex.StatusCode, ex.Message);
         }
         catch (Exception ex)

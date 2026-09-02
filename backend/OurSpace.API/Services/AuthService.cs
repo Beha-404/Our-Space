@@ -24,6 +24,11 @@ public partial class AuthService(
     private static readonly TimeSpan LoginCodeLifetime = TimeSpan.FromMinutes(10);
     private const int MaxLoginCodeAttempts = 5;
 
+    private static readonly TimeSpan RevokedTokenRetention = TimeSpan.FromDays(7);
+
+    private static readonly Lazy<string> TimingDecoyHash =
+        new(() => BCrypt.Net.BCrypt.EnhancedHashPassword("timing-decoy"));
+
     public async Task<AuthResult> RegisterAsync(RegisterRequest request)
     {
         if (!authOptions.Value.RegistrationOpen)
@@ -60,7 +65,10 @@ public partial class AuthService(
     public async Task<LoginOutcome> LoginAsync(LoginRequest request)
     {
         var user = await db.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
-        if (user is null || !BCrypt.Net.BCrypt.EnhancedVerify(request.Password, user.PasswordHash))
+
+        var passwordMatches = VerifyPassword(request.Password, user?.PasswordHash);
+
+        if (user is null || !passwordMatches)
             throw new UnauthorizedAppException(localizer.T("Auth.LoginFailed"));
 
         if (!authOptions.Value.TwoFactorEnabled)
@@ -104,6 +112,21 @@ public partial class AuthService(
         await db.SaveChangesAsync();
 
         return await IssueTokensAsync(user);
+    }
+
+    private static bool VerifyPassword(string password, string? storedHash)
+    {
+        var userExists = !string.IsNullOrWhiteSpace(storedHash);
+
+        try
+        {
+            var matches = BCrypt.Net.BCrypt.EnhancedVerify(password, userExists ? storedHash : TimingDecoyHash.Value);
+            return userExists && matches;
+        }
+        catch (BCrypt.Net.SaltParseException)
+        {
+            return false;
+        }
     }
 
     private static void ClearLoginCode(User user)
@@ -209,6 +232,8 @@ public partial class AuthService(
 
     private async Task<AuthResult> IssueTokensAsync(User user)
     {
+        await PruneRefreshTokensAsync(user.Id);
+
         var accessToken = tokenService.GenerateAccessToken(user);
         var refreshToken = tokenService.GenerateRefreshToken();
 
@@ -229,6 +254,18 @@ public partial class AuthService(
         );
 
         return new AuthResult(response, refreshToken);
+    }
+
+    private async Task PruneRefreshTokensAsync(int userId)
+    {
+        var now = DateTime.UtcNow;
+        var revokedCutoff = now - RevokedTokenRetention;
+
+        await db.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(r => r.UserId == userId
+                && (r.ExpiresAt < now || (r.RevokedAt != null && r.RevokedAt < revokedCutoff)))
+            .ExecuteDeleteAsync();
     }
 
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
