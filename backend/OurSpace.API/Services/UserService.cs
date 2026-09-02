@@ -151,9 +151,51 @@ public partial class UserService(
     public async Task DeleteAsync(int userId)
     {
         var user = await GetUserOrThrow(userId);
+        var couple = await db.Couples.SingleOrDefaultAsync(c => c.User1Id == userId || c.User2Id == userId);
+
+        var storedPaths = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(user.ProfilePictureUrl))
+            storedPaths.Add(user.ProfilePictureUrl);
+
+        if (couple is not null)
+        {
+            var photos = await db.Photos
+                .Where(p => p.CoupleId == couple.Id)
+                .Select(p => new { p.FilePath, p.ThumbnailPath })
+                .ToListAsync();
+
+            var audioPaths = await db.AudioMessages
+                .Where(a => a.CoupleId == couple.Id)
+                .Select(a => a.FilePath)
+                .ToListAsync();
+
+            foreach (var photo in photos)
+            {
+                storedPaths.Add(photo.FilePath);
+                storedPaths.Add(photo.ThumbnailPath);
+            }
+
+            storedPaths.AddRange(audioPaths);
+
+            db.Couples.Remove(couple);
+        }
+
         user.IsDeleted = true;
+        user.ProfilePictureUrl = null;
+        user.PairingCode = null;
+        user.PairingCodeExpiresAt = null;
         user.UpdatedAt = DateTime.UtcNow;
+
         await db.SaveChangesAsync();
+
+        await db.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(r => r.UserId == userId)
+            .ExecuteDeleteAsync();
+
+        foreach (var path in storedPaths)
+            fileStorage.Delete(path);
     }
 
     public async Task<PairingCodeResponse> GeneratePairingCodeAsync(int userId)
