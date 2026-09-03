@@ -127,6 +127,7 @@ public class AudioService(
 
         db.AudioMessages.Remove(audio);
         await db.SaveChangesAsync();
+        await ClearQuotaWarningAsync(coupleId);
 
         fileStorage.Delete(audio.FilePath);
     }
@@ -194,6 +195,16 @@ public class AudioService(
             .SingleOrDefaultAsync();
 
         return id ?? throw new BadRequestException(localizer.T("Audio.NeedPartner"));
+    }
+
+    private async Task ClearQuotaWarningAsync(int coupleId)
+    {
+        var couple = await db.Couples.SingleOrDefaultAsync(c => c.Id == coupleId);
+        if (couple is null || couple.QuotaWarningEmailSentAt is null)
+            return;
+
+        couple.QuotaWarningEmailSentAt = null;
+        await db.SaveChangesAsync();
     }
 
     private async Task<(int CoupleId, string Username)> GetCoupleAndUsernameOrThrow(int userId)

@@ -10,6 +10,7 @@ namespace OurSpace.API.Services;
 public class StorageQuotaService(
     AppDbContext db,
     IOptions<StorageOptions> storageOptions,
+    IEmailQueue emailQueue,
     ILocalizer localizer) : IStorageQuotaService
 {
     public async Task<long> GetUsedBytesAsync(int coupleId)
@@ -35,7 +36,31 @@ public class StorageQuotaService(
         var used = await GetUsedBytesAsync(coupleId);
 
         if (used + incomingBytes > quota)
+        {
+            await NotifyQuotaReachedOnceAsync(coupleId, quota);
             throw new BadRequestException(localizer.T("Storage.QuotaExceeded", Megabytes(quota), Megabytes(Math.Max(quota - used, 0))));
+        }
+    }
+
+    private async Task NotifyQuotaReachedOnceAsync(int coupleId, long quota)
+    {
+        var couple = await db.Couples.Include(c => c.User1).Include(c => c.User2)
+            .SingleOrDefaultAsync(c => c.Id == coupleId);
+
+        if (couple is null || couple.QuotaWarningEmailSentAt is not null)
+            return;
+
+        var gigabytes = quota / (1024 * 1024 * 1024);
+
+        foreach (var user in new[] { couple.User1, couple.User2 })
+        {
+            var subject = localizer.For("Email.StorageQuotaReached.Subject", user.PreferredLanguage);
+            var body = localizer.For("Email.StorageQuotaReached.Body", user.PreferredLanguage, gigabytes);
+            emailQueue.Enqueue(user.Email, subject, body);
+        }
+
+        couple.QuotaWarningEmailSentAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
     }
 
     private static long Megabytes(long bytes) => bytes / (1024 * 1024);

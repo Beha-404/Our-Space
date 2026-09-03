@@ -109,6 +109,7 @@ public class PhotoService(
 
         db.Photos.Remove(photo);
         await db.SaveChangesAsync();
+        await ClearQuotaWarningAsync(coupleId);
 
         fileStorage.Delete(photo.FilePath);
         fileStorage.Delete(photo.ThumbnailPath);
@@ -151,6 +152,16 @@ public class PhotoService(
             .SingleOrDefaultAsync();
 
         return id ?? throw new BadRequestException(localizer.T("Photo.NeedPartner"));
+    }
+
+    private async Task ClearQuotaWarningAsync(int coupleId)
+    {
+        var couple = await db.Couples.SingleOrDefaultAsync(c => c.Id == coupleId);
+        if (couple is null || couple.QuotaWarningEmailSentAt is null)
+            return;
+
+        couple.QuotaWarningEmailSentAt = null;
+        await db.SaveChangesAsync();
     }
 
     private async Task<(int CoupleId, string Username)> GetCoupleAndUsernameOrThrow(int userId)

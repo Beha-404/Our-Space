@@ -282,6 +282,15 @@ public static class Messages
             "Događaj \"{0}\" je zakazan za {1}.",
             "The event \"{0}\" is scheduled for {1}.",
             "El evento \"{0}\" está programado para {1}."),
+
+        ["Email.StorageQuotaReached.Subject"] = Lang(
+            "Vaš prostor za uspomene je pun",
+            "Your memory storage is full",
+            "El almacenamiento de sus recuerdos está lleno"),
+        ["Email.StorageQuotaReached.Body"] = Lang(
+            "Iskoristili ste cijeli dostupni prostor za slike i audio poruke ({0}GB). Novi uploadi neće uspijevati dok se ne oslobodi prostor.\n\nMožete obrisati neke starije uspomene, ili osoba koja održava aplikaciju može povećati limit u podešavanjima (Storage:QuotaBytesPerCouple) ako je to potrebno.",
+            "You've used up all the available storage for photos and audio messages ({0}GB). New uploads will fail until some space is freed.\n\nYou can delete some older memories, or whoever maintains the app can raise the limit in settings (Storage:QuotaBytesPerCouple) if needed.",
+            "Han utilizado todo el almacenamiento disponible para fotos y audios ({0}GB). Las nuevas subidas fallarán hasta que se libere espacio.\n\nPueden eliminar recuerdos antiguos, o quien mantiene la aplicación puede aumentar el límite en la configuración (Storage:QuotaBytesPerCouple) si es necesario."),
     };
 
     private static IReadOnlyDictionary<string, string> Lang(string bs, string en, string es) =>

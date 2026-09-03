@@ -12,4 +12,5 @@ public class Couple
 
     public DateOnly? RelationshipStartDate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? QuotaWarningEmailSentAt { get; set; }
 }
