@@ -209,10 +209,6 @@ builder.Services.AddHostedService<DeletedUserCleanupBackgroundService>();
 
 var app = builder.Build();
 
-// Azure's front end proxies every request over plain HTTP and reports the real client
-// IP via X-Forwarded-For. Without this, every visitor looks like the same address to
-// the rate limiter below. KnownProxies/KnownNetworks are cleared per Microsoft's App
-// Service guidance, since the front end's own address isn't fixed.
 var forwardedHeaderOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
@@ -235,17 +231,12 @@ app.UseCors(AngularDevCorsPolicy);
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
 Directory.CreateDirectory(uploadsPath);
 
-// Signed upload URLs carry an hour-bucketed expiry, so a cached copy can never outlive its signature.
 const string UploadsCacheControl = "public, max-age=3600, immutable";
 
 app.UseMiddleware<SignedFileMiddleware>();
 
 if (!string.IsNullOrWhiteSpace(blobConnectionString))
 {
-    // SignedFileMiddleware has already checked our own signature by this point, so the
-    // request is legitimate. Redirect straight to Blob Storage instead of pulling every
-    // byte through this server twice (Blob -> here -> client); the SAS carries the same
-    // expiry as our own signature, so it never outlives what the client already trusts.
     app.MapGet("/uploads/{**path}", (string path, HttpContext http, AzureBlobFileStorageService storage) =>
     {
         var query = http.Request.Query;

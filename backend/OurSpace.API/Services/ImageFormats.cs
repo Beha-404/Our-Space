@@ -15,10 +15,6 @@ public static class ImageFormats
         ["GIF"] = ".gif",
     };
 
-    /// <summary>
-    /// Decides the stored extension from the file's actual decoded content, never from the
-    /// client-supplied name. Returns null when the upload is not a supported image.
-    /// </summary>
     public static async Task<string?> ResolveExtensionAsync(IFormFile file)
     {
         try

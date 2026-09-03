@@ -31,10 +31,6 @@ public class ForwardedClientIpTests
         using var factory = new OurSpaceFactory();
         await TestWorld.SeedAsync(factory);
 
-        // X-Forwarded-For can carry a comma-separated hop chain; Azure appends the real
-        // client as the leftmost entry. With KnownProxies cleared, the middleware should
-        // still land on that same leftmost address rather than throwing or picking the
-        // wrong hop.
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Forwarded-For", "198.51.100.7, 10.0.0.4");
 

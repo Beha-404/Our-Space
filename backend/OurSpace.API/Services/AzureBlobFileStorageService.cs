@@ -14,11 +14,6 @@ public class AzureBlobFileStorageService : IFileStorageService
         container = new BlobContainerClient(connectionString, ContainerName);
     }
 
-    /// <summary>
-    /// Lets callers redirect straight to Blob Storage instead of streaming the file through
-    /// this server. Returns null if the client can't sign (e.g. not authenticated with an
-    /// account key), so the caller can fall back to streaming.
-    /// </summary>
     public Uri? GenerateReadSasUri(string url, DateTimeOffset expiresOn, string? contentDisposition)
     {
         var blobClient = container.GetBlobClient(ToBlobName(url));
