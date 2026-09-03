@@ -1,5 +1,4 @@
 using Azure.Storage.Blobs;
-using Azure.Storage.Sas;
 
 namespace OurSpace.API.Services;
 
@@ -12,26 +11,6 @@ public class AzureBlobFileStorageService : IFileStorageService
     public AzureBlobFileStorageService(string connectionString)
     {
         container = new BlobContainerClient(connectionString, ContainerName);
-    }
-
-    public Uri? GenerateReadSasUri(string url, DateTimeOffset expiresOn, string? contentDisposition)
-    {
-        var blobClient = container.GetBlobClient(ToBlobName(url));
-
-        if (!blobClient.CanGenerateSasUri)
-            return null;
-
-        var sasBuilder = new BlobSasBuilder
-        {
-            BlobContainerName = container.Name,
-            BlobName = blobClient.Name,
-            Resource = "b",
-            ExpiresOn = expiresOn,
-            ContentDisposition = contentDisposition,
-        };
-        sasBuilder.SetPermissions(BlobSasPermissions.Read);
-
-        return blobClient.GenerateSasUri(sasBuilder);
     }
 
     public async Task<string> SaveAsync(Stream content, string subfolder, string fileExtension)

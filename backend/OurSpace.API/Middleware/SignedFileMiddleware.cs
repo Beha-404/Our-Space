@@ -31,7 +31,7 @@ public class SignedFileMiddleware(RequestDelegate next)
         await next(context);
     }
 
-    internal static string SafeFileName(string? requested, string path)
+    private static string SafeFileName(string? requested, string path)
     {
         var fallback = Path.GetFileName(path);
 
