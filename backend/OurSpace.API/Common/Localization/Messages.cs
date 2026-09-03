@@ -40,6 +40,18 @@ public static class Messages
             "Nevažeći ili istekao refresh token.",
             "Invalid or expired refresh token.",
             "Token de actualización inválido o expirado."),
+        ["Auth.UsernameTooLong"] = Lang(
+            "Korisničko ime može imati najviše 30 karaktera.",
+            "Username can be at most 30 characters.",
+            "El nombre de usuario puede tener como máximo 30 caracteres."),
+        ["Auth.EmailTooLong"] = Lang(
+            "Email adresa je predugačka.",
+            "That email address is too long.",
+            "Esa dirección de correo es demasiado larga."),
+        ["Auth.PasswordTooLong"] = Lang(
+            "Lozinka može imati najviše 128 karaktera.",
+            "Password can be at most 128 characters.",
+            "La contraseña puede tener como máximo 128 caracteres."),
 
         ["User.PictureFileEmpty"] = Lang(
             "Fajl je prazan.",
@@ -102,6 +114,14 @@ public static class Messages
             "Naziv događaja je obavezan.",
             "An event title is required.",
             "El título del evento es obligatorio."),
+        ["Event.TitleTooLong"] = Lang(
+            "Naziv događaja može imati najviše 200 karaktera.",
+            "Event title can be at most 200 characters.",
+            "El título del evento puede tener como máximo 200 caracteres."),
+        ["Event.DescriptionTooLong"] = Lang(
+            "Opis događaja može imati najviše 2000 karaktera.",
+            "Event description can be at most 2000 characters.",
+            "La descripción del evento puede tener como máximo 2000 caracteres."),
         ["Event.NotFound"] = Lang(
             "Događaj nije pronađen.",
             "Event not found.",
@@ -143,6 +163,10 @@ public static class Messages
             "Naslov je obavezan.",
             "A title is required.",
             "Se requiere un título."),
+        ["Photo.CaptionTooLong"] = Lang(
+            "Naslov može imati najviše 300 karaktera.",
+            "Caption can be at most 300 characters.",
+            "El título puede tener como máximo 300 caracteres."),
 
         ["Audio.FileEmpty"] = Lang(
             "Fajl je prazan.",
@@ -168,6 +192,10 @@ public static class Messages
             "Naslov je obavezan.",
             "A title is required.",
             "Se requiere un título."),
+        ["Audio.CaptionTooLong"] = Lang(
+            "Naslov može imati najviše 300 karaktera.",
+            "Caption can be at most 300 characters.",
+            "El título puede tener como máximo 300 caracteres."),
         ["Audio.NeedPartner"] = Lang(
             "Moraš biti uparen/a sa partnerom da bi dodavao/la audio poruke.",
             "You need to be paired with a partner to add audio messages.",
@@ -185,6 +213,10 @@ public static class Messages
             "Naziv želje je obavezan.",
             "A wish needs a title.",
             "El deseo necesita un título."),
+        ["Wish.TitleTooLong"] = Lang(
+            "Naziv želje može imati najviše 200 karaktera.",
+            "Wish title can be at most 200 characters.",
+            "El título del deseo puede tener como máximo 200 caracteres."),
         ["Wish.NotFound"] = Lang(
             "Želja nije pronađena.",
             "Wish not found.",

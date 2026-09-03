@@ -18,6 +18,8 @@ public partial class UserService(
     IFileUrlSigner urlSigner) : IUserService
 {
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
+    private const int MaxUsernameLength = 30;
+    private const int MaxEmailLength = 254;
 
     public async Task<UserDto> GetCurrentAsync(int userId)
     {
@@ -34,6 +36,9 @@ public partial class UserService(
             var username = request.Username.Trim();
             if (string.IsNullOrWhiteSpace(username))
                 throw new BadRequestException(localizer.T("User.UsernameRequired"));
+
+            if (username.Length > MaxUsernameLength)
+                throw new BadRequestException(localizer.T("Auth.UsernameTooLong"));
 
             if (!string.Equals(username, user.Username, StringComparison.Ordinal))
             {
@@ -55,6 +60,9 @@ public partial class UserService(
     {
         var user = await GetUserOrThrow(userId);
         newEmail = newEmail.Trim();
+
+        if (newEmail.Length > MaxEmailLength)
+            throw new BadRequestException(localizer.T("Auth.EmailTooLong"));
 
         if (!EmailRegex().IsMatch(newEmail))
             throw new BadRequestException(localizer.T("Auth.InvalidEmail"));

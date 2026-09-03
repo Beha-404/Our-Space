@@ -9,10 +9,15 @@ namespace OurSpace.API.Services;
 
 public class WishlistService(AppDbContext db, ILocalizer localizer) : IWishlistService
 {
+    private const int MaxTitleLength = 200;
+
     public async Task<WishDto> CreateAsync(int userId, CreateWishRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Title))
             throw new BadRequestException(localizer.T("Wish.TitleRequired"));
+
+        if (request.Title.Trim().Length > MaxTitleLength)
+            throw new BadRequestException(localizer.T("Wish.TitleTooLong"));
 
         var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
 

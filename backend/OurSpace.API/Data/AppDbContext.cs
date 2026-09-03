@@ -17,6 +17,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         modelBuilder.Entity<User>(entity =>
         {
+            entity.Property(u => u.Username).HasMaxLength(30);
+            entity.Property(u => u.Email).HasMaxLength(254);
+            entity.Property(u => u.PendingEmail).HasMaxLength(254);
+
             entity.HasIndex(u => u.Username).IsUnique();
             entity.HasIndex(u => u.Email).IsUnique();
             entity.HasIndex(u => u.PairingCode).IsUnique().HasFilter("[PairingCode] IS NOT NULL");
@@ -53,6 +57,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Event>(entity =>
         {
+            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+
             entity.HasOne(e => e.Couple)
                 .WithMany()
                 .HasForeignKey(e => e.CoupleId)
@@ -69,6 +76,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Photo>(entity =>
         {
+            entity.Property(p => p.Caption).HasMaxLength(300);
+
             entity.HasOne(p => p.Couple)
                 .WithMany()
                 .HasForeignKey(p => p.CoupleId)
@@ -85,6 +94,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<AudioMessage>(entity =>
         {
+            entity.Property(a => a.Caption).HasMaxLength(300);
+
             entity.HasOne(a => a.Couple)
                 .WithMany()
                 .HasForeignKey(a => a.CoupleId)
@@ -101,6 +112,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<WishlistItem>(entity =>
         {
+            entity.Property(w => w.Title).HasMaxLength(200);
+
             entity.HasOne(w => w.Couple)
                 .WithMany()
                 .HasForeignKey(w => w.CoupleId)

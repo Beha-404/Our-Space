@@ -9,10 +9,12 @@ namespace OurSpace.API.Services;
 
 public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer localizer) : IEventService
 {
+    private const int MaxTitleLength = 200;
+    private const int MaxDescriptionLength = 2000;
+
     public async Task<EventDto> CreateAsync(int userId, CreateEventRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Title))
-            throw new BadRequestException(localizer.T("Event.TitleRequired"));
+        ValidateTitleAndDescription(request);
 
         var couple = await GetCoupleWithUsersOrThrow(userId);
 
@@ -53,8 +55,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
 
     public async Task<EventDto> UpdateAsync(int userId, int eventId, CreateEventRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Title))
-            throw new BadRequestException(localizer.T("Event.TitleRequired"));
+        ValidateTitleAndDescription(request);
 
         var couple = await GetCoupleWithUsersOrThrow(userId);
 
@@ -91,6 +92,18 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
         await db.SaveChangesAsync();
 
         NotifyPartner(couple, userId, ActingUser(couple, userId).Username, title, EventChangeType.Deleted);
+    }
+
+    private void ValidateTitleAndDescription(CreateEventRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Title))
+            throw new BadRequestException(localizer.T("Event.TitleRequired"));
+
+        if (request.Title.Trim().Length > MaxTitleLength)
+            throw new BadRequestException(localizer.T("Event.TitleTooLong"));
+
+        if (request.Description?.Trim().Length > MaxDescriptionLength)
+            throw new BadRequestException(localizer.T("Event.DescriptionTooLong"));
     }
 
     private async Task<int> GetCoupleIdOrThrow(int userId)

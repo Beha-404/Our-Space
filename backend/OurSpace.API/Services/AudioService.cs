@@ -30,6 +30,7 @@ public class AudioService(
 
     private const long MaxFileSizeBytes = 20 * 1024 * 1024;
     private const int MaxPageSize = 500;
+    private const int MaxCaptionLength = 300;
 
     public async Task<AudioDto> UploadAsync(int userId, IFormFile file, DateOnly recordedAt, string? caption)
     {
@@ -37,6 +38,9 @@ public class AudioService(
 
         if (string.IsNullOrWhiteSpace(caption))
             throw new BadRequestException(localizer.T("Audio.TitleRequired"));
+
+        if (caption.Trim().Length > MaxCaptionLength)
+            throw new BadRequestException(localizer.T("Audio.CaptionTooLong"));
 
         var (coupleId, username) = await GetCoupleAndUsernameOrThrow(userId);
         var isVideo = IsVideoUpload(file);

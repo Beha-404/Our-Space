@@ -78,7 +78,7 @@ public class ImageUploadValidationTests
         Assert.Contains(".png?", user!.ProfilePictureUrl);
         Assert.DoesNotContain(".html", user.ProfilePictureUrl);
 
-        DeleteStoredFile(factory, user.ProfilePictureUrl);
+        DeleteStoredFile(factory, user.ProfilePictureUrl!);
     }
 
     private static void DeleteStoredFile(OurSpaceFactory factory, string signedUrl)

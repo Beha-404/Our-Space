@@ -20,6 +20,7 @@ public class PhotoService(
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
     private const int ThumbnailWidth = 480;
     private const int MaxPageSize = 500;
+    private const int MaxCaptionLength = 300;
 
     public async Task<PhotoDto> UploadAsync(int userId, IFormFile file, DateOnly takenAt, string? caption)
     {
@@ -27,6 +28,9 @@ public class PhotoService(
 
         if (string.IsNullOrWhiteSpace(caption))
             throw new BadRequestException(localizer.T("Photo.TitleRequired"));
+
+        if (caption.Trim().Length > MaxCaptionLength)
+            throw new BadRequestException(localizer.T("Photo.CaptionTooLong"));
 
         var extension = await ImageFormats.ResolveExtensionAsync(file)
             ?? throw new BadRequestException(localizer.T("Photo.UnsupportedFormat"));

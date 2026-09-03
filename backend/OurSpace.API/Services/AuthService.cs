@@ -29,10 +29,23 @@ public partial class AuthService(
     private static readonly Lazy<string> TimingDecoyHash =
         new(() => BCrypt.Net.BCrypt.EnhancedHashPassword("timing-decoy"));
 
+    private const int MaxUsernameLength = 30;
+    private const int MaxEmailLength = 254;
+    private const int MaxPasswordLength = 128;
+
     public async Task<AuthResult> RegisterAsync(RegisterRequest request)
     {
         if (!authOptions.Value.RegistrationOpen)
             throw new BadRequestException(localizer.T("Auth.RegistrationClosed"));
+
+        if (request.Username.Length > MaxUsernameLength)
+            throw new BadRequestException(localizer.T("Auth.UsernameTooLong"));
+
+        if (request.Email.Length > MaxEmailLength)
+            throw new BadRequestException(localizer.T("Auth.EmailTooLong"));
+
+        if (request.Password.Length > MaxPasswordLength)
+            throw new BadRequestException(localizer.T("Auth.PasswordTooLong"));
 
         if (!EmailRegex().IsMatch(request.Email))
             throw new BadRequestException(localizer.T("Auth.InvalidEmail"));
@@ -186,6 +199,9 @@ public partial class AuthService(
 
     public async Task ResetPasswordAsync(ResetPasswordRequest request)
     {
+        if (request.NewPassword.Length > MaxPasswordLength)
+            throw new BadRequestException(localizer.T("Auth.PasswordTooLong"));
+
         if (!PasswordRegex().IsMatch(request.NewPassword))
             throw new BadRequestException(localizer.T("Auth.WeakPassword"));
 
