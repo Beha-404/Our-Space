@@ -162,7 +162,9 @@ builder.Services.AddScoped<IEventService, EventService>();
 var blobConnectionString = builder.Configuration["Storage:BlobConnectionString"];
 if (!string.IsNullOrWhiteSpace(blobConnectionString))
 {
-    builder.Services.AddSingleton<IFileStorageService>(new AzureBlobFileStorageService(blobConnectionString));
+    var blobStorage = new AzureBlobFileStorageService(blobConnectionString);
+    builder.Services.AddSingleton<IFileStorageService>(blobStorage);
+    builder.Services.AddSingleton(blobStorage);
 }
 else
 {
@@ -240,24 +242,32 @@ app.UseMiddleware<SignedFileMiddleware>();
 
 if (!string.IsNullOrWhiteSpace(blobConnectionString))
 {
-    var contentTypeProvider = new FileExtensionContentTypeProvider();
-
-    app.MapGet("/uploads/{**path}", async (string path, HttpContext http, IFileStorageService storage) =>
+    // SignedFileMiddleware has already checked our own signature by this point, so the
+    // request is legitimate. Redirect straight to Blob Storage instead of pulling every
+    // byte through this server twice (Blob -> here -> client); the SAS carries the same
+    // expiry as our own signature, so it never outlives what the client already trusts.
+    app.MapGet("/uploads/{**path}", (string path, HttpContext http, AzureBlobFileStorageService storage) =>
     {
-        if (!contentTypeProvider.TryGetContentType(path, out var contentType))
-            contentType = "application/octet-stream";
+        var query = http.Request.Query;
 
-        try
-        {
-            var stream = await storage.OpenReadAsync($"/uploads/{path}");
-            http.Response.Headers.CacheControl = UploadsCacheControl;
-            http.Response.Headers.XContentTypeOptions = "nosniff";
-            return Results.Stream(stream, contentType);
-        }
-        catch (Azure.RequestFailedException ex) when (ex.Status == 404)
-        {
+        if (!long.TryParse(query["exp"], out var expSeconds))
             return Results.NotFound();
-        }
+
+        var expiresOn = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
+
+        string? contentDisposition = query.ContainsKey("download")
+            ? $"attachment; filename=\"{SignedFileMiddleware.SafeFileName(query["name"], path)}\""
+            : null;
+
+        var sasUri = storage.GenerateReadSasUri($"/uploads/{path}", expiresOn, contentDisposition);
+        if (sasUri is null)
+            return Results.NotFound();
+
+        var maxAge = (int)Math.Max(0, (expiresOn - DateTimeOffset.UtcNow).TotalSeconds);
+        http.Response.Headers.CacheControl = $"public, max-age={maxAge}, immutable";
+        http.Response.Headers.XContentTypeOptions = "nosniff";
+
+        return Results.Redirect(sasUri.ToString());
     });
 }
 else
