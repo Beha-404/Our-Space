@@ -24,10 +24,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         {
             logger.LogError(ex, "Unhandled exception");
             var localizer = context.RequestServices.GetRequiredService<ILocalizer>();
-            // TEMP diagnostic: surfacing the exception message to find a live 500 that Azure's
-            // log stream isn't capturing. Revert before this is done.
-            await WriteProblem(context, HttpStatusCode.InternalServerError,
-                $"{localizer.T("Generic.UnexpectedError")} [[{ex.GetType().Name}: {ex.Message}]]");
+            await WriteProblem(context, HttpStatusCode.InternalServerError, localizer.T("Generic.UnexpectedError"));
         }
     }
 
