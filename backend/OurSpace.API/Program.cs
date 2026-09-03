@@ -271,6 +271,9 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
             .Select(AzureBlobFileStorageService.ToBlobName)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        if (keepNames.Count == 0)
+            return Results.Conflict(new { message = "Refusing to run: the database returned zero known files. This would delete every blob in storage, which is almost certainly a bug, not the intent." });
+
         var (count, bytes) = await storage.DeleteOrphanedBlobsAsync(keepNames);
         return Results.Ok(new { deletedCount = count, deletedBytes = bytes });
     }).RequireAuthorization();
