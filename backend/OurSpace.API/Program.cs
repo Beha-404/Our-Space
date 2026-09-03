@@ -261,7 +261,7 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
         return Results.Redirect(sasUri.ToString());
     });
 
-    app.MapPost("/api/storage/cleanup-orphaned", async (AzureBlobFileStorageService storage, AppDbContext db) =>
+    app.MapPost("/api/storage/cleanup-orphaned", async (HttpContext http, AzureBlobFileStorageService storage, AppDbContext db) =>
     {
         var photoPaths = await db.Photos.SelectMany(p => new[] { p.FilePath, p.ThumbnailPath }).ToListAsync();
         var audioPaths = await db.AudioMessages.Select(a => a.FilePath).ToListAsync();
@@ -274,8 +274,16 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
         if (keepNames.Count == 0)
             return Results.Conflict(new { message = "Refusing to run: the database returned zero known files. This would delete every blob in storage, which is almost certainly a bug, not the intent." });
 
-        var (count, bytes) = await storage.DeleteOrphanedBlobsAsync(keepNames);
-        return Results.Ok(new { deletedCount = count, deletedBytes = bytes });
+        var confirmed = http.Request.Query["confirm"] == "true";
+        var (count, bytes) = await storage.DeleteOrphanedBlobsAsync(keepNames, dryRun: !confirmed);
+
+        return Results.Ok(new
+        {
+            dryRun = !confirmed,
+            deletedCount = count,
+            deletedBytes = bytes,
+            hint = confirmed ? null : "Add ?confirm=true to actually delete these files.",
+        });
     }).RequireAuthorization();
 }
 else
