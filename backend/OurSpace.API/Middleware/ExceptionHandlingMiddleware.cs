@@ -24,9 +24,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         {
             logger.LogError(ex, "Unhandled exception");
             var localizer = context.RequestServices.GetRequiredService<ILocalizer>();
-            // TEMP diagnostic: revert before this is done.
-            await WriteProblem(context, HttpStatusCode.InternalServerError,
-                $"{localizer.T("Generic.UnexpectedError")} [[{ex.GetType().Name}: {ex.Message}]]");
+            await WriteProblem(context, HttpStatusCode.InternalServerError, localizer.T("Generic.UnexpectedError"));
         }
     }
 
