@@ -13,6 +13,10 @@ export class AudioService {
         return this.http.get<PagedResult<AudioMessage>>(`${this.apiUrl}/audio?page=${page}&pageSize=${pageSize}`);
     }
 
+    getCount() {
+        return this.http.get<number>(`${this.apiUrl}/audio/count`);
+    }
+
     upload(file: File, recordedAt: string, caption: string | null) {
         const formData = new FormData();
         formData.append('file', file);

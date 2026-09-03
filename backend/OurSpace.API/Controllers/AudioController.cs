@@ -34,6 +34,13 @@ public class AudioController(IAudioService audioService, ILocalizer localizer) :
         return Ok(audio);
     }
 
+    [HttpGet("count")]
+    public async Task<ActionResult<int>> GetCount()
+    {
+        var count = await audioService.GetCountAsync(this.GetUserId());
+        return Ok(count);
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

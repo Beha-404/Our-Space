@@ -35,6 +35,7 @@ export class HomePage {
   photos = signal<Photo[]>([]);
   audioItems = signal<AudioMessage[]>([]);
   wishes = signal<Wish[]>([]);
+  totalMemories = signal<number | null>(null);
 
   recentWishes = computed(() =>
     [...this.wishes()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
@@ -94,6 +95,7 @@ export class HomePage {
     request$.subscribe(() => {
       this.postPendingDelete.set(null);
       this.loadMemories();
+      this.loadMemoryCount();
     });
   }
 
@@ -117,6 +119,7 @@ export class HomePage {
         this.eventService.getUpcoming().subscribe(events => this.upcomingEvents.set(events.slice(0, 3)));
         this.wishlistService.getAll().subscribe(wishes => this.wishes.set(wishes));
         this.loadMemories();
+        this.loadMemoryCount();
       }
     });
   }
@@ -129,5 +132,12 @@ export class HomePage {
       this.photos.set(photos.items);
       this.audioItems.set(audio.items);
     });
+  }
+
+  private loadMemoryCount(): void {
+    forkJoin({
+      photoCount: this.photoService.getCount(),
+      audioCount: this.audioService.getCount(),
+    }).subscribe(({ photoCount, audioCount }) => this.totalMemories.set(photoCount + audioCount));
   }
 }

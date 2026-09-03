@@ -7,5 +7,6 @@ public interface IAudioService
 {
     Task<AudioDto> UploadAsync(int userId, IFormFile file, DateOnly recordedAt, string? caption);
     Task<PagedResult<AudioDto>> GetAllAsync(int userId, int page, int pageSize);
+    Task<int> GetCountAsync(int userId);
     Task DeleteAsync(int userId, int audioId);
 }

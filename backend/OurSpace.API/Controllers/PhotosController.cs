@@ -34,6 +34,13 @@ public class PhotosController(IPhotoService photoService, ILocalizer localizer) 
         return Ok(photos);
     }
 
+    [HttpGet("count")]
+    public async Task<ActionResult<int>> GetCount()
+    {
+        var count = await photoService.GetCountAsync(this.GetUserId());
+        return Ok(count);
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

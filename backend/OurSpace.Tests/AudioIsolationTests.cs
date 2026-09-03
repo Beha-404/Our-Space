@@ -34,6 +34,19 @@ public class AudioIsolationTests
     }
 
     [Fact]
+    public async Task Count_Reflects_Only_The_Caller_Couples_Audio()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var markoClient = TestWorld.ClientFor(factory, world.MarkoToken);
+        Assert.Equal(1, await markoClient.GetFromJsonAsync<int>("/api/audio/count"));
+
+        var lejlaClient = TestWorld.ClientFor(factory, world.LejlaToken);
+        Assert.Equal(0, await lejlaClient.GetFromJsonAsync<int>("/api/audio/count"));
+    }
+
+    [Fact]
     public async Task Other_Couple_Cannot_Delete_Audio()
     {
         using var factory = new OurSpaceFactory();

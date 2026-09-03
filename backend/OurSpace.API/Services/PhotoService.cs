@@ -97,6 +97,12 @@ public class PhotoService(
         return new PagedResult<PhotoDto>(photos.Select(Signed).ToList(), hasMore);
     }
 
+    public async Task<int> GetCountAsync(int userId)
+    {
+        var coupleId = await GetCoupleIdOrThrow(userId);
+        return await db.Photos.CountAsync(p => p.CoupleId == coupleId);
+    }
+
     public async Task DeleteAsync(int userId, int photoId)
     {
         var coupleId = await GetCoupleIdOrThrow(userId);

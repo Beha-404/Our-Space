@@ -15,6 +15,9 @@
 						@if (daysTogether() !== null) {
 							<p class="days-together">{{ 'home.togetherPrefix' | translate }} <strong>{{ daysTogether() }}</strong> {{ 'home.togetherSuffix' | translate }}</p>
 						}
+						@if (totalMemories() !== null) {
+							<p class="days-together">{{ 'home.totalMemoriesPrefix' | translate }} <strong>{{ totalMemories() }}</strong> {{ 'home.totalMemoriesSuffix' | translate }}</p>
+						}
 					</div>
 				</div>
 

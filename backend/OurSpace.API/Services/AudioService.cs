@@ -115,6 +115,12 @@ public class AudioService(
         return new PagedResult<AudioDto>(audio.Select(Signed).ToList(), hasMore);
     }
 
+    public async Task<int> GetCountAsync(int userId)
+    {
+        var coupleId = await GetCoupleIdOrThrow(userId);
+        return await db.AudioMessages.CountAsync(a => a.CoupleId == coupleId);
+    }
+
     public async Task DeleteAsync(int userId, int audioId)
     {
         var coupleId = await GetCoupleIdOrThrow(userId);

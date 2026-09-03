@@ -13,6 +13,10 @@ export class PhotoService {
         return this.http.get<PagedResult<Photo>>(`${this.apiUrl}/photos?page=${page}&pageSize=${pageSize}`);
     }
 
+    getCount() {
+        return this.http.get<number>(`${this.apiUrl}/photos/count`);
+    }
+
     upload(file: File, takenAt: string, caption: string | null) {
         const formData = new FormData();
         formData.append('file', file);
