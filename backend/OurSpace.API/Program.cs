@@ -260,6 +260,20 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
 
         return Results.Redirect(sasUri.ToString());
     });
+
+    app.MapPost("/uploads/cleanup-orphaned", async (AzureBlobFileStorageService storage, AppDbContext db) =>
+    {
+        var photoPaths = await db.Photos.SelectMany(p => new[] { p.FilePath, p.ThumbnailPath }).ToListAsync();
+        var audioPaths = await db.AudioMessages.Select(a => a.FilePath).ToListAsync();
+        var avatarPaths = await db.Users.Where(u => u.ProfilePictureUrl != null).Select(u => u.ProfilePictureUrl!).ToListAsync();
+
+        var keepNames = photoPaths.Concat(audioPaths).Concat(avatarPaths)
+            .Select(AzureBlobFileStorageService.ToBlobName)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var (count, bytes) = await storage.DeleteOrphanedBlobsAsync(keepNames);
+        return Results.Ok(new { deletedCount = count, deletedBytes = bytes });
+    }).RequireAuthorization();
 }
 else
 {

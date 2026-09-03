@@ -73,6 +73,24 @@ public class AzureBlobFileStorageService : IFileStorageService
         return blobClient.Exists() ? blobClient.GetProperties().Value.ContentLength : 0;
     }
 
-    private static string ToBlobName(string url) =>
+    public async Task<(int Count, long Bytes)> DeleteOrphanedBlobsAsync(IReadOnlySet<string> keepBlobNames)
+    {
+        var deletedCount = 0;
+        long deletedBytes = 0;
+
+        await foreach (var blob in container.GetBlobsAsync())
+        {
+            if (keepBlobNames.Contains(blob.Name))
+                continue;
+
+            deletedBytes += blob.Properties.ContentLength ?? 0;
+            await container.DeleteBlobIfExistsAsync(blob.Name);
+            deletedCount++;
+        }
+
+        return (deletedCount, deletedBytes);
+    }
+
+    internal static string ToBlobName(string url) =>
         url.TrimStart('/').Replace("uploads/", "", StringComparison.OrdinalIgnoreCase).TrimStart('/');
 }
