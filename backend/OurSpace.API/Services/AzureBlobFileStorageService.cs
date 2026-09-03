@@ -1,11 +1,15 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace OurSpace.API.Services;
 
 public class AzureBlobFileStorageService : IFileStorageService
 {
     private const string ContainerName = "uploads";
+
+    private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
 
     private readonly BlobContainerClient container;
 
@@ -41,7 +45,13 @@ public class AzureBlobFileStorageService : IFileStorageService
         if (content.CanSeek)
             content.Position = 0;
 
-        await container.GetBlobClient(blobName).UploadAsync(content, overwrite: true);
+        ContentTypeProvider.TryGetContentType(fileExtension, out var contentType);
+        var options = new BlobUploadOptions
+        {
+            HttpHeaders = new BlobHttpHeaders { ContentType = contentType ?? "application/octet-stream" },
+        };
+
+        await container.GetBlobClient(blobName).UploadAsync(content, options);
 
         return $"/uploads/{blobName}";
     }
