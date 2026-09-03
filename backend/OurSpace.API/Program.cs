@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -205,6 +206,18 @@ builder.Services.AddHostedService<EventReminderBackgroundService>();
 builder.Services.AddHostedService<DeletedUserCleanupBackgroundService>();
 
 var app = builder.Build();
+
+// Azure's front end proxies every request over plain HTTP and reports the real client
+// IP via X-Forwarded-For. Without this, every visitor looks like the same address to
+// the rate limiter below. KnownProxies/KnownNetworks are cleared per Microsoft's App
+// Service guidance, since the front end's own address isn't fixed.
+var forwardedHeaderOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+};
+forwardedHeaderOptions.KnownIPNetworks.Clear();
+forwardedHeaderOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeaderOptions);
 
 if (app.Environment.IsDevelopment())
 {
