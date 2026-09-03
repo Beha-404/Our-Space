@@ -261,7 +261,7 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
         return Results.Redirect(sasUri.ToString());
     });
 
-    app.MapPost("/uploads/cleanup-orphaned", async (AzureBlobFileStorageService storage, AppDbContext db) =>
+    app.MapPost("/api/storage/cleanup-orphaned", async (AzureBlobFileStorageService storage, AppDbContext db) =>
     {
         var photoPaths = await db.Photos.SelectMany(p => new[] { p.FilePath, p.ThumbnailPath }).ToListAsync();
         var audioPaths = await db.AudioMessages.Select(a => a.FilePath).ToListAsync();
