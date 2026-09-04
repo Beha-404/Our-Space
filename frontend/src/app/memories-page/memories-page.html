@@ -152,6 +152,7 @@
 		@if (lightboxPost(); as post) {
 			<app-lightbox
 				[imageUrl]="post.imageUrl!"
+				[previewUrl]="post.mediumUrl ?? null"
 				[title]="post.caption || (post.date | date:'longDate') || ''"
 				[downloadUrl]="post.downloadUrl"
 				(closed)="closeLightbox()" />

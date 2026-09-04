@@ -8,6 +8,7 @@ export interface FeedPost {
   caption: string | null;
   imageUrl?: string;
   thumbnailUrl?: string;
+  mediumUrl?: string;
   audioUrl?: string;
   downloadUrl: string;
   uploadedByUsername: string;
@@ -37,6 +38,7 @@ export function buildFeedPosts(
       caption: p.caption,
       imageUrl: url,
       thumbnailUrl: resolvePhotoUrl(p.thumbnailUrl),
+      mediumUrl: p.mediumUrl ? resolvePhotoUrl(p.mediumUrl) : undefined,
       downloadUrl: withDownload(url, p.caption, p.takenAt),
       uploadedByUsername: p.uploadedByUsername,
     };

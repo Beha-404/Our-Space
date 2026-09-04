@@ -281,12 +281,13 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
 
     app.MapPost("/api/storage/cleanup-orphaned", async (HttpContext http, AzureBlobFileStorageService storage, AppDbContext db) =>
     {
-        var photoPaths = await db.Photos.SelectMany(p => new[] { p.FilePath, p.ThumbnailPath }).ToListAsync();
+        var photoPaths = await db.Photos.SelectMany(p => new[] { p.FilePath, p.ThumbnailPath, p.MediumPath }).ToListAsync();
         var audioPaths = await db.AudioMessages.Select(a => a.FilePath).ToListAsync();
         var avatarPaths = await db.Users.Where(u => u.ProfilePictureUrl != null).Select(u => u.ProfilePictureUrl!).ToListAsync();
 
         var keepNames = photoPaths.Concat(audioPaths).Concat(avatarPaths)
-            .Select(AzureBlobFileStorageService.ToBlobName)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => AzureBlobFileStorageService.ToBlobName(path!))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         if (keepNames.Count == 0)

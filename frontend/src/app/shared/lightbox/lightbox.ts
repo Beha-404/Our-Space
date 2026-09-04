@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
@@ -18,7 +18,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
       </div>
 
       <div class="lightbox-stage" (click)="closed.emit()">
-        <img [src]="imageUrl()" [alt]="title()" class="lightbox-image"
+        <img [src]="displayedUrl()" [alt]="title()" class="lightbox-image"
           [class.zoomed]="zoomed()"
           (click)="toggleZoom(); $event.stopPropagation()">
       </div>
@@ -88,12 +88,16 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 })
 export class Lightbox {
   imageUrl = input.required<string>();
+  previewUrl = input<string | null>(null);
   title = input<string>('');
   downloadUrl = input<string | null>(null);
 
   closed = output<void>();
 
   zoomed = signal(false);
+
+  displayedUrl = computed(() =>
+    this.zoomed() ? this.imageUrl() : this.previewUrl() ?? this.imageUrl());
 
   toggleZoom(): void {
     this.zoomed.update(value => !value);

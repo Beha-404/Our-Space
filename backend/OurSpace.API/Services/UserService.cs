@@ -170,7 +170,7 @@ public partial class UserService(
         {
             var photos = await db.Photos
                 .Where(p => p.CoupleId == couple.Id)
-                .Select(p => new { p.FilePath, p.ThumbnailPath })
+                .Select(p => new { p.FilePath, p.ThumbnailPath, p.MediumPath })
                 .ToListAsync();
 
             var audioPaths = await db.AudioMessages
@@ -182,6 +182,7 @@ public partial class UserService(
             {
                 storedPaths.Add(photo.FilePath);
                 storedPaths.Add(photo.ThumbnailPath);
+                if (photo.MediumPath is not null) storedPaths.Add(photo.MediumPath);
             }
 
             storedPaths.AddRange(audioPaths);
@@ -257,7 +258,7 @@ public partial class UserService(
 
         var photoPaths = await db.Photos
             .Where(p => p.CoupleId == couple.Id)
-            .Select(p => new { p.FilePath, p.ThumbnailPath })
+            .Select(p => new { p.FilePath, p.ThumbnailPath, p.MediumPath })
             .ToListAsync();
 
         var audioPaths = await db.AudioMessages
@@ -272,6 +273,7 @@ public partial class UserService(
         {
             fileStorage.Delete(photo.FilePath);
             fileStorage.Delete(photo.ThumbnailPath);
+            if (photo.MediumPath is not null) fileStorage.Delete(photo.MediumPath);
         }
 
         foreach (var path in audioPaths)

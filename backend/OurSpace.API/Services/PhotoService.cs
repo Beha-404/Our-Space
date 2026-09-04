@@ -18,7 +18,8 @@ public class PhotoService(
     IStorageQuotaService quota) : IPhotoService
 {
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
-    private const int ThumbnailWidth = 480;
+    private const int ThumbnailWidth = 640;
+    private const int MediumWidth = 1600;
     private const int MaxPageSize = 500;
     private const int MaxCaptionLength = 300;
 
@@ -47,10 +48,11 @@ public class PhotoService(
         }
 
         string? thumbnailPath = null;
+        string? mediumPath = null;
 
         try
         {
-            thumbnailPath = await GenerateThumbnailAsync(filePath);
+            (thumbnailPath, mediumPath) = await GenerateVariantsAsync(file);
 
             var photo = new Photo
             {
@@ -58,7 +60,10 @@ public class PhotoService(
                 UploadedByUserId = userId,
                 FilePath = filePath,
                 ThumbnailPath = thumbnailPath,
-                SizeBytes = fileStorage.GetSizeBytes(filePath) + fileStorage.GetSizeBytes(thumbnailPath),
+                MediumPath = mediumPath,
+                SizeBytes = fileStorage.GetSizeBytes(filePath)
+                    + fileStorage.GetSizeBytes(thumbnailPath)
+                    + fileStorage.GetSizeBytes(mediumPath),
                 Caption = caption.Trim(),
                 TakenAt = takenAt,
             };
@@ -72,6 +77,7 @@ public class PhotoService(
         {
             fileStorage.Delete(filePath);
             if (thumbnailPath is not null) fileStorage.Delete(thumbnailPath);
+            if (mediumPath is not null) fileStorage.Delete(mediumPath);
             throw;
         }
     }
@@ -88,7 +94,7 @@ public class PhotoService(
             .OrderByDescending(p => p.TakenAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize + 1)
-            .Select(p => new PhotoDto(p.Id, p.FilePath, p.ThumbnailPath, p.Caption, p.TakenAt, p.UploadedByUser.Username, p.CreatedAt))
+            .Select(p => new PhotoDto(p.Id, p.FilePath, p.ThumbnailPath, p.MediumPath, p.Caption, p.TakenAt, p.UploadedByUser.Username, p.CreatedAt))
             .ToListAsync();
 
         var hasMore = photos.Count > pageSize;
@@ -119,6 +125,7 @@ public class PhotoService(
 
         fileStorage.Delete(photo.FilePath);
         fileStorage.Delete(photo.ThumbnailPath);
+        if (photo.MediumPath is not null) fileStorage.Delete(photo.MediumPath);
     }
 
     private void ValidateFile(IFormFile file)
@@ -130,24 +137,32 @@ public class PhotoService(
             throw new BadRequestException(localizer.T("Photo.TooLarge"));
     }
 
-    private async Task<string> GenerateThumbnailAsync(string originalUrl)
+    private async Task<(string ThumbnailPath, string MediumPath)> GenerateVariantsAsync(IFormFile file)
     {
-        await using var originalStream = await fileStorage.OpenReadAsync(originalUrl);
-        using var image = await Image.LoadAsync(originalStream);
+        await using var uploadStream = file.OpenReadStream();
+        using var image = await Image.LoadAsync(uploadStream);
 
-        image.Mutate(x => x
-            .AutoOrient()
-            .Resize(new ResizeOptions
-            {
-                Mode = ResizeMode.Max,
-                Size = new Size(ThumbnailWidth, ThumbnailWidth),
-            }));
+        image.Mutate(x => x.AutoOrient());
 
-        await using var thumbStream = new MemoryStream();
-        await image.SaveAsJpegAsync(thumbStream);
-        thumbStream.Position = 0;
+        var mediumPath = await SaveResizedAsync(image, MediumWidth, "medium");
+        var thumbnailPath = await SaveResizedAsync(image, ThumbnailWidth, "thumbnails");
 
-        return await fileStorage.SaveAsync(thumbStream, "thumbnails", ".jpg");
+        return (thumbnailPath, mediumPath);
+    }
+
+    private async Task<string> SaveResizedAsync(Image source, int maxSize, string subfolder)
+    {
+        using var resized = source.Clone(x => x.Resize(new ResizeOptions
+        {
+            Mode = ResizeMode.Max,
+            Size = new Size(maxSize, maxSize),
+        }));
+
+        await using var buffer = new MemoryStream();
+        await resized.SaveAsWebpAsync(buffer);
+        buffer.Position = 0;
+
+        return await fileStorage.SaveAsync(buffer, subfolder, ".webp");
     }
 
     private async Task<int> GetCoupleIdOrThrow(int userId)
@@ -183,8 +198,13 @@ public class PhotoService(
     }
 
     private PhotoDto ToDto(Photo photo, string uploadedByUsername) =>
-        Signed(new PhotoDto(photo.Id, photo.FilePath, photo.ThumbnailPath, photo.Caption, photo.TakenAt, uploadedByUsername, photo.CreatedAt));
+        Signed(new PhotoDto(photo.Id, photo.FilePath, photo.ThumbnailPath, photo.MediumPath, photo.Caption, photo.TakenAt, uploadedByUsername, photo.CreatedAt));
 
     private PhotoDto Signed(PhotoDto dto) =>
-        dto with { Url = urlSigner.Sign(dto.Url), ThumbnailUrl = urlSigner.Sign(dto.ThumbnailUrl) };
+        dto with
+        {
+            Url = urlSigner.Sign(dto.Url),
+            ThumbnailUrl = urlSigner.Sign(dto.ThumbnailUrl),
+            MediumUrl = urlSigner.Sign(dto.MediumUrl),
+        };
 }
