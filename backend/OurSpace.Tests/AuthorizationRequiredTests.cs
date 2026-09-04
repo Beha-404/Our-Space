@@ -10,6 +10,7 @@ public class AuthorizationRequiredTests
     [InlineData("/api/photos")]
     [InlineData("/api/audio")]
     [InlineData("/api/wishlist")]
+    [InlineData("/api/export/memories")]
     public async Task Endpoint_Rejects_Request_Without_Token(string route)
     {
         using var factory = new OurSpaceFactory();
@@ -26,6 +27,7 @@ public class AuthorizationRequiredTests
     [InlineData("/api/photos")]
     [InlineData("/api/audio")]
     [InlineData("/api/wishlist")]
+    [InlineData("/api/export/memories")]
     public async Task Endpoint_Rejects_Forged_Token(string route)
     {
         using var factory = new OurSpaceFactory();

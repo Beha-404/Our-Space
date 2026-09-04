@@ -31,7 +31,10 @@ h1 {
   margin: 0;
 }
 
-.add-memory-btn {
+.memories-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 8px;
 }
 

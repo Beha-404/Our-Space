@@ -10,9 +10,16 @@
 			</div>
 		} @else {
 			@if (!showUploadForm()) {
-				<button type="button" class="btn btn-primary add-memory-btn" (click)="openUploadForm()">
-					+ {{ 'memories.uploadButton' | translate }}
-				</button>
+				<div class="memories-actions">
+					<button type="button" class="btn btn-primary add-memory-btn" (click)="openUploadForm()">
+						+ {{ 'memories.uploadButton' | translate }}
+					</button>
+					@if (allFeedPosts().length > 0) {
+						<button type="button" class="btn btn-ghost" [disabled]="exporting()" (click)="exportAll()">
+							{{ (exporting() ? 'memories.exporting' : 'memories.exportButton') | translate }}
+						</button>
+					}
+				</div>
 			} @else {
 				<div class="card upload-card">
 					<div class="upload-card-head">

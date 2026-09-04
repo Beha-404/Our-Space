@@ -135,6 +135,10 @@ public static class Messages
             "Fajl je prazan.",
             "The file is empty.",
             "El archivo está vacío."),
+        ["Export.NothingToExport"] = Lang(
+            "Nemate nijednu uspomenu za izvoz.",
+            "You don't have any memories to export yet.",
+            "No tienen ningún recuerdo para exportar todavía."),
         ["Storage.QuotaExceeded"] = Lang(
             "Nema više prostora. Ograničenje je {0}MB, a preostalo je {1}MB. Obriši nešto pa pokušaj ponovo.",
             "Out of space. The limit is {0}MB and only {1}MB is left. Delete something and try again.",

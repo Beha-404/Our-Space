@@ -139,6 +139,13 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromHours(1),
         }));
 
+    options.AddPolicy(RateLimitPolicies.Export, http =>
+        RateLimitPartition.GetFixedWindowLimiter(ClientKey(http), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromHours(1),
+        }));
+
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http =>
         RateLimitPartition.GetFixedWindowLimiter(ClientKey(http), _ => new FixedWindowRateLimiterOptions
         {

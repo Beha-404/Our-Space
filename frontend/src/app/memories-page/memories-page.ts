@@ -7,6 +7,7 @@ import { TranslationService } from '../i18n/translation.service';
 import { AudioMessage } from '../interfaces/audio';
 import { Photo } from '../interfaces/photo';
 import { AudioService } from '../services/audio.service';
+import { ExportService } from '../services/export.service';
 import { PhotoService } from '../services/photo.service';
 import { UserService } from '../services/user.service';
 import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
@@ -29,6 +30,7 @@ type SortOrder = 'newest' | 'oldest';
 export class MemoriesPage {
   private photoService = inject(PhotoService);
   private audioService = inject(AudioService);
+  private exportService = inject(ExportService);
   private userService = inject(UserService);
   private i18n = inject(TranslationService);
   private toast = inject(ToastService);
@@ -330,5 +332,33 @@ export class MemoriesPage {
       },
       error: () => this.toast.error('toast.actionFailed')
     });
+  }
+
+  exporting = signal(false);
+
+  exportAll(): void {
+    if (this.exporting()) return;
+
+    this.exporting.set(true);
+
+    this.exportService.exportMemories().subscribe({
+      next: blob => {
+        this.exporting.set(false);
+        this.triggerDownload(blob, `ourspace-uspomene-${new Date().toISOString().slice(0, 10)}.zip`);
+      },
+      error: () => {
+        this.exporting.set(false);
+        this.toast.error('toast.actionFailed');
+      }
+    });
+  }
+
+  private triggerDownload(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 }

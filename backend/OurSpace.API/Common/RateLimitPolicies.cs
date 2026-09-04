@@ -8,4 +8,5 @@ public static class RateLimitPolicies
     public const string VerifyLogin = "verify-login";
     public const string Writes = "writes";
     public const string Pair = "pair";
+    public const string Export = "export";
 }
