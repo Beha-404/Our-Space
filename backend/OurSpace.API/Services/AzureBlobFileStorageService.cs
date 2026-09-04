@@ -38,7 +38,7 @@ public class AzureBlobFileStorageService : IFileStorageService
         return blobClient.GenerateSasUri(sasBuilder);
     }
 
-    public async Task<string> SaveAsync(Stream content, string subfolder, string fileExtension)
+    public async Task<StoredFile> SaveAsync(Stream content, string subfolder, string fileExtension)
     {
         var blobName = $"{subfolder}/{Guid.NewGuid():N}{fileExtension}";
 
@@ -51,9 +51,14 @@ public class AzureBlobFileStorageService : IFileStorageService
             HttpHeaders = new BlobHttpHeaders { ContentType = contentType ?? "application/octet-stream" },
         };
 
-        await container.GetBlobClient(blobName).UploadAsync(content, options);
+        var blobClient = container.GetBlobClient(blobName);
+        await blobClient.UploadAsync(content, options);
 
-        return $"/uploads/{blobName}";
+        var sizeBytes = content.CanSeek
+            ? content.Length
+            : (await blobClient.GetPropertiesAsync()).Value.ContentLength;
+
+        return new StoredFile($"/uploads/{blobName}", sizeBytes);
     }
 
     public async Task<Stream> OpenReadAsync(string url)
@@ -62,15 +67,9 @@ public class AzureBlobFileStorageService : IFileStorageService
         return download.Value.Content;
     }
 
-    public void Delete(string url)
+    public async Task DeleteAsync(string url)
     {
-        container.GetBlobClient(ToBlobName(url)).DeleteIfExists();
-    }
-
-    public long GetSizeBytes(string url)
-    {
-        var blobClient = container.GetBlobClient(ToBlobName(url));
-        return blobClient.Exists() ? blobClient.GetProperties().Value.ContentLength : 0;
+        await container.GetBlobClient(ToBlobName(url)).DeleteIfExistsAsync();
     }
 
     public async Task<(int Count, long Bytes)> DeleteOrphanedBlobsAsync(IReadOnlySet<string> keepBlobNames, bool dryRun)

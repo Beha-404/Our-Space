@@ -174,13 +174,15 @@ public class AccountDeletionTests
     {
         public List<string> Deleted { get; } = [];
 
-        public void Delete(string url) => Deleted.Add(url);
+        public Task DeleteAsync(string url)
+        {
+            Deleted.Add(url);
+            return Task.CompletedTask;
+        }
 
-        public Task<string> SaveAsync(Stream content, string subfolder, string fileExtension) =>
-            Task.FromResult($"/uploads/{subfolder}/spy{fileExtension}");
+        public Task<StoredFile> SaveAsync(Stream content, string subfolder, string fileExtension) =>
+            Task.FromResult(new StoredFile($"/uploads/{subfolder}/spy{fileExtension}", 0));
 
         public Task<Stream> OpenReadAsync(string url) => Task.FromResult<Stream>(new MemoryStream());
-
-        public long GetSizeBytes(string url) => 0;
     }
 }

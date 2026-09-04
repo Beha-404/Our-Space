@@ -1,10 +1,10 @@
-﻿namespace OurSpace.API.Services;
+namespace OurSpace.API.Services;
 
 public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageService
 {
     private readonly string _uploadsRoot = Path.Combine(env.ContentRootPath, "uploads");
 
-    public async Task<string> SaveAsync(Stream content, string subfolder, string fileExtension)
+    public async Task<StoredFile> SaveAsync(Stream content, string subfolder, string fileExtension)
     {
         var folder = Path.Combine(_uploadsRoot, subfolder);
         Directory.CreateDirectory(folder);
@@ -17,7 +17,7 @@ public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageServ
             await content.CopyToAsync(fileStream);
         }
 
-        return $"/uploads/{subfolder}/{fileName}";
+        return new StoredFile($"/uploads/{subfolder}/{fileName}", new FileInfo(fullPath).Length);
     }
 
     public Task<Stream> OpenReadAsync(string url)
@@ -26,17 +26,13 @@ public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageServ
         return Task.FromResult(stream);
     }
 
-    public void Delete(string url)
+    public Task DeleteAsync(string url)
     {
         var path = GetPhysicalPath(url);
         if (File.Exists(path))
             File.Delete(path);
-    }
 
-    public long GetSizeBytes(string url)
-    {
-        var file = new FileInfo(GetPhysicalPath(url));
-        return file.Exists ? file.Length : 0;
+        return Task.CompletedTask;
     }
 
     private string GetPhysicalPath(string url)

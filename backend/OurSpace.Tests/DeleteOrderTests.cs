@@ -102,13 +102,11 @@ public class DeleteOrderTests
     {
         public List<bool> RowExistedAtDelete { get; } = [];
 
-        public void Delete(string url) => RowExistedAtDelete.Add(rowExists().GetAwaiter().GetResult());
+        public async Task DeleteAsync(string url) => RowExistedAtDelete.Add(await rowExists());
 
-        public Task<string> SaveAsync(Stream content, string subfolder, string fileExtension) =>
-            Task.FromResult($"/uploads/{subfolder}/spy{fileExtension}");
+        public Task<StoredFile> SaveAsync(Stream content, string subfolder, string fileExtension) =>
+            Task.FromResult(new StoredFile($"/uploads/{subfolder}/spy{fileExtension}", 0));
 
         public Task<Stream> OpenReadAsync(string url) => Task.FromResult<Stream>(new MemoryStream());
-
-        public long GetSizeBytes(string url) => 0;
     }
 }

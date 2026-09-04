@@ -1,12 +1,12 @@
-﻿namespace OurSpace.API.Services;
+namespace OurSpace.API.Services;
+
+public record StoredFile(string Path, long SizeBytes);
 
 public interface IFileStorageService
 {
-    Task<string> SaveAsync(Stream content, string subfolder, string fileExtension);
+    Task<StoredFile> SaveAsync(Stream content, string subfolder, string fileExtension);
 
     Task<Stream> OpenReadAsync(string url);
 
-    void Delete(string url);
-
-    long GetSizeBytes(string url);
+    Task DeleteAsync(string url);
 }

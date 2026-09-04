@@ -40,30 +40,28 @@ public class PhotoService(
 
         await quota.EnsureRoomAsync(coupleId, file.Length);
 
-        string filePath;
+        StoredFile original;
 
         await using (var uploadStream = file.OpenReadStream())
         {
-            filePath = await fileStorage.SaveAsync(uploadStream, "photos", extension);
+            original = await fileStorage.SaveAsync(uploadStream, "photos", extension);
         }
 
-        string? thumbnailPath = null;
-        string? mediumPath = null;
+        StoredFile? thumbnail = null;
+        StoredFile? medium = null;
 
         try
         {
-            (thumbnailPath, mediumPath) = await GenerateVariantsAsync(file);
+            (thumbnail, medium) = await GenerateVariantsAsync(file);
 
             var photo = new Photo
             {
                 CoupleId = coupleId,
                 UploadedByUserId = userId,
-                FilePath = filePath,
-                ThumbnailPath = thumbnailPath,
-                MediumPath = mediumPath,
-                SizeBytes = fileStorage.GetSizeBytes(filePath)
-                    + fileStorage.GetSizeBytes(thumbnailPath)
-                    + fileStorage.GetSizeBytes(mediumPath),
+                FilePath = original.Path,
+                ThumbnailPath = thumbnail.Path,
+                MediumPath = medium.Path,
+                SizeBytes = original.SizeBytes + thumbnail.SizeBytes + medium.SizeBytes,
                 Caption = caption.Trim(),
                 TakenAt = takenAt,
             };
@@ -75,9 +73,9 @@ public class PhotoService(
         }
         catch (Exception)
         {
-            fileStorage.Delete(filePath);
-            if (thumbnailPath is not null) fileStorage.Delete(thumbnailPath);
-            if (mediumPath is not null) fileStorage.Delete(mediumPath);
+            await fileStorage.DeleteAsync(original.Path);
+            if (thumbnail is not null) await fileStorage.DeleteAsync(thumbnail.Path);
+            if (medium is not null) await fileStorage.DeleteAsync(medium.Path);
             throw;
         }
     }
@@ -123,9 +121,9 @@ public class PhotoService(
         await db.SaveChangesAsync();
         await ClearQuotaWarningAsync(coupleId);
 
-        fileStorage.Delete(photo.FilePath);
-        fileStorage.Delete(photo.ThumbnailPath);
-        if (photo.MediumPath is not null) fileStorage.Delete(photo.MediumPath);
+        await fileStorage.DeleteAsync(photo.FilePath);
+        await fileStorage.DeleteAsync(photo.ThumbnailPath);
+        if (photo.MediumPath is not null) await fileStorage.DeleteAsync(photo.MediumPath);
     }
 
     private void ValidateFile(IFormFile file)
@@ -137,20 +135,20 @@ public class PhotoService(
             throw new BadRequestException(localizer.T("Photo.TooLarge"));
     }
 
-    private async Task<(string ThumbnailPath, string MediumPath)> GenerateVariantsAsync(IFormFile file)
+    private async Task<(StoredFile Thumbnail, StoredFile Medium)> GenerateVariantsAsync(IFormFile file)
     {
         await using var uploadStream = file.OpenReadStream();
         using var image = await Image.LoadAsync(uploadStream);
 
         image.Mutate(x => x.AutoOrient());
 
-        var mediumPath = await SaveResizedAsync(image, MediumWidth, "medium");
-        var thumbnailPath = await SaveResizedAsync(image, ThumbnailWidth, "thumbnails");
+        var medium = await SaveResizedAsync(image, MediumWidth, "medium");
+        var thumbnail = await SaveResizedAsync(image, ThumbnailWidth, "thumbnails");
 
-        return (thumbnailPath, mediumPath);
+        return (thumbnail, medium);
     }
 
-    private async Task<string> SaveResizedAsync(Image source, int maxSize, string subfolder)
+    private async Task<StoredFile> SaveResizedAsync(Image source, int maxSize, string subfolder)
     {
         using var resized = source.Clone(x => x.Resize(new ResizeOptions
         {

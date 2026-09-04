@@ -58,14 +58,12 @@ public class ExportTests
 
     private sealed class FakeFileStorageService : IFileStorageService
     {
-        public Task<string> SaveAsync(Stream content, string subfolder, string fileExtension) =>
-            Task.FromResult($"/uploads/{subfolder}/fake{fileExtension}");
+        public Task<StoredFile> SaveAsync(Stream content, string subfolder, string fileExtension) =>
+            Task.FromResult(new StoredFile($"/uploads/{subfolder}/fake{fileExtension}", 3));
 
         public Task<Stream> OpenReadAsync(string url) =>
             Task.FromResult<Stream>(new MemoryStream([1, 2, 3]));
 
-        public void Delete(string url) { }
-
-        public long GetSizeBytes(string url) => 3;
+        public Task DeleteAsync(string url) => Task.CompletedTask;
     }
 }

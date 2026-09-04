@@ -50,23 +50,23 @@ public class AudioService(
 
         await quota.EnsureRoomAsync(coupleId, file.Length);
 
-        string filePath;
+        StoredFile stored;
 
         if (isVideo)
         {
-            string videoUrl;
+            StoredFile video;
             await using (var uploadStream = file.OpenReadStream())
             {
-                videoUrl = await fileStorage.SaveAsync(uploadStream, "audio", ".mp4");
+                video = await fileStorage.SaveAsync(uploadStream, "audio", ".mp4");
             }
 
             try
             {
-                filePath = await ConvertToMp3Async(videoUrl);
+                stored = await ConvertToMp3Async(video.Path);
             }
             finally
             {
-                fileStorage.Delete(videoUrl);
+                await fileStorage.DeleteAsync(video.Path);
             }
         }
         else
@@ -75,15 +75,15 @@ public class AudioService(
             if (string.IsNullOrWhiteSpace(extension)) extension = ".mp3";
 
             await using var uploadStream = file.OpenReadStream();
-            filePath = await fileStorage.SaveAsync(uploadStream, "audio", extension);
+            stored = await fileStorage.SaveAsync(uploadStream, "audio", extension);
         }
 
         var audio = new AudioMessage
         {
             CoupleId = coupleId,
             UploadedByUserId = userId,
-            FilePath = filePath,
-            SizeBytes = fileStorage.GetSizeBytes(filePath),
+            FilePath = stored.Path,
+            SizeBytes = stored.SizeBytes,
             Caption = caption.Trim(),
             RecordedAt = recordedAt,
         };
@@ -135,7 +135,7 @@ public class AudioService(
         await db.SaveChangesAsync();
         await ClearQuotaWarningAsync(coupleId);
 
-        fileStorage.Delete(audio.FilePath);
+        await fileStorage.DeleteAsync(audio.FilePath);
     }
 
     private void ValidateFile(IFormFile file)
@@ -154,7 +154,7 @@ public class AudioService(
         VideoContentTypes.Contains(file.ContentType) ||
         string.Equals(Path.GetExtension(file.FileName), ".mp4", StringComparison.OrdinalIgnoreCase);
 
-    private async Task<string> ConvertToMp3Async(string videoUrl)
+    private async Task<StoredFile> ConvertToMp3Async(string videoUrl)
     {
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);

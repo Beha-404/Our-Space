@@ -144,14 +144,14 @@ public partial class UserService(
         var oldPictureUrl = user.ProfilePictureUrl;
 
         await using var uploadStream = file.OpenReadStream();
-        var newUrl = await fileStorage.SaveAsync(uploadStream, "avatars", extension);
+        var stored = await fileStorage.SaveAsync(uploadStream, "avatars", extension);
 
-        user.ProfilePictureUrl = newUrl;
+        user.ProfilePictureUrl = stored.Path;
         user.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
         if (!string.IsNullOrWhiteSpace(oldPictureUrl) && oldPictureUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
-            fileStorage.Delete(oldPictureUrl);
+            await fileStorage.DeleteAsync(oldPictureUrl);
 
         return await ToDto(user);
     }
@@ -194,7 +194,7 @@ public partial class UserService(
         await db.SaveChangesAsync();
 
         foreach (var path in storedPaths)
-            fileStorage.Delete(path);
+            await fileStorage.DeleteAsync(path);
     }
 
     public async Task<PairingCodeResponse> GeneratePairingCodeAsync(int userId)
@@ -271,13 +271,13 @@ public partial class UserService(
 
         foreach (var photo in photoPaths)
         {
-            fileStorage.Delete(photo.FilePath);
-            fileStorage.Delete(photo.ThumbnailPath);
-            if (photo.MediumPath is not null) fileStorage.Delete(photo.MediumPath);
+            await fileStorage.DeleteAsync(photo.FilePath);
+            await fileStorage.DeleteAsync(photo.ThumbnailPath);
+            if (photo.MediumPath is not null) await fileStorage.DeleteAsync(photo.MediumPath);
         }
 
         foreach (var path in audioPaths)
-            fileStorage.Delete(path);
+            await fileStorage.DeleteAsync(path);
 
         return await ToDto(user);
     }
