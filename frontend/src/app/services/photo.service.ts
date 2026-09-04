@@ -23,7 +23,10 @@ export class PhotoService {
         formData.append('takenAt', takenAt);
         if (caption) formData.append('caption', caption);
 
-        return this.http.post<Photo>(`${this.apiUrl}/photos`, formData);
+        return this.http.post<Photo>(`${this.apiUrl}/photos`, formData, {
+            reportProgress: true,
+            observe: 'events',
+        });
     }
 
     delete(id: number) {

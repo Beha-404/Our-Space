@@ -1,7 +1,7 @@
 ﻿import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { forkJoin, of } from 'rxjs';
+import { catchError, concatMap, forkJoin, from, Observable, of, tap } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
 import { AudioMessage } from '../interfaces/audio';
@@ -20,6 +20,12 @@ import { ToastService } from '../shared/toast/toast.service';
 
 type UploadType = 'photo' | 'audio';
 type SortOrder = 'newest' | 'oldest';
+
+interface UploadItem {
+  file: File;
+  progress: number;
+  status: 'pending' | 'uploading' | 'done' | 'error';
+}
 
 @Component({
   imports: [DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker],
@@ -70,6 +76,7 @@ export class MemoriesPage {
 
   uploadType = signal<UploadType>('photo');
   selectedFile = signal<File | null>(null);
+  uploadQueue = signal<UploadItem[]>([]);
   uploadDate = signal('');
   uploadCaption = signal('');
   uploadCaptionTouched = signal(false);
@@ -244,11 +251,14 @@ export class MemoriesPage {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-    this.selectedFile.set(file);
+    const files = Array.from(input.files ?? []);
+
+    this.selectedFile.set(files[0] ?? null);
+    this.uploadQueue.set(files.map(file => ({ file, progress: 0, status: 'pending' as const })));
 
     this.revokePreviewUrl();
-    this.previewUrl.set(file && this.uploadType() === 'photo' ? URL.createObjectURL(file) : null);
+    this.previewUrl.set(
+      files.length === 1 && this.uploadType() === 'photo' ? URL.createObjectURL(files[0]) : null);
   }
 
   private revokePreviewUrl(): void {
@@ -256,14 +266,16 @@ export class MemoriesPage {
     if (url) URL.revokeObjectURL(url);
   }
 
+  uploadedCount = computed(() => this.uploadQueue().filter(i => i.status === 'done').length);
+
   upload(): void {
     this.uploadCaptionTouched.set(true);
 
-    const file = this.selectedFile();
+    const queue = this.uploadQueue();
     const date = this.uploadDate();
     const caption = this.uploadCaption().trim();
 
-    if (!file || !date || this.uploadCaptionError()) {
+    if (queue.length === 0 || !date || this.uploadCaptionError()) {
       this.uploadErrorKey.set('memories.errFillAll');
       return;
     }
@@ -271,28 +283,57 @@ export class MemoriesPage {
     this.uploading.set(true);
     this.uploadErrorKey.set('');
 
-    const onSuccess = () => {
-      this.uploading.set(false);
-      this.closeUploadForm();
-      this.loadAll();
-      this.toast.success('toast.memoryAdded');
-    };
-    const onError = (err: HttpErrorResponse) => {
-      this.uploading.set(false);
-      const key = err.error?.title ?? 'memories.uploadError';
-      this.uploadErrorKey.set(key);
-      this.toast.error(key);
-    };
+    from(queue.map((_, index) => index))
+      .pipe(concatMap(index => this.uploadOne(index, date, caption)))
+      .subscribe({
+        complete: () => {
+          this.uploading.set(false);
 
-    if (this.uploadType() === 'photo') {
-      this.photoService.upload(file, date, caption).subscribe({ next: onSuccess, error: onError });
-    } else {
-      this.audioService.upload(file, date, caption).subscribe({ next: onSuccess, error: onError });
-    }
+          const failed = this.uploadQueue().filter(i => i.status === 'error').length;
+          if (failed === 0) {
+            this.closeUploadForm();
+            this.toast.success('toast.memoryAdded');
+          } else {
+            this.toast.error(this.uploadErrorKey() || 'memories.uploadError');
+          }
+
+          this.loadAll();
+        }
+      });
+  }
+
+  private uploadOne(index: number, date: string, caption: string): Observable<unknown> {
+    const item = this.uploadQueue()[index];
+    this.patchQueueItem(index, { status: 'uploading' });
+
+    const request$: Observable<HttpEvent<Photo | AudioMessage>> = this.uploadType() === 'photo'
+      ? this.photoService.upload(item.file, date, caption)
+      : this.audioService.upload(item.file, date, caption);
+
+    return request$.pipe(
+      tap(event => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          this.patchQueueItem(index, { progress: Math.round(100 * event.loaded / event.total) });
+        } else if (event.type === HttpEventType.Response) {
+          this.patchQueueItem(index, { progress: 100, status: 'done' });
+        }
+      }),
+      catchError((err: HttpErrorResponse) => {
+        this.patchQueueItem(index, { status: 'error' });
+        this.uploadErrorKey.set(err.error?.title ?? 'memories.uploadError');
+        return of(null);
+      })
+    );
+  }
+
+  private patchQueueItem(index: number, changes: Partial<UploadItem>): void {
+    this.uploadQueue.update(queue =>
+      queue.map((item, i) => i === index ? { ...item, ...changes } : item));
   }
 
   private clearSelectedFile(): void {
     this.selectedFile.set(null);
+    this.uploadQueue.set([]);
     this.revokePreviewUrl();
     this.previewUrl.set(null);
     const input = this.fileInputRef()?.nativeElement;

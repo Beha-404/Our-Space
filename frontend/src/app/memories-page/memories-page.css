@@ -350,3 +350,52 @@ h1 {
     padding: 14px;
   }
 }
+
+.upload-queue {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.upload-queue-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 44px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.upload-queue-item.failed {
+  color: var(--color-danger, #ff6b6b);
+}
+
+.upload-queue-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-queue-bar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-bg-2);
+  overflow: hidden;
+}
+
+.upload-queue-fill {
+  display: block;
+  height: 100%;
+  background: var(--gradient-primary);
+  transition: width 0.15s linear;
+}
+
+.upload-queue-state {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

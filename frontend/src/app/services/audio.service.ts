@@ -23,7 +23,10 @@ export class AudioService {
         formData.append('recordedAt', recordedAt);
         if (caption) formData.append('caption', caption);
 
-        return this.http.post<AudioMessage>(`${this.apiUrl}/audio`, formData);
+        return this.http.post<AudioMessage>(`${this.apiUrl}/audio`, formData, {
+            reportProgress: true,
+            observe: 'events',
+        });
     }
 
     delete(id: number) {

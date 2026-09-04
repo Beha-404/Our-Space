@@ -37,9 +37,28 @@
 					<div class="field-row">
 						<div class="field">
 							<label for="file">{{ uploadType() === 'photo' ? ('memories.pickPhoto' | translate) : ('memories.pickAudio' | translate) }}</label>
-							<input id="file" #fileInput type="file" [accept]="uploadType() === 'photo' ? 'image/*' : 'audio/*,video/mp4'" (change)="onFileSelected($event)">
+							<input id="file" #fileInput type="file" multiple [accept]="uploadType() === 'photo' ? 'image/*' : 'audio/*,video/mp4'" (change)="onFileSelected($event)">
 							@if (previewUrl()) {
 								<img [src]="previewUrl()" alt="" class="upload-preview">
+							}
+							@if (uploadQueue().length > 1) {
+								<ul class="upload-queue">
+									@for (item of uploadQueue(); track item.file.name + item.file.size) {
+										<li class="upload-queue-item" [class.failed]="item.status === 'error'">
+											<span class="upload-queue-name">{{ item.file.name }}</span>
+											<span class="upload-queue-bar">
+												<span class="upload-queue-fill" [style.width.%]="item.progress"></span>
+											</span>
+											<span class="upload-queue-state">
+												@switch (item.status) {
+													@case ('done') { ✓ }
+													@case ('error') { ✕ }
+													@default { {{ item.progress }}% }
+												}
+											</span>
+										</li>
+									}
+								</ul>
 							}
 						</div>
 						<div class="field">
@@ -62,7 +81,11 @@
 					}
 
 					<button class="btn btn-primary" (click)="upload()" [disabled]="uploading()">
-						{{ (uploading() ? 'memories.uploading' : 'memories.uploadButton') | translate }}
+						@if (uploading() && uploadQueue().length > 1) {
+							{{ 'memories.uploading' | translate }} {{ uploadedCount() }}/{{ uploadQueue().length }}
+						} @else {
+							{{ (uploading() ? 'memories.uploading' : 'memories.uploadButton') | translate }}
+						}
 					</button>
 				</div>
 			}
