@@ -205,7 +205,6 @@ builder.Services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueu
 builder.Services.AddHostedService<EmailDispatchBackgroundService>();
 
 builder.Services.AddHostedService<EventReminderBackgroundService>();
-builder.Services.AddHostedService<DeletedUserCleanupBackgroundService>();
 
 var app = builder.Build();
 
