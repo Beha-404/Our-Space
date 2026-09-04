@@ -95,7 +95,7 @@ public partial class AuthService(
 
         var subject = localizer.For("Email.LoginCode.Subject", user.PreferredLanguage);
         var body = localizer.For("Email.LoginCode.Body", user.PreferredLanguage, code, (int)LoginCodeLifetime.TotalMinutes);
-        emailQueue.Enqueue(user.Email, subject, body);
+        await emailQueue.EnqueueAsync(user.Email, subject, body);
 
         return new LoginOutcome(true, null);
     }
@@ -194,7 +194,7 @@ public partial class AuthService(
         var subject = localizer.For("Email.PasswordReset.Subject", user.PreferredLanguage);
         var body = localizer.For("Email.PasswordReset.Body", user.PreferredLanguage, code,
             (int)ResetCodeLifetime.TotalMinutes);
-        emailQueue.Enqueue(user.Email, subject, body);
+        await emailQueue.EnqueueAsync(user.Email, subject, body);
     }
 
     public async Task ResetPasswordAsync(ResetPasswordRequest request)

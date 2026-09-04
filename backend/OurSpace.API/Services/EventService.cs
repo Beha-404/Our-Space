@@ -31,7 +31,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
         await db.SaveChangesAsync();
 
         var creator = ActingUser(couple, userId);
-        NotifyPartner(couple, userId, creator.Username, ev.Title, EventChangeType.Created);
+        await NotifyPartnerAsync(couple, userId, creator.Username, ev.Title, EventChangeType.Created);
         return ToDto(ev, creator.Username);
     }
 
@@ -72,7 +72,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
 
         await db.SaveChangesAsync();
 
-        NotifyPartner(couple, userId, ActingUser(couple, userId).Username, ev.Title, EventChangeType.Updated);
+        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, ev.Title, EventChangeType.Updated);
 
         return ToDto(ev, ev.CreatedByUser.Username);
     }
@@ -91,7 +91,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
         db.Events.Remove(ev);
         await db.SaveChangesAsync();
 
-        NotifyPartner(couple, userId, ActingUser(couple, userId).Username, title, EventChangeType.Deleted);
+        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, title, EventChangeType.Deleted);
     }
 
     private void ValidateTitleAndDescription(CreateEventRequest request)
@@ -114,7 +114,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
     private static User ActingUser(Couple couple, int userId) =>
         couple.User1Id == userId ? couple.User1 : couple.User2;
 
-    private void NotifyPartner(Couple couple, int actingUserId, string actorUsername, string eventTitle, EventChangeType change)
+    private async Task NotifyPartnerAsync(Couple couple, int actingUserId, string actorUsername, string eventTitle, EventChangeType change)
     {
         var (subjectKey, bodyKey) = change switch
         {
@@ -129,7 +129,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
         {
             var subject = localizer.For(subjectKey, user.PreferredLanguage, eventTitle);
             var body = localizer.For(bodyKey, user.PreferredLanguage, actorUsername, eventTitle);
-            emailQueue.Enqueue(user.Email, subject, body);
+            await emailQueue.EnqueueAsync(user.Email, subject, body);
         }
     }
 

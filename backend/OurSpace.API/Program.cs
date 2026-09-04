@@ -209,8 +209,8 @@ else
     builder.Services.AddSingleton<IEmailService, LoggingEmailService>();
 }
 
-builder.Services.AddSingleton<EmailQueue>();
-builder.Services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueue>());
+builder.Services.AddScoped<IEmailQueue, EmailQueue>();
+builder.Services.AddScoped<IJobLeaseService, JobLeaseService>();
 builder.Services.AddHostedService<EmailDispatchBackgroundService>();
 
 builder.Services.AddHostedService<EventReminderBackgroundService>();

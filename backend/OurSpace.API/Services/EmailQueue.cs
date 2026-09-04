@@ -1,20 +1,19 @@
-using System.Threading.Channels;
+using OurSpace.API.Data;
+using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
-public class EmailQueue : IEmailQueue
+public class EmailQueue(AppDbContext db) : IEmailQueue
 {
-    private const int Capacity = 500;
-
-    private readonly Channel<QueuedEmail> _channel = Channel.CreateBounded<QueuedEmail>(
-        new BoundedChannelOptions(Capacity)
+    public async Task EnqueueAsync(string toEmail, string subject, string body)
+    {
+        db.OutboxEmails.Add(new OutboxEmail
         {
-            FullMode = BoundedChannelFullMode.DropWrite,
-            SingleReader = true,
+            ToEmail = toEmail,
+            Subject = subject,
+            Body = body,
         });
 
-    public ChannelReader<QueuedEmail> Reader => _channel.Reader;
-
-    public void Enqueue(string toEmail, string subject, string body) =>
-        _channel.Writer.TryWrite(new QueuedEmail(toEmail, subject, body));
+        await db.SaveChangesAsync();
+    }
 }

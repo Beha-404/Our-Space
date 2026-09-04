@@ -12,6 +12,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<AudioMessage> AudioMessages => Set<AudioMessage>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
+    public DbSet<JobLease> JobLeases => Set<JobLease>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -118,6 +120,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(w => new { w.CoupleId, w.IsFulfilled, w.CreatedAt });
+        });
+
+        modelBuilder.Entity<OutboxEmail>(entity =>
+        {
+            entity.Property(o => o.ToEmail).HasMaxLength(254);
+            entity.Property(o => o.Subject).HasMaxLength(300);
+            entity.Property(o => o.LastError).HasMaxLength(1000);
+
+            entity.HasIndex(o => new { o.SentAt, o.NextAttemptAt });
+        });
+
+        modelBuilder.Entity<JobLease>(entity =>
+        {
+            entity.HasKey(l => l.Name);
+            entity.Property(l => l.Name).HasMaxLength(100);
+            entity.Property(l => l.Owner).HasMaxLength(100);
         });
     }
 }

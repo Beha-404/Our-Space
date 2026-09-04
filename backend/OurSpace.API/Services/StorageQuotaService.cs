@@ -56,7 +56,7 @@ public class StorageQuotaService(
         {
             var subject = localizer.For("Email.StorageQuotaReached.Subject", user.PreferredLanguage);
             var body = localizer.For("Email.StorageQuotaReached.Body", user.PreferredLanguage, gigabytes);
-            emailQueue.Enqueue(user.Email, subject, body);
+            await emailQueue.EnqueueAsync(user.Email, subject, body);
         }
 
         couple.QuotaWarningEmailSentAt = DateTime.UtcNow;

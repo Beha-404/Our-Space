@@ -8,8 +8,11 @@ public class EventReminderBackgroundService(
     IServiceScopeFactory scopeFactory,
     ILogger<EventReminderBackgroundService> logger) : BackgroundService
 {
-    private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);
+    private const string JobName = "event-reminders";
     private const int ReminderWindowDays = 3;
+
+    private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);
+    private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(10);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -32,6 +35,11 @@ public class EventReminderBackgroundService(
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var leases = scope.ServiceProvider.GetRequiredService<IJobLeaseService>();
+
+        if (!await leases.TryAcquireAsync(JobName, LeaseDuration, stoppingToken))
+            return;
+
         var emailQueue = scope.ServiceProvider.GetRequiredService<IEmailQueue>();
         var localizer = scope.ServiceProvider.GetRequiredService<ILocalizer>();
 
@@ -69,7 +77,7 @@ public class EventReminderBackgroundService(
             {
                 var subject = localizer.For("Email.Reminder.Subject", language, ev.Title);
                 var body = localizer.For("Email.Reminder.Body", language, ev.Title, eventDateText);
-                emailQueue.Enqueue(email, subject, body);
+                await emailQueue.EnqueueAsync(email, subject, body);
             }
         }
 

@@ -83,7 +83,7 @@ public partial class UserService(
 
         var subject = localizer.For("Email.EmailChange.Subject", user.PreferredLanguage);
         var body = localizer.For("Email.EmailChange.Body", user.PreferredLanguage, newEmail, code);
-        emailQueue.Enqueue(user.Email, subject, body);
+        await emailQueue.EnqueueAsync(user.Email, subject, body);
     }
 
     public async Task<UserDto> ConfirmEmailChangeAsync(int userId, string code)
