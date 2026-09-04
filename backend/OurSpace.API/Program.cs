@@ -184,6 +184,7 @@ builder.Services.AddScoped<IStorageQuotaService, StorageQuotaService>();
 builder.Services.AddSingleton<IFFmpegReadiness, FFmpegReadiness>();
 builder.Services.AddHostedService<FFmpegSetupBackgroundService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
+builder.Services.AddScoped<IMemoryFeedService, MemoryFeedService>();
 builder.Services.AddScoped<IAudioService, AudioService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 

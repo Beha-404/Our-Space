@@ -14,7 +14,7 @@
 					<button type="button" class="btn btn-primary add-memory-btn" (click)="openUploadForm()">
 						+ {{ 'memories.uploadButton' | translate }}
 					</button>
-					@if (allFeedPosts().length > 0) {
+					@if (pagedFeed().length > 0) {
 						<button type="button" class="btn btn-ghost" [disabled]="exporting()" (click)="exportAll()">
 							{{ (exporting() ? 'memories.exporting' : 'memories.exportButton') | translate }}
 						</button>
@@ -105,10 +105,10 @@
 
 			@if (loading()) {
 				<app-skeleton [count]="3" variant="post" />
-			} @else if (allFeedPosts().length === 0) {
-				<p class="muted-hint">{{ 'memories.noMemories' | translate }}</p>
-			} @else if (feed().length === 0) {
-				<p class="muted-hint">{{ 'memories.noMemoriesFiltered' | translate }}</p>
+			} @else if (pagedFeed().length === 0) {
+				<p class="muted-hint">
+					{{ (isFiltered() ? 'memories.noMemoriesFiltered' : 'memories.noMemories') | translate }}
+				</p>
 			} @else {
 				<div class="feed-grid">
 					@for (post of pagedFeed(); track post.id + post.type) {
@@ -143,30 +143,15 @@
 					}
 				</div>
 
-				@if (totalFeedPages() > 1) {
+				@if (hasMore() || feedPage() > 1) {
 					<div class="feed-pager">
-						<button type="button" class="btn btn-ghost btn-xs" (click)="goToFeedPage(currentFeedPage() - 1)"
-							[disabled]="currentFeedPage() === 1">‹</button>
+						<button type="button" class="btn btn-ghost btn-xs" (click)="goToFeedPage(feedPage() - 1)"
+							[disabled]="feedPage() === 1 || loading()">‹</button>
 
-						@for (p of pageNumbers(); track $index) {
-							@if (p === '…') {
-								<span class="feed-pager-ellipsis">…</span>
-							} @else {
-								<button type="button" class="feed-pager-num" [class.active]="p === currentFeedPage()"
-									(click)="goToFeedPage(p)">{{ p }}</button>
-							}
-						}
+						<span class="feed-pager-num active">{{ feedPage() }}</span>
 
-						<button type="button" class="btn btn-ghost btn-xs" (click)="goToFeedPage(currentFeedPage() + 1)"
-							[disabled]="currentFeedPage() === totalFeedPages()">›</button>
-					</div>
-				}
-
-				@if (hasMore()) {
-					<div class="load-more-row">
-						<button class="btn btn-ghost" (click)="loadMore()" [disabled]="loadingMore()">
-							{{ (loadingMore() ? 'memories.loadingMore' : 'memories.loadMore') | translate }}
-						</button>
+						<button type="button" class="btn btn-ghost btn-xs" (click)="goToFeedPage(feedPage() + 1)"
+							[disabled]="!hasMore() || loading()">›</button>
 					</div>
 				}
 			}

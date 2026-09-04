@@ -21,6 +21,35 @@ function withDownload(url: string, caption: string | null, date: string): string
   return `${url}${separator}download=1&name=${encodeURIComponent(name)}`;
 }
 
+export function toFeedPost(
+  item: {
+    id: number;
+    type: 'photo' | 'audio';
+    url: string;
+    thumbnailUrl: string | null;
+    mediumUrl: string | null;
+    caption: string | null;
+    date: string;
+    uploadedByUsername: string;
+  },
+  resolveUrl: (path: string) => string,
+): FeedPost {
+  const url = resolveUrl(item.url);
+
+  return {
+    id: item.id,
+    type: item.type,
+    date: item.date,
+    caption: item.caption,
+    imageUrl: item.type === 'photo' ? url : undefined,
+    thumbnailUrl: item.thumbnailUrl ? resolveUrl(item.thumbnailUrl) : undefined,
+    mediumUrl: item.mediumUrl ? resolveUrl(item.mediumUrl) : undefined,
+    audioUrl: item.type === 'audio' ? url : undefined,
+    downloadUrl: withDownload(url, item.caption, item.date),
+    uploadedByUsername: item.uploadedByUsername,
+  };
+}
+
 export function buildFeedPosts(
   photos: Photo[],
   audioItems: AudioMessage[],

@@ -1,16 +1,15 @@
 ﻿import { DatePipe } from '@angular/common';
 import { HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { catchError, concatMap, forkJoin, from, Observable, of, tap } from 'rxjs';
+import { catchError, concatMap, from, Observable, of, tap } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
-import { AudioMessage } from '../interfaces/audio';
-import { Photo } from '../interfaces/photo';
 import { AudioService } from '../services/audio.service';
 import { ExportService } from '../services/export.service';
+import { MemoryFeedService, MemoryItem } from '../services/memory-feed.service';
 import { PhotoService } from '../services/photo.service';
 import { UserService } from '../services/user.service';
-import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
+import { toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { DatePicker } from '../shared/date-picker/date-picker';
 import { Lightbox } from '../shared/lightbox/lightbox';
@@ -37,6 +36,7 @@ export class MemoriesPage {
   private photoService = inject(PhotoService);
   private audioService = inject(AudioService);
   private exportService = inject(ExportService);
+  private memoryFeed = inject(MemoryFeedService);
   private userService = inject(UserService);
   private i18n = inject(TranslationService);
   private toast = inject(ToastService);
@@ -46,18 +46,12 @@ export class MemoriesPage {
   userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
 
-  private static readonly PAGE_SIZE = 500;
+  private static readonly PAGE_SIZE = 24;
 
-  photos = signal<Photo[]>([]);
-  audioItems = signal<AudioMessage[]>([]);
+  feedItems = signal<MemoryItem[]>([]);
+  availableYears = signal<number[]>([]);
+  hasMore = signal(false);
   loading = signal(true);
-  loadingMore = signal(false);
-
-  private photoPage = signal(1);
-  private audioPage = signal(1);
-  private hasMorePhotos = signal(false);
-  private hasMoreAudio = signal(false);
-  hasMore = computed(() => this.hasMorePhotos() || this.hasMoreAudio());
 
   showUploadForm = signal(false);
 
@@ -94,24 +88,19 @@ export class MemoriesPage {
     'memories.month9', 'memories.month10', 'memories.month11', 'memories.month12',
   ];
 
-  allFeedPosts = computed<FeedPost[]>(() =>
-    buildFeedPosts(
-      this.photos(),
-      this.audioItems(),
-      path => this.photoService.fullUrl(path),
-      path => this.audioService.fullUrl(path),
-      this.sortOrder(),
-    )
-  );
-
   feedYearFilter = signal<number | 'all'>('all');
   feedMonthFilter = signal<number | 'all'>('all');
+  feedPage = signal(1);
 
-  yearOptions = computed<SelectOption[]>(() => {
-    const years = new Set(this.allFeedPosts().map(p => new Date(p.date).getFullYear()));
-    const sorted = [...years].sort((a, b) => b - a);
-    return [{ value: 'all', label: this.i18n.t('events.allYears') }, ...sorted.map(y => ({ value: y, label: String(y) }))];
-  });
+  isFiltered = computed(() => this.feedYearFilter() !== 'all' || this.feedMonthFilter() !== 'all');
+
+  pagedFeed = computed<FeedPost[]>(() =>
+    this.feedItems().map(item => toFeedPost(item, path => this.photoService.fullUrl(path))));
+
+  yearOptions = computed<SelectOption[]>(() => [
+    { value: 'all', label: this.i18n.t('events.allYears') },
+    ...this.availableYears().map(year => ({ value: year, label: String(year) })),
+  ]);
 
   monthOptions = computed<SelectOption[]>(() => [
     { value: 'all', label: this.i18n.t('memories.allMonths') },
@@ -120,124 +109,53 @@ export class MemoriesPage {
 
   setFeedYearFilter(year: number | 'all'): void {
     this.feedYearFilter.set(year);
-    this.feedPage.set(1);
+    this.loadPage(1);
   }
 
   setFeedMonthFilter(month: number | 'all'): void {
     this.feedMonthFilter.set(month);
-    this.feedPage.set(1);
+    this.loadPage(1);
   }
-
-  feed = computed<FeedPost[]>(() => {
-    const year = this.feedYearFilter();
-    const month = this.feedMonthFilter();
-
-    return this.allFeedPosts().filter(p => {
-      const d = new Date(p.date);
-      if (year !== 'all' && d.getFullYear() !== year) return false;
-      if (month !== 'all' && d.getMonth() + 1 !== month) return false;
-      return true;
-    });
-  });
-
-  private static readonly FEED_PER_PAGE = 5;
-
-  feedPage = signal(1);
-
-  totalFeedPages = computed(() => Math.max(1, Math.ceil(this.feed().length / MemoriesPage.FEED_PER_PAGE)));
-
-  currentFeedPage = computed(() => Math.min(this.feedPage(), this.totalFeedPages()));
-
-  pagedFeed = computed(() => {
-    const start = (this.currentFeedPage() - 1) * MemoriesPage.FEED_PER_PAGE;
-    return this.feed().slice(start, start + MemoriesPage.FEED_PER_PAGE);
-  });
-
-  goToFeedPage(page: number): void {
-    this.feedPage.set(Math.min(Math.max(page, 1), this.totalFeedPages()));
-  }
-
-  pageNumbers = computed<(number | '…')[]>(() => {
-    const total = this.totalFeedPages();
-    const current = this.currentFeedPage();
-
-    if (total <= 7) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    const keep = new Set<number>([1, total, current - 1, current, current + 1]);
-    const sorted = [...keep].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
-
-    const result: (number | '…')[] = [];
-    let previous = 0;
-    for (const page of sorted) {
-      if (previous && page - previous > 1) result.push('…');
-      result.push(page);
-      previous = page;
-    }
-    return result;
-  });
 
   setSortOrder(order: SortOrder): void {
     this.sortOrder.set(order);
-    this.feedPage.set(1);
+    this.loadPage(1);
+  }
+
+  goToFeedPage(page: number): void {
+    this.loadPage(Math.max(page, 1));
   }
 
   constructor() {
     this.userService.ensureCurrentUser().subscribe(user => {
-      if (user.partner) this.loadAll();
+      if (user.partner) this.loadPage(1);
       else this.loading.set(false);
     });
   }
 
   loadAll(): void {
-    this.loading.set(true);
-    this.photoPage.set(1);
-    this.audioPage.set(1);
+    this.loadPage(1);
+  }
 
-    forkJoin({
-      photos: this.photoService.getAll(1, MemoriesPage.PAGE_SIZE),
-      audio: this.audioService.getAll(1, MemoriesPage.PAGE_SIZE),
+  private loadPage(page: number): void {
+    this.loading.set(true);
+
+    this.memoryFeed.getPage({
+      page,
+      pageSize: MemoriesPage.PAGE_SIZE,
+      sort: this.sortOrder(),
+      year: this.feedYearFilter(),
+      month: this.feedMonthFilter(),
+      type: 'all',
     }).subscribe({
-      next: ({ photos, audio }) => {
-        this.photos.set(photos.items);
-        this.audioItems.set(audio.items);
-        this.hasMorePhotos.set(photos.hasMore);
-        this.hasMoreAudio.set(audio.hasMore);
+      next: feed => {
+        this.feedItems.set(feed.items);
+        this.hasMore.set(feed.hasMore);
+        this.feedPage.set(page);
+        if (feed.years) this.availableYears.set(feed.years);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
-    });
-  }
-
-  loadMore(): void {
-    this.loadingMore.set(true);
-
-    const nextPhotoPage = this.hasMorePhotos() ? this.photoPage() + 1 : null;
-    const nextAudioPage = this.hasMoreAudio() ? this.audioPage() + 1 : null;
-
-    forkJoin({
-      photos: nextPhotoPage
-        ? this.photoService.getAll(nextPhotoPage, MemoriesPage.PAGE_SIZE)
-        : of({ items: [] as Photo[], hasMore: false }),
-      audio: nextAudioPage
-        ? this.audioService.getAll(nextAudioPage, MemoriesPage.PAGE_SIZE)
-        : of({ items: [] as AudioMessage[], hasMore: false }),
-    }).subscribe({
-      next: ({ photos, audio }) => {
-        if (nextPhotoPage) {
-          this.photos.update(items => [...items, ...photos.items]);
-          this.photoPage.set(nextPhotoPage);
-          this.hasMorePhotos.set(photos.hasMore);
-        }
-        if (nextAudioPage) {
-          this.audioItems.update(items => [...items, ...audio.items]);
-          this.audioPage.set(nextAudioPage);
-          this.hasMoreAudio.set(audio.hasMore);
-        }
-        this.loadingMore.set(false);
-      },
-      error: () => this.loadingMore.set(false)
     });
   }
 
@@ -306,7 +224,7 @@ export class MemoriesPage {
     const item = this.uploadQueue()[index];
     this.patchQueueItem(index, { status: 'uploading' });
 
-    const request$: Observable<HttpEvent<Photo | AudioMessage>> = this.uploadType() === 'photo'
+    const request$: Observable<HttpEvent<unknown>> = this.uploadType() === 'photo'
       ? this.photoService.upload(item.file, date, caption)
       : this.audioService.upload(item.file, date, caption);
 
