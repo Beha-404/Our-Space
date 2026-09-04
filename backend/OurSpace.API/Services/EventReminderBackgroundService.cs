@@ -12,7 +12,7 @@ public class EventReminderBackgroundService(
     private const int ReminderWindowDays = 3;
 
     private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);
-    private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(2);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

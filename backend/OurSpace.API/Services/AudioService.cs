@@ -5,7 +5,6 @@ using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.Memory;
 using OurSpace.API.Models.Entities;
-using Xabe.FFmpeg;
 
 namespace OurSpace.API.Services;
 
@@ -16,6 +15,7 @@ public class AudioService(
     IFileUrlSigner urlSigner,
     IStorageQuotaService quota,
     IFFmpegReadiness ffmpeg,
+    IBackgroundJobQueue jobQueue,
     ICoupleContext coupleContext) : IAudioService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
@@ -51,31 +51,12 @@ public class AudioService(
 
         await quota.EnsureRoomAsync(coupleId, file.Length);
 
+        var extension = isVideo ? ".mp4" : Path.GetExtension(file.FileName);
+        if (string.IsNullOrWhiteSpace(extension)) extension = ".mp3";
+
         StoredFile stored;
-
-        if (isVideo)
+        await using (var uploadStream = file.OpenReadStream())
         {
-            StoredFile video;
-            await using (var uploadStream = file.OpenReadStream())
-            {
-                video = await fileStorage.SaveAsync(uploadStream, "audio", ".mp4");
-            }
-
-            try
-            {
-                stored = await ConvertToMp3Async(video.Path);
-            }
-            finally
-            {
-                await fileStorage.DeleteAsync(video.Path);
-            }
-        }
-        else
-        {
-            var extension = Path.GetExtension(file.FileName);
-            if (string.IsNullOrWhiteSpace(extension)) extension = ".mp3";
-
-            await using var uploadStream = file.OpenReadStream();
             stored = await fileStorage.SaveAsync(uploadStream, "audio", extension);
         }
 
@@ -85,12 +66,21 @@ public class AudioService(
             UploadedByUserId = userId,
             FilePath = stored.Path,
             SizeBytes = stored.SizeBytes,
+            Status = isVideo ? AudioStatus.Processing : AudioStatus.Ready,
             Caption = caption.Trim(),
             RecordedAt = recordedAt,
         };
 
         db.AudioMessages.Add(audio);
         await db.SaveChangesAsync();
+
+        if (isVideo)
+        {
+            await jobQueue.EnqueueAsync(
+                BackgroundJobTypes.AudioConversion,
+                new AudioConversionPayload(audio.Id, stored.Path),
+                userId);
+        }
 
         return ToDto(audio, username);
     }
@@ -154,45 +144,6 @@ public class AudioService(
     private static bool IsVideoUpload(IFormFile file) =>
         VideoContentTypes.Contains(file.ContentType) ||
         string.Equals(Path.GetExtension(file.FileName), ".mp4", StringComparison.OrdinalIgnoreCase);
-
-    private async Task<StoredFile> ConvertToMp3Async(string videoUrl)
-    {
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(tempDir);
-
-        try
-        {
-            var videoPath = Path.Combine(tempDir, "input.mp4");
-            var mp3Path = Path.Combine(tempDir, "output.mp3");
-
-            await using (var videoStream = await fileStorage.OpenReadAsync(videoUrl))
-            await using (var videoFile = File.Create(videoPath))
-            {
-                await videoStream.CopyToAsync(videoFile);
-            }
-
-            try
-            {
-                var conversion = FFmpeg.Conversions.New()
-                    .AddParameter($"-i \"{videoPath}\"")
-                    .AddParameter("-vn -acodec libmp3lame -q:a 2")
-                    .SetOutput(mp3Path);
-
-                await conversion.Start();
-            }
-            catch (Exception)
-            {
-                throw new BadRequestException(localizer.T("Audio.ConversionFailed"));
-            }
-
-            await using var mp3Stream = File.OpenRead(mp3Path);
-            return await fileStorage.SaveAsync(mp3Stream, "audio", ".mp3");
-        }
-        finally
-        {
-            Directory.Delete(tempDir, recursive: true);
-        }
-    }
 
     private async Task ClearQuotaWarningAsync(int coupleId)
     {

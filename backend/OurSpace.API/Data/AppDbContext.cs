@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
     public DbSet<JobLease> JobLeases => Set<JobLease>();
     public DbSet<AttemptCounter> AttemptCounters => Set<AttemptCounter>();
+    public DbSet<BackgroundJob> BackgroundJobs => Set<BackgroundJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -137,6 +138,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(l => l.Name);
             entity.Property(l => l.Name).HasMaxLength(100);
             entity.Property(l => l.Owner).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<BackgroundJob>(entity =>
+        {
+            entity.Property(j => j.Type).HasMaxLength(50);
+            entity.Property(j => j.LastError).HasMaxLength(1000);
+
+            entity.HasIndex(j => new { j.Status, j.Id });
         });
 
         modelBuilder.Entity<AttemptCounter>(entity =>

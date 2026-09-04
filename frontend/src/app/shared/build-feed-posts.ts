@@ -12,6 +12,7 @@ export interface FeedPost {
   audioUrl?: string;
   downloadUrl: string;
   uploadedByUsername: string;
+  status?: 'ready' | 'processing' | 'failed';
 }
 
 function withDownload(url: string, caption: string | null, date: string): string {
@@ -29,6 +30,7 @@ export function toFeedPost(
     thumbnailUrl: string | null;
     mediumUrl: string | null;
     caption: string | null;
+    status: 'ready' | 'processing' | 'failed';
     date: string;
     uploadedByUsername: string;
   },
@@ -47,6 +49,7 @@ export function toFeedPost(
     audioUrl: item.type === 'audio' ? url : undefined,
     downloadUrl: withDownload(url, item.caption, item.date),
     uploadedByUsername: item.uploadedByUsername,
+    status: item.status,
   };
 }
 

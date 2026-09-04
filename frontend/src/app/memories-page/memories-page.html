@@ -121,7 +121,13 @@
 									<span class="post-tile-caption">{{ post.caption || ('memories.untitledPhoto' | translate) }}</span>
 								} @else {
 									<div class="post-tile-audio">
-										<app-audio-player [src]="post.audioUrl!" />
+										@if (post.status === 'processing') {
+											<p class="audio-state">{{ 'memories.audioProcessing' | translate }}</p>
+										} @else if (post.status === 'failed') {
+											<p class="audio-state failed">{{ 'memories.audioFailed' | translate }}</p>
+										} @else {
+											<app-audio-player [src]="post.audioUrl!" />
+										}
 									</div>
 									<span class="post-tile-caption">{{ post.caption || ('memories.untitledAudio' | translate) }}</span>
 								}

@@ -210,8 +210,13 @@ else
 }
 
 builder.Services.AddScoped<IEmailQueue, EmailQueue>();
+builder.Services.AddSingleton<IInstanceIdentity, MachineInstanceIdentity>();
 builder.Services.AddScoped<IJobLeaseService, JobLeaseService>();
 builder.Services.AddScoped<IAttemptLimiter, AttemptLimiter>();
+builder.Services.AddScoped<IBackgroundJobQueue, BackgroundJobQueue>();
+builder.Services.AddScoped<IBackgroundJobHandler, AudioConversionJobHandler>();
+builder.Services.AddScoped<IBackgroundJobHandler, MemoriesExportJobHandler>();
+builder.Services.AddHostedService<BackgroundJobWorker>();
 builder.Services.AddHostedService<EmailDispatchBackgroundService>();
 
 builder.Services.AddHostedService<EventReminderBackgroundService>();

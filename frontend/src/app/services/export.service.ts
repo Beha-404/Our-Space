@@ -8,6 +8,9 @@ export class ExportService {
     private apiUrl = config.apiUrl;
 
     exportMemories() {
-        return this.http.get(`${this.apiUrl}/export/memories`, { responseType: 'blob' });
+        return this.http.get(`${this.apiUrl}/export/memories`, {
+            responseType: 'blob',
+            observe: 'response',
+        });
     }
 }

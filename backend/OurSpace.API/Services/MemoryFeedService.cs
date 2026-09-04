@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.Memory;
+using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
@@ -84,6 +85,9 @@ public class MemoryFeedService(
                 ThumbnailUrl = null,
                 MediumUrl = null,
                 Caption = a.Caption,
+                Status = a.Status == AudioStatus.Ready ? "ready"
+                    : a.Status == AudioStatus.Processing ? "processing"
+                    : "failed",
                 Date = a.RecordedAt,
                 UploadedByUsername = a.UploadedByUser.Username,
                 CreatedAt = a.CreatedAt,

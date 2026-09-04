@@ -12,7 +12,8 @@ namespace OurSpace.Tests;
 public class OurSpaceFactory(
     long? quotaBytes = null,
     bool registrationOpen = true,
-    bool twoFactorEnabled = true) : WebApplicationFactory<Program>
+    bool twoFactorEnabled = true,
+    long? exportInlineLimitBytes = null) : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection connection = new("Filename=:memory:");
 
@@ -22,6 +23,9 @@ public class OurSpaceFactory(
 
         if (quotaBytes.HasValue)
             builder.UseSetting("Storage:QuotaBytesPerCouple", quotaBytes.Value.ToString());
+
+        if (exportInlineLimitBytes.HasValue)
+            builder.UseSetting("Storage:ExportInlineLimitBytes", exportInlineLimitBytes.Value.ToString());
 
         builder.UseSetting("ConnectionStrings:DefaultConnection", "Server=test;Database=test;");
         builder.UseSetting("Jwt:Key", "oursspace-test-signing-key-do-not-use-in-production-0123456789");

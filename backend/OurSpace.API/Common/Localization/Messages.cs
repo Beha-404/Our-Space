@@ -135,6 +135,18 @@ public static class Messages
             "Fajl je prazan.",
             "The file is empty.",
             "El archivo está vacío."),
+        ["Export.AlreadyRunning"] = Lang(
+            "Priprema preuzimanja je već u toku. Javićemo ti mejlom kad bude gotovo.",
+            "An export is already being prepared. We'll email you when it's ready.",
+            "Ya se está preparando una descarga. Te avisaremos por correo cuando esté lista."),
+        ["Email.ExportReady.Subject"] = Lang(
+            "Vaše uspomene su spremne za preuzimanje",
+            "Your memories are ready to download",
+            "Sus recuerdos están listos para descargar"),
+        ["Email.ExportReady.Body"] = Lang(
+            "Spakovali smo sve vaše slike i audio poruke ({0}MB).\n\nPreuzmi ovdje: {1}\n\nLink vrijedi ograničeno vrijeme.",
+            "We've packed up all your photos and audio messages ({0}MB).\n\nDownload here: {1}\n\nThe link is valid for a limited time.",
+            "Hemos empaquetado todas sus fotos y audios ({0}MB).\n\nDescarga aquí: {1}\n\nEl enlace es válido por tiempo limitado."),
         ["Export.NothingToExport"] = Lang(
             "Nemate nijednu uspomenu za izvoz.",
             "You don't have any memories to export yet.",

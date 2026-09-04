@@ -1,8 +1,11 @@
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OurSpace.API.Data;
+using OurSpace.API.Models.Entities;
 using OurSpace.API.Services;
 using Xunit;
 
@@ -28,6 +31,37 @@ public class ExportTests
         Assert.Equal(2, archive.Entries.Count);
         Assert.Contains(archive.Entries, e => e.FullName.StartsWith("Slike/"));
         Assert.Contains(archive.Entries, e => e.FullName.StartsWith("Audio poruke/"));
+    }
+
+    [Fact]
+    public async Task A_Large_Library_Is_Handed_To_A_Background_Job_Instead_Of_Streaming()
+    {
+        using var factory = new OurSpaceFactory(exportInlineLimitBytes: 1);
+        var world = await TestWorld.SeedAsync(factory);
+
+        await GiveTheCoupleSomeWeightAsync(factory);
+
+        var client = ClientWith(factory, world.MarkoToken);
+        var response = await client.GetAsync("/api/export/memories");
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var job = await db.BackgroundJobs.SingleAsync();
+        Assert.Equal(BackgroundJobTypes.MemoriesExport, job.Type);
+        Assert.Equal(BackgroundJobStatus.Pending, job.Status);
+    }
+
+    private static async Task GiveTheCoupleSomeWeightAsync(OurSpaceFactory factory)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var photo = await db.Photos.FirstAsync();
+        photo.SizeBytes = 5_000_000;
+        await db.SaveChangesAsync();
     }
 
     [Fact]

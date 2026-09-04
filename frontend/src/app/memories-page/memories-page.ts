@@ -301,9 +301,17 @@ export class MemoriesPage {
     this.exporting.set(true);
 
     this.exportService.exportMemories().subscribe({
-      next: blob => {
+      next: response => {
         this.exporting.set(false);
-        this.triggerDownload(blob, `ourspace-uspomene-${new Date().toISOString().slice(0, 10)}.zip`);
+
+        if (response.status === 202) {
+          this.toast.success('toast.exportQueued');
+          return;
+        }
+
+        if (response.body) {
+          this.triggerDownload(response.body, `ourspace-uspomene-${new Date().toISOString().slice(0, 10)}.zip`);
+        }
       },
       error: () => {
         this.exporting.set(false);

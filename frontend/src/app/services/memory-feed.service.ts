@@ -9,6 +9,7 @@ export interface MemoryItem {
     thumbnailUrl: string | null;
     mediumUrl: string | null;
     caption: string | null;
+    status: 'ready' | 'processing' | 'failed';
     date: string;
     uploadedByUsername: string;
     createdAt: string;

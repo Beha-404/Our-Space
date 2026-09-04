@@ -30,17 +30,34 @@ public class EmailOutboxTests
     {
         using var factory = new OurSpaceFactory();
 
-        using var first = factory.Services.CreateScope();
-        using var second = factory.Services.CreateScope();
+        var serverOne = LeaseServiceFor(factory, "server-1");
+        var serverTwo = LeaseServiceFor(factory, "server-2");
 
-        var firstLease = first.ServiceProvider.GetRequiredService<IJobLeaseService>();
-        var secondLease = second.ServiceProvider.GetRequiredService<IJobLeaseService>();
-
-        var firstAcquired = await firstLease.TryAcquireAsync("test-job", TimeSpan.FromMinutes(5), CancellationToken.None);
-        var secondAcquired = await secondLease.TryAcquireAsync("test-job", TimeSpan.FromMinutes(5), CancellationToken.None);
+        var firstAcquired = await serverOne.TryAcquireAsync("test-job", TimeSpan.FromMinutes(5), CancellationToken.None);
+        var secondAcquired = await serverTwo.TryAcquireAsync("test-job", TimeSpan.FromMinutes(5), CancellationToken.None);
 
         Assert.True(firstAcquired);
         Assert.False(secondAcquired);
+    }
+
+    private static IJobLeaseService LeaseServiceFor(OurSpaceFactory factory, string instanceId)
+    {
+        var db = factory.Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
+        return new JobLeaseService(db, new FixedInstanceIdentity(instanceId));
+    }
+
+    private sealed record FixedInstanceIdentity(string Value) : IInstanceIdentity;
+
+    [Fact]
+    public async Task The_Current_Holder_Can_Keep_Working_On_The_Next_Round()
+    {
+        using var factory = new OurSpaceFactory();
+        using var scope = factory.Services.CreateScope();
+
+        var lease = scope.ServiceProvider.GetRequiredService<IJobLeaseService>();
+
+        Assert.True(await lease.TryAcquireAsync("repeat-job", TimeSpan.FromMinutes(15), CancellationToken.None));
+        Assert.True(await lease.TryAcquireAsync("repeat-job", TimeSpan.FromMinutes(15), CancellationToken.None));
     }
 
     [Fact]
@@ -48,16 +65,12 @@ public class EmailOutboxTests
     {
         using var factory = new OurSpaceFactory();
 
-        using var first = factory.Services.CreateScope();
-        var firstLease = first.ServiceProvider.GetRequiredService<IJobLeaseService>();
-
-        Assert.True(await firstLease.TryAcquireAsync("stale-job", TimeSpan.FromMilliseconds(1), CancellationToken.None));
+        var deadServer = LeaseServiceFor(factory, "server-that-died");
+        Assert.True(await deadServer.TryAcquireAsync("stale-job", TimeSpan.FromMilliseconds(1), CancellationToken.None));
 
         await Task.Delay(30);
 
-        using var second = factory.Services.CreateScope();
-        var secondLease = second.ServiceProvider.GetRequiredService<IJobLeaseService>();
-
-        Assert.True(await secondLease.TryAcquireAsync("stale-job", TimeSpan.FromMinutes(5), CancellationToken.None));
+        var takingOver = LeaseServiceFor(factory, "server-taking-over");
+        Assert.True(await takingOver.TryAcquireAsync("stale-job", TimeSpan.FromMinutes(5), CancellationToken.None));
     }
 }
