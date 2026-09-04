@@ -224,6 +224,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.XContentTypeOptions = "nosniff";
+    context.Response.Headers.XFrameOptions = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    await next();
+});
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
 app.UseHttpsRedirection();
 
 app.UseCors(AngularDevCorsPolicy);
@@ -256,7 +269,6 @@ if (!string.IsNullOrWhiteSpace(blobConnectionString))
 
         var maxAge = (int)Math.Max(0, (expiresOn - DateTimeOffset.UtcNow).TotalSeconds);
         http.Response.Headers.CacheControl = $"public, max-age={maxAge}, immutable";
-        http.Response.Headers.XContentTypeOptions = "nosniff";
 
         return Results.Redirect(sasUri.ToString());
     });
@@ -295,7 +307,6 @@ else
         OnPrepareResponse = ctx =>
         {
             ctx.Context.Response.Headers.CacheControl = UploadsCacheControl;
-            ctx.Context.Response.Headers.XContentTypeOptions = "nosniff";
         },
     });
 }
