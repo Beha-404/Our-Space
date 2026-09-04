@@ -39,26 +39,44 @@ public class EventReminderBackgroundService(
         var reminderCutoff = now.AddDays(ReminderWindowDays);
 
         var dueEvents = await db.Events
-            .Include(e => e.Couple).ThenInclude(c => c.User1)
-            .Include(e => e.Couple).ThenInclude(c => c.User2)
             .Where(e => e.ReminderSentAt == null && e.EventDate >= now && e.EventDate <= reminderCutoff)
+            .Select(e => new
+            {
+                e.Id,
+                e.Title,
+                e.EventDate,
+                PartnerOneEmail = e.Couple.User1.Email,
+                PartnerOneLanguage = e.Couple.User1.PreferredLanguage,
+                PartnerTwoEmail = e.Couple.User2.Email,
+                PartnerTwoLanguage = e.Couple.User2.PreferredLanguage,
+            })
             .ToListAsync(stoppingToken);
+
+        if (dueEvents.Count == 0)
+            return;
 
         foreach (var ev in dueEvents)
         {
             var eventDateText = ev.EventDate.ToString("dd.MM.yyyy.");
 
-            foreach (var recipient in new[] { ev.Couple.User1, ev.Couple.User2 })
+            var recipients = new[]
             {
-                var subject = localizer.For("Email.Reminder.Subject", recipient.PreferredLanguage, ev.Title);
-                var body = localizer.For("Email.Reminder.Body", recipient.PreferredLanguage, ev.Title, eventDateText);
-                emailQueue.Enqueue(recipient.Email, subject, body);
-            }
+                (Email: ev.PartnerOneEmail, Language: ev.PartnerOneLanguage),
+                (Email: ev.PartnerTwoEmail, Language: ev.PartnerTwoLanguage),
+            };
 
-            ev.ReminderSentAt = now;
+            foreach (var (email, language) in recipients)
+            {
+                var subject = localizer.For("Email.Reminder.Subject", language, ev.Title);
+                var body = localizer.For("Email.Reminder.Body", language, ev.Title, eventDateText);
+                emailQueue.Enqueue(email, subject, body);
+            }
         }
 
-        if (dueEvents.Count > 0)
-            await db.SaveChangesAsync(stoppingToken);
+        var sentIds = dueEvents.Select(e => e.Id).ToList();
+
+        await db.Events
+            .Where(e => sentIds.Contains(e.Id))
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.ReminderSentAt, now), stoppingToken);
     }
 }

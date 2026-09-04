@@ -1,14 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EventItem } from '../interfaces/event';
-import { EventService } from '../services/event.service';
+import { HomeService } from '../services/home.service';
 import { PhotoService } from '../services/photo.service';
 import { AudioService } from '../services/audio.service';
 import { UserService } from '../services/user.service';
-import { WishlistService } from '../services/wishlist.service';
 import { Wish } from '../interfaces/wish';
 import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
 import { Photo } from '../interfaces/photo';
@@ -26,10 +24,9 @@ import { Skeleton } from '../shared/skeleton/skeleton';
 })
 export class HomePage {
   userService = inject(UserService);
-  private eventService = inject(EventService);
+  private homeService = inject(HomeService);
   private photoService = inject(PhotoService);
   private audioService = inject(AudioService);
-  private wishlistService = inject(WishlistService);
 
   upcomingEvents = signal<EventItem[]>([]);
   photos = signal<Photo[]>([]);
@@ -42,7 +39,6 @@ export class HomePage {
   );
 
   private static readonly FEED_PREVIEW_SIZE = 6;
-  private static readonly PREVIEW_FETCH_SIZE = 10;
 
   feedTypeFilter = signal<'all' | 'photo' | 'audio'>('all');
 
@@ -94,8 +90,7 @@ export class HomePage {
     const request$ = post.type === 'photo' ? this.photoService.delete(post.id) : this.audioService.delete(post.id);
     request$.subscribe(() => {
       this.postPendingDelete.set(null);
-      this.loadMemories();
-      this.loadMemoryCount();
+      this.load();
     });
   }
 
@@ -114,30 +109,17 @@ export class HomePage {
   });
 
   constructor() {
-    this.userService.ensureCurrentUser().subscribe(user => {
-      if (user.partner) {
-        this.eventService.getUpcoming().subscribe(events => this.upcomingEvents.set(events.slice(0, 3)));
-        this.wishlistService.getAll().subscribe(wishes => this.wishes.set(wishes));
-        this.loadMemories();
-        this.loadMemoryCount();
-      }
-    });
+    this.load();
   }
 
-  private loadMemories(): void {
-    forkJoin({
-      photos: this.photoService.getAll(1, HomePage.PREVIEW_FETCH_SIZE),
-      audio: this.audioService.getAll(1, HomePage.PREVIEW_FETCH_SIZE),
-    }).subscribe(({ photos, audio }) => {
-      this.photos.set(photos.items);
-      this.audioItems.set(audio.items);
+  private load(): void {
+    this.homeService.get().subscribe(summary => {
+      this.userService.currentUser.set(summary.user);
+      this.upcomingEvents.set(summary.upcomingEvents);
+      this.wishes.set(summary.recentWishes);
+      this.photos.set(summary.photos);
+      this.audioItems.set(summary.audio);
+      this.totalMemories.set(summary.user.partner ? summary.totalMemories : null);
     });
-  }
-
-  private loadMemoryCount(): void {
-    forkJoin({
-      photoCount: this.photoService.getCount(),
-      audioCount: this.audioService.getCount(),
-    }).subscribe(({ photoCount, audioCount }) => this.totalMemories.set(photoCount + audioCount));
   }
 }

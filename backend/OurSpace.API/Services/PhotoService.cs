@@ -15,7 +15,8 @@ public class PhotoService(
     IFileStorageService fileStorage,
     ILocalizer localizer,
     IFileUrlSigner urlSigner,
-    IStorageQuotaService quota) : IPhotoService
+    IStorageQuotaService quota,
+    ICoupleContext coupleContext) : IPhotoService
 {
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
     private const int ThumbnailWidth = 640;
@@ -82,7 +83,7 @@ public class PhotoService(
 
     public async Task<PagedResult<PhotoDto>> GetAllAsync(int userId, int page, int pageSize)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Photo.NeedPartner");
 
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
@@ -103,13 +104,13 @@ public class PhotoService(
 
     public async Task<int> GetCountAsync(int userId)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Photo.NeedPartner");
         return await db.Photos.CountAsync(p => p.CoupleId == coupleId);
     }
 
     public async Task DeleteAsync(int userId, int photoId)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Photo.NeedPartner");
 
         var photo = await db.Photos.SingleOrDefaultAsync(p => p.Id == photoId)
             ?? throw new NotFoundException(localizer.T("Photo.NotFound"));
@@ -161,16 +162,6 @@ public class PhotoService(
         buffer.Position = 0;
 
         return await fileStorage.SaveAsync(buffer, subfolder, ".webp");
-    }
-
-    private async Task<int> GetCoupleIdOrThrow(int userId)
-    {
-        var id = await db.Couples
-            .Where(c => c.User1Id == userId || c.User2Id == userId)
-            .Select(c => (int?)c.Id)
-            .SingleOrDefaultAsync();
-
-        return id ?? throw new BadRequestException(localizer.T("Photo.NeedPartner"));
     }
 
     private async Task ClearQuotaWarningAsync(int coupleId)

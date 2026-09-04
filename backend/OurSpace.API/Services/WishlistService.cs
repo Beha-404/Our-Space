@@ -7,7 +7,7 @@ using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
-public class WishlistService(AppDbContext db, ILocalizer localizer) : IWishlistService
+public class WishlistService(AppDbContext db, ILocalizer localizer, ICoupleContext coupleContext) : IWishlistService
 {
     private const int MaxTitleLength = 200;
 
@@ -36,7 +36,7 @@ public class WishlistService(AppDbContext db, ILocalizer localizer) : IWishlistS
 
     public async Task<List<WishDto>> GetAllAsync(int userId)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Wish.NeedPartner");
 
         return await db.WishlistItems
             .Where(w => w.CoupleId == coupleId)
@@ -67,7 +67,7 @@ public class WishlistService(AppDbContext db, ILocalizer localizer) : IWishlistS
 
     private async Task<WishlistItem> GetWishOrThrow(int userId, int wishId)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Wish.NeedPartner");
 
         var wish = await db.WishlistItems.Include(w => w.CreatedByUser).SingleOrDefaultAsync(w => w.Id == wishId)
             ?? throw new NotFoundException(localizer.T("Wish.NotFound"));
@@ -76,16 +76,6 @@ public class WishlistService(AppDbContext db, ILocalizer localizer) : IWishlistS
             throw new NotFoundException(localizer.T("Wish.NotFound"));
 
         return wish;
-    }
-
-    private async Task<int> GetCoupleIdOrThrow(int userId)
-    {
-        var id = await db.Couples
-            .Where(c => c.User1Id == userId || c.User2Id == userId)
-            .Select(c => (int?)c.Id)
-            .SingleOrDefaultAsync();
-
-        return id ?? throw new BadRequestException(localizer.T("Wish.NeedPartner"));
     }
 
     private async Task<(int CoupleId, string Username)> GetCoupleAndUsernameOrThrow(int userId)

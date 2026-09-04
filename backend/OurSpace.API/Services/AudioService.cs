@@ -15,7 +15,8 @@ public class AudioService(
     ILocalizer localizer,
     IFileUrlSigner urlSigner,
     IStorageQuotaService quota,
-    IFFmpegReadiness ffmpeg) : IAudioService
+    IFFmpegReadiness ffmpeg,
+    ICoupleContext coupleContext) : IAudioService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -96,7 +97,7 @@ public class AudioService(
 
     public async Task<PagedResult<AudioDto>> GetAllAsync(int userId, int page, int pageSize)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Audio.NeedPartner");
 
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
@@ -117,13 +118,13 @@ public class AudioService(
 
     public async Task<int> GetCountAsync(int userId)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Audio.NeedPartner");
         return await db.AudioMessages.CountAsync(a => a.CoupleId == coupleId);
     }
 
     public async Task DeleteAsync(int userId, int audioId)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Audio.NeedPartner");
 
         var audio = await db.AudioMessages.SingleOrDefaultAsync(a => a.Id == audioId)
             ?? throw new NotFoundException(localizer.T("Audio.NotFound"));
@@ -191,16 +192,6 @@ public class AudioService(
         {
             Directory.Delete(tempDir, recursive: true);
         }
-    }
-
-    private async Task<int> GetCoupleIdOrThrow(int userId)
-    {
-        var id = await db.Couples
-            .Where(c => c.User1Id == userId || c.User2Id == userId)
-            .Select(c => (int?)c.Id)
-            .SingleOrDefaultAsync();
-
-        return id ?? throw new BadRequestException(localizer.T("Audio.NeedPartner"));
     }
 
     private async Task ClearQuotaWarningAsync(int coupleId)

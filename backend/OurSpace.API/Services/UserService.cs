@@ -312,17 +312,23 @@ public partial class UserService(
 
     private async Task<UserDto> ToDto(User user)
     {
-        var couple = await db.Couples
-            .Include(c => c.User1)
-            .Include(c => c.User2)
-            .SingleOrDefaultAsync(c => c.User1Id == user.Id || c.User2Id == user.Id);
+        var partner = await db.Couples
+            .Where(c => c.User1Id == user.Id || c.User2Id == user.Id)
+            .Select(c => new
+            {
+                Partner = c.User1Id == user.Id ? c.User2 : c.User1,
+                c.RelationshipStartDate,
+            })
+            .Select(x => new PartnerDto(
+                x.Partner.Id,
+                x.Partner.Username,
+                x.Partner.ProfilePictureUrl,
+                x.RelationshipStartDate))
+            .SingleOrDefaultAsync();
 
-        PartnerDto? partnerDto = null;
-        if (couple is not null)
-        {
-            var partner = couple.User1Id == user.Id ? couple.User2 : couple.User1;
-            partnerDto = new PartnerDto(partner.Id, partner.Username, urlSigner.Sign(partner.ProfilePictureUrl), couple.RelationshipStartDate);
-        }
+        var partnerDto = partner is null
+            ? null
+            : partner with { ProfilePictureUrl = urlSigner.Sign(partner.ProfilePictureUrl) };
 
         return new UserDto(user.Id, user.Username, user.Email, urlSigner.Sign(user.ProfilePictureUrl), partnerDto, user.PendingEmail);
     }

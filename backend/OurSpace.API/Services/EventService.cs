@@ -7,7 +7,7 @@ using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
-public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer localizer) : IEventService
+public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer localizer, ICoupleContext coupleContext) : IEventService
 {
     private const int MaxTitleLength = 200;
     private const int MaxDescriptionLength = 2000;
@@ -37,7 +37,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
 
     public async Task<List<EventDto>> GetUpcomingAsync(int userId, bool includePast = false)
     {
-        var coupleId = await GetCoupleIdOrThrow(userId);
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Event.NeedPartner");
         var today = DateTime.UtcNow.Date;
 
         var query = db.Events.Where(e => e.CoupleId == coupleId);
@@ -104,16 +104,6 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
 
         if (request.Description?.Trim().Length > MaxDescriptionLength)
             throw new BadRequestException(localizer.T("Event.DescriptionTooLong"));
-    }
-
-    private async Task<int> GetCoupleIdOrThrow(int userId)
-    {
-        var id = await db.Couples
-            .Where(c => c.User1Id == userId || c.User2Id == userId)
-            .Select(c => (int?)c.Id)
-            .SingleOrDefaultAsync();
-
-        return id ?? throw new BadRequestException(localizer.T("Event.NeedPartner"));
     }
 
     private async Task<Couple> GetCoupleWithUsersOrThrow(int userId) =>
