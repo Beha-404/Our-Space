@@ -18,6 +18,9 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             logger.LogInformation("{Status} {Method} {Path}: {Message}",
                 (int)ex.StatusCode, context.Request.Method, context.Request.Path, ex.Message);
 
+            if (ex is TooManyAttemptsException throttled && !context.Response.HasStarted)
+                context.Response.Headers.RetryAfter = throttled.RetryAfterSeconds.ToString();
+
             await WriteProblem(context, ex.StatusCode, ex.Message);
         }
         catch (Exception ex)

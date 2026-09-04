@@ -16,6 +16,7 @@ public partial class AuthService(
     ITokenService tokenService,
     ILocalizer localizer,
     IEmailQueue emailQueue,
+    IAttemptLimiter attemptLimiter,
     IOptions<AuthOptions> authOptions) : IAuthService
 {
     private static readonly TimeSpan ResetCodeLifetime = TimeSpan.FromMinutes(15);
@@ -23,6 +24,12 @@ public partial class AuthService(
 
     private static readonly TimeSpan LoginCodeLifetime = TimeSpan.FromMinutes(10);
     private const int MaxLoginCodeAttempts = 5;
+
+    private const int MaxLoginAttempts = 10;
+    private static readonly TimeSpan LoginAttemptWindow = TimeSpan.FromMinutes(5);
+
+    private const int MaxResetRequests = 3;
+    private static readonly TimeSpan ResetRequestWindow = TimeSpan.FromHours(1);
 
     private static readonly TimeSpan RevokedTokenRetention = TimeSpan.FromDays(7);
 
@@ -77,6 +84,9 @@ public partial class AuthService(
 
     public async Task<LoginOutcome> LoginAsync(LoginRequest request)
     {
+        await attemptLimiter.EnsureAllowedAsync(
+            "login", request.Username.Trim().ToLowerInvariant(), MaxLoginAttempts, LoginAttemptWindow);
+
         var user = await db.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
 
         var passwordMatches = VerifyPassword(request.Password, user?.PasswordHash);
@@ -179,6 +189,9 @@ public partial class AuthService(
 
     public async Task RequestPasswordResetAsync(string email)
     {
+        await attemptLimiter.EnsureAllowedAsync(
+            "forgot-password", email.Trim().ToLowerInvariant(), MaxResetRequests, ResetRequestWindow);
+
         var normalized = email.Trim();
         var user = await db.Users.SingleOrDefaultAsync(u => u.Email == normalized);
         if (user is null)

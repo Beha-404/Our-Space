@@ -16,13 +16,27 @@ public class ForwardedClientIpTests
         var visitorB = ClientFrom(factory, "203.0.113.20");
 
         for (var i = 0; i < 10; i++)
-            await Login(visitorA, "nema-me", "PogresnaSifra1");
+            await Login(visitorA, $"nema-me-{i}", "PogresnaSifra1");
 
-        var visitorAThrottled = await Login(visitorA, "nema-me", "PogresnaSifra1");
-        var visitorBStillAllowed = await Login(visitorB, "nema-me", "PogresnaSifra1");
+        var visitorAThrottled = await Login(visitorA, "nema-me-x", "PogresnaSifra1");
+        var visitorBStillAllowed = await Login(visitorB, "nema-me-y", "PogresnaSifra1");
 
         Assert.Equal(HttpStatusCode.TooManyRequests, visitorAThrottled.StatusCode);
         Assert.NotEqual(HttpStatusCode.TooManyRequests, visitorBStillAllowed.StatusCode);
+    }
+
+    [Fact]
+    public async Task One_Account_Is_Protected_Even_When_The_Attacker_Rotates_Ip()
+    {
+        using var factory = new OurSpaceFactory();
+        await TestWorld.SeedAsync(factory);
+
+        for (var i = 0; i < 10; i++)
+            await Login(ClientFrom(factory, $"198.51.100.{i}"), "ana", "PogresnaSifra1");
+
+        var fromAFreshIp = await Login(ClientFrom(factory, "198.51.100.200"), "ana", "PogresnaSifra1");
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, fromAFreshIp.StatusCode);
     }
 
     [Fact]

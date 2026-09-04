@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
     public DbSet<JobLease> JobLeases => Set<JobLease>();
+    public DbSet<AttemptCounter> AttemptCounters => Set<AttemptCounter>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -136,6 +137,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(l => l.Name);
             entity.Property(l => l.Name).HasMaxLength(100);
             entity.Property(l => l.Owner).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AttemptCounter>(entity =>
+        {
+            entity.Property(c => c.Bucket).HasMaxLength(200);
+            entity.HasIndex(c => new { c.Bucket, c.WindowStart }).IsUnique();
         });
     }
 }

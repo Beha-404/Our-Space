@@ -14,3 +14,9 @@ public class ConflictException(string message) : ApiException(message, HttpStatu
 public class BadRequestException(string message) : ApiException(message, HttpStatusCode.BadRequest);
 
 public class UnauthorizedAppException(string message) : ApiException(message, HttpStatusCode.Unauthorized);
+
+public class TooManyAttemptsException(string message, int retryAfterSeconds)
+    : ApiException(message, HttpStatusCode.TooManyRequests)
+{
+    public int RetryAfterSeconds { get; } = retryAfterSeconds;
+}

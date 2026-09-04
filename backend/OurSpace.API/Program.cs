@@ -211,6 +211,7 @@ else
 
 builder.Services.AddScoped<IEmailQueue, EmailQueue>();
 builder.Services.AddScoped<IJobLeaseService, JobLeaseService>();
+builder.Services.AddScoped<IAttemptLimiter, AttemptLimiter>();
 builder.Services.AddHostedService<EmailDispatchBackgroundService>();
 
 builder.Services.AddHostedService<EventReminderBackgroundService>();
