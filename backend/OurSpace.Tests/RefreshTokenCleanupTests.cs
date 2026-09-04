@@ -98,7 +98,6 @@ public class RefreshTokenCleanupTests
 
         return await scope.ServiceProvider.GetRequiredService<AppDbContext>()
             .RefreshTokens
-            .IgnoreQueryFilters()
             .Where(r => r.UserId == userId)
             .Select(r => r.Token)
             .ToListAsync();

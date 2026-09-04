@@ -24,7 +24,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(u => u.Username).IsUnique();
             entity.HasIndex(u => u.Email).IsUnique();
             entity.HasIndex(u => u.PairingCode).IsUnique().HasFilter("[PairingCode] IS NOT NULL");
-            entity.HasQueryFilter(u => !u.IsDeleted);
         });
 
         modelBuilder.Entity<Couple>(entity =>
@@ -40,7 +39,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(c => new { c.User1Id, c.User2Id }).IsUnique();
-            entity.HasQueryFilter(c => !c.User1.IsDeleted && !c.User2.IsDeleted);
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>
@@ -51,8 +49,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany()
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasQueryFilter(r => !r.User.IsDeleted);
         });
 
         modelBuilder.Entity<Event>(entity =>
@@ -71,7 +67,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => new { e.CoupleId, e.EventDate });
-            entity.HasQueryFilter(e => !e.Couple.User1.IsDeleted && !e.Couple.User2.IsDeleted);
         });
 
         modelBuilder.Entity<Photo>(entity =>
@@ -89,7 +84,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(p => new { p.CoupleId, p.TakenAt });
-            entity.HasQueryFilter(p => !p.Couple.User1.IsDeleted && !p.Couple.User2.IsDeleted);
         });
 
         modelBuilder.Entity<AudioMessage>(entity =>
@@ -107,7 +101,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(a => new { a.CoupleId, a.RecordedAt });
-            entity.HasQueryFilter(a => !a.Couple.User1.IsDeleted && !a.Couple.User2.IsDeleted);
         });
 
         modelBuilder.Entity<WishlistItem>(entity =>
@@ -125,7 +118,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(w => new { w.CoupleId, w.IsFulfilled, w.CreatedAt });
-            entity.HasQueryFilter(w => !w.Couple.User1.IsDeleted && !w.Couple.User2.IsDeleted);
         });
     }
 }

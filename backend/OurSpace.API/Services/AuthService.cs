@@ -278,7 +278,6 @@ public partial class AuthService(
         var revokedCutoff = now - RevokedTokenRetention;
 
         await db.RefreshTokens
-            .IgnoreQueryFilters()
             .Where(r => r.UserId == userId
                 && (r.ExpiresAt < now || (r.RevokedAt != null && r.RevokedAt < revokedCutoff)))
             .ExecuteDeleteAsync();

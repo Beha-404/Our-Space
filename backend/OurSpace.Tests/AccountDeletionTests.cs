@@ -63,10 +63,10 @@ public class AccountDeletionTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        Assert.False(await db.Photos.IgnoreQueryFilters().AnyAsync(p => p.Id == world.PhotoId));
-        Assert.False(await db.AudioMessages.IgnoreQueryFilters().AnyAsync(a => a.Id == world.AudioId));
-        Assert.False(await db.Events.IgnoreQueryFilters().AnyAsync(e => e.Id == world.EventId));
-        Assert.False(await db.WishlistItems.IgnoreQueryFilters().AnyAsync(w => w.Id == world.WishId));
+        Assert.False(await db.Photos.AnyAsync(p => p.Id == world.PhotoId));
+        Assert.False(await db.AudioMessages.AnyAsync(a => a.Id == world.AudioId));
+        Assert.False(await db.Events.AnyAsync(e => e.Id == world.EventId));
+        Assert.False(await db.WishlistItems.AnyAsync(w => w.Id == world.WishId));
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class AccountDeletionTests
 
         using var scope = factory.Services.CreateScope();
         var remaining = await scope.ServiceProvider.GetRequiredService<AppDbContext>()
-            .RefreshTokens.IgnoreQueryFilters().CountAsync(r => r.UserId == userId);
+            .RefreshTokens.CountAsync(r => r.UserId == userId);
 
         Assert.Equal(0, remaining);
     }
@@ -103,7 +103,7 @@ public class AccountDeletionTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        Assert.Equal(1, await db.Couples.IgnoreQueryFilters().CountAsync());
+        Assert.Equal(1, await db.Couples.CountAsync());
         Assert.True(await db.Users.AnyAsync(u => u.Username == "lejla"));
     }
 
