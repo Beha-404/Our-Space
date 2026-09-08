@@ -67,8 +67,8 @@ h1 {
 }
 
 .year-trigger:focus-visible {
-  border-color: var(--color-purple);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
 .year-caret {
@@ -135,7 +135,7 @@ h1 {
 }
 
 .year-check {
-  color: var(--color-purple);
+  color: var(--color-accent);
   font-size: 0.8rem;
 }
 
@@ -161,8 +161,8 @@ h1 {
 }
 
 .sort-btn.active {
-  background: var(--gradient-primary);
-  color: #0a0c18;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .feed-pager {
@@ -194,9 +194,9 @@ h1 {
 }
 
 .feed-pager-num.active {
-  background: var(--gradient-primary);
+  background: var(--color-accent);
   border-color: transparent;
-  color: #0a0c18;
+  color: var(--color-on-accent);
 }
 
 .feed-pager-ellipsis {
@@ -283,13 +283,14 @@ h1 {
   height: 56px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: var(--color-surface-strong);
-  border: 1px solid var(--color-border);
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(193, 115, 74, 0.4);
 }
 
 .event-day {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
+  color: #e8ceb8;
   font-size: 1.2rem;
   line-height: 1.1;
 }
@@ -297,7 +298,7 @@ h1 {
 .event-month {
   font-size: 0.7rem;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: #c1a487;
 }
 
 .event-info {
@@ -306,8 +307,11 @@ h1 {
 }
 
 .event-info h3 {
-  margin: 0 0 2px;
-  font-size: 1rem;
+  margin: 0 0 3px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.05rem;
 }
 
 .event-info p {

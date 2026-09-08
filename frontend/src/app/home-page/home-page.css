@@ -47,13 +47,14 @@ h1 {
   height: 56px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: var(--color-surface-strong);
-  border: 1px solid var(--color-border);
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(193, 115, 74, 0.4);
 }
 
 .event-day {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
+  color: #e8ceb8;
   font-size: 1.2rem;
   line-height: 1.1;
 }
@@ -61,7 +62,7 @@ h1 {
 .event-month {
   font-size: 0.7rem;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: #c1a487;
 }
 
 .event-info {
@@ -70,8 +71,11 @@ h1 {
 }
 
 .event-info h3 {
-  margin: 0 0 2px;
-  font-size: 1rem;
+  margin: 0 0 3px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.05rem;
 }
 
 .event-info p {
@@ -121,9 +125,9 @@ h1 {
   font-size: 1.2rem;
 }
 
-.mini-swatch-photo { background: linear-gradient(135deg, #ff5da2, #8b5cf6); }
-.mini-swatch-audio { background: linear-gradient(135deg, #38bdf8, #8b5cf6); }
-.mini-swatch-wish { background: linear-gradient(135deg, #38bdf8, #4ade80); }
+.mini-swatch-photo { background: var(--color-accent-soft); color: var(--color-accent-strong); border: 1px solid var(--color-border-strong); }
+.mini-swatch-audio { background: var(--color-accent-soft); color: var(--color-accent-strong); border: 1px solid var(--color-border-strong); }
+.mini-swatch-wish { background: var(--color-accent-soft); color: var(--color-accent-strong); border: 1px solid var(--color-border-strong); }
 
 .couple-card {
   display: flex;
@@ -195,8 +199,10 @@ h1 {
 
 .wish-preview-title {
   margin: 0;
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1rem;
 }
 
 .wish-label {
@@ -216,8 +222,8 @@ h1 {
 }
 
 .wish-label.fulfilled {
-  background: rgba(74, 222, 128, 0.15);
-  border-color: rgba(74, 222, 128, 0.35);
+  background: rgba(138, 155, 99, 0.16);
+  border-color: rgba(138, 155, 99, 0.42);
   color: var(--color-success);
 }
 
@@ -251,8 +257,8 @@ h1 {
 }
 
 .type-filter-btn.active {
-  background: var(--gradient-primary);
-  color: #0a0c18;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .feed-grid {
@@ -261,122 +267,6 @@ h1 {
   gap: 12px;
 }
 
-.post-tile-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.post-tile-date {
-  font-size: 0.9rem;
-  color: #fff;
-  text-align: center;
-}
-
-.post-tile {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  padding: 0;
-  overflow: hidden;
-  background: var(--color-bg-2);
-}
-
-.post-tile-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-  cursor: zoom-in;
-  background: var(--color-bg-2);
-}
-
-.post-tile-caption {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 20px 14px 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(to top, rgba(5, 6, 14, 0.85), transparent);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  pointer-events: none;
-}
-
-.post-tile-audio {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  padding: 10px;
-}
-
-.post-tile-audio app-audio-player {
-  display: block;
-}
-
-.post-tile-actions {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: flex;
-  gap: 6px;
-  z-index: 1;
-}
-
-.tile-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(5, 6, 14, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--color-text);
-  font-size: 0.8rem;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.tile-action-btn:hover {
-  background: rgba(5, 6, 14, 0.9);
-  border-color: var(--color-border-strong);
-}
-
-.tile-action-danger:hover {
-  color: var(--color-danger);
-  border-color: var(--color-danger);
-}
-
-.tile-download-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 100px;
-  background: rgba(5, 6, 14, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--color-text);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.tile-download-btn:hover {
-  background: rgba(5, 6, 14, 0.9);
-  border-color: var(--color-border-strong);
-}
 
 @media (max-width: 900px) {
   .feed-grid {

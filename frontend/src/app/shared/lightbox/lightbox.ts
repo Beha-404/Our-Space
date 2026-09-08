@@ -28,7 +28,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
     .lightbox-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(5, 6, 14, 0.92);
+      background: rgba(20, 13, 8, 0.94);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
       display: flex;
@@ -51,6 +51,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
       flex: 1;
       min-width: 0;
       font-family: var(--font-display);
+      font-style: italic;
       font-size: 0.95rem;
       color: var(--color-text);
       white-space: nowrap;

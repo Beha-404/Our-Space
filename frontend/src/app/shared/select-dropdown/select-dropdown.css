@@ -27,8 +27,8 @@
 }
 
 .select-trigger:focus-visible {
-  border-color: var(--color-purple);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
 .select-caret {
@@ -97,6 +97,6 @@
 }
 
 .select-check {
-  color: var(--color-purple);
+  color: var(--color-accent);
   font-size: 0.8rem;
 }

@@ -2,7 +2,7 @@
 	<button type="button" class="date-trigger" [id]="fieldId()" [class.open]="open()" [class.has-value]="value()"
 		(click)="toggle()" aria-haspopup="dialog" [attr.aria-expanded]="open()">
 		<span class="date-current">{{ displayLabel() || ('datePicker.placeholder' | translate) }}</span>
-		<span class="date-icon">📅</span>
+		<span class="date-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
 	</button>
 
 	@if (open()) {

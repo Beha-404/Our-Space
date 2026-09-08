@@ -54,7 +54,7 @@
 
 .nav-links a.active {
   color: var(--color-text);
-  border-bottom-color: var(--color-purple);
+  border-bottom-color: var(--color-accent);
 }
 
 .nav-user {
@@ -81,7 +81,7 @@
 }
 
 .user-link.active {
-  border-color: var(--color-purple);
+  border-color: var(--color-accent);
 }
 
 .user-name {

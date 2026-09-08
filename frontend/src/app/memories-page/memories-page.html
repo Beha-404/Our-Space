@@ -25,10 +25,12 @@
 					<div class="upload-card-head">
 						<div class="type-toggle">
 							<button type="button" class="toggle-btn" [class.active]="uploadType() === 'photo'" (click)="setUploadType('photo')">
-								🖼️ {{ 'landing.featurePhotosTitle' | translate }}
+								<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="M21 16l-5-5L5 20" /></svg>
+								{{ 'landing.featurePhotosTitle' | translate }}
 							</button>
 							<button type="button" class="toggle-btn" [class.active]="uploadType() === 'audio'" (click)="setUploadType('audio')">
-								🎧 {{ 'landing.featureAudioTitle' | translate }}
+								<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 14v-3a8 8 0 0 1 16 0v3" /><rect x="2.5" y="13" width="4" height="7" rx="1.6" /><rect x="17.5" y="13" width="4" height="7" rx="1.6" /></svg>
+								{{ 'landing.featureAudioTitle' | translate }}
 							</button>
 						</div>
 						<button type="button" class="link-btn" (click)="closeUploadForm()">{{ 'profile.cancelButton' | translate }}</button>
@@ -110,44 +112,51 @@
 					{{ (isFiltered() ? 'memories.noMemoriesFiltered' : 'memories.noMemories') | translate }}
 				</p>
 			} @else {
-				<div class="feed-grid">
-					@for (post of pagedFeed(); track post.id + post.type) {
-						<div class="post-tile-wrap">
-							<div class="card post-tile">
-								@if (post.type === 'photo') {
-									<img [src]="post.thumbnailUrl || post.imageUrl" [alt]="post.caption || ''" class="post-tile-image" loading="lazy"
-										(click)="openLightbox(post)"
-										[title]="'memories.openFullscreen' | translate">
-									<span class="post-tile-caption">{{ post.caption || ('memories.untitledPhoto' | translate) }}</span>
-								} @else {
-									<div class="post-tile-audio">
-										@if (post.status === 'processing') {
-											<p class="audio-state">{{ 'memories.audioProcessing' | translate }}</p>
-										} @else if (post.status === 'failed') {
-											<p class="audio-state failed">{{ 'memories.audioFailed' | translate }}</p>
+				@for (group of groupedFeed(); track group.key) {
+					<h3 class="feed-month">{{ group.label }}</h3>
+
+					<div class="feed-grid">
+						@for (post of group.posts; track post.id + post.type) {
+							<div class="post-tile-wrap">
+								<div class="polaroid">
+									<div class="polaroid-media" [class.polaroid-media-audio]="post.type === 'audio'">
+										@if (post.type === 'photo') {
+											<img [src]="post.thumbnailUrl || post.imageUrl" [alt]="post.caption || ''" class="post-tile-image" loading="lazy"
+												(click)="openLightbox(post)"
+												[title]="'memories.openFullscreen' | translate">
 										} @else {
-											<app-audio-player [src]="post.audioUrl!" />
+											@if (post.status === 'processing') {
+												<p class="audio-state">{{ 'memories.audioProcessing' | translate }}</p>
+											} @else if (post.status === 'failed') {
+												<p class="audio-state failed">{{ 'memories.audioFailed' | translate }}</p>
+											} @else {
+												<app-audio-player [src]="post.audioUrl!" />
+											}
 										}
+
+										<div class="post-tile-actions">
+											<a class="tile-download-btn" [href]="post.downloadUrl" (click)="$event.stopPropagation()">{{ 'memories.downloadButton' | translate }}</a>
+											<button type="button" class="tile-action-btn tile-action-danger" [title]="'events.deleteButton' | translate" (click)="confirmDeletePost(post); $event.stopPropagation()">
+												<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+													<path d="M3 6h18" />
+													<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+													<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+													<line x1="10" y1="11" x2="10" y2="17" />
+													<line x1="14" y1="11" x2="14" y2="17" />
+												</svg>
+											</button>
+										</div>
 									</div>
-									<span class="post-tile-caption">{{ post.caption || ('memories.untitledAudio' | translate) }}</span>
-								}
-								<div class="post-tile-actions">
-									<a class="tile-download-btn" [href]="post.downloadUrl" (click)="$event.stopPropagation()">{{ 'memories.downloadButton' | translate }}</a>
-									<button type="button" class="tile-action-btn tile-action-danger" [title]="'events.deleteButton' | translate" (click)="confirmDeletePost(post); $event.stopPropagation()">
-										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-											<path d="M3 6h18" />
-											<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-											<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-											<line x1="10" y1="11" x2="10" y2="17" />
-											<line x1="14" y1="11" x2="14" y2="17" />
-										</svg>
-									</button>
+
+									<p class="polaroid-caption">
+										{{ post.caption || ((post.type === 'photo' ? 'memories.untitledPhoto' : 'memories.untitledAudio') | translate) }}
+									</p>
+									<p class="polaroid-date">{{ post.date | date:'dd.MM.yyyy.' }}</p>
 								</div>
 							</div>
-							<span class="post-tile-date">{{ post.date | date:'dd.MM.yyyy.' }}</span>
-						</div>
-					}
-				</div>
+						}
+					</div>
+				}
 
 				@if (hasMore() || feedPage() > 1) {
 					<div class="feed-pager">

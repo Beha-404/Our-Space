@@ -11,7 +11,7 @@ import { UserService } from '../../services/user.service';
     <div class="lang-switcher">
       <button type="button" class="lang-trigger" [class.open]="open()"
         (click)="toggle()" aria-haspopup="listbox" [attr.aria-expanded]="open()" aria-label="Language">
-        <span class="lang-globe">🌐</span>
+        <span class="lang-globe"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg></span>
         <span class="lang-current">{{ labels[i18n.lang()] }}</span>
         <span class="lang-caret"></span>
       </button>
@@ -65,8 +65,8 @@ import { UserService } from '../../services/user.service';
     }
 
     .lang-trigger:focus-visible {
-      border-color: var(--color-purple);
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-soft);
     }
 
     .lang-globe {
@@ -138,7 +138,7 @@ import { UserService } from '../../services/user.service';
     }
 
     .lang-check {
-      color: var(--color-purple);
+      color: var(--color-accent);
       font-size: 0.8rem;
     }
 

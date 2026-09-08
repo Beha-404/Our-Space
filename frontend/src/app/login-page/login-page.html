@@ -39,7 +39,7 @@
 							(keyup.space)="showPassword.set(false)"
 							(blur)="showPassword.set(false)"
 							[attr.aria-label]="'auth.showPassword' | translate"
-							[title]="'auth.showPassword' | translate">👁</button>
+							[title]="'auth.showPassword' | translate"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" /><circle cx="12" cy="12" r="2.6" /></svg></button>
 					</div>
 					@if (passwordError()) {
 						<span class="field-error">{{ passwordError() | translate }}</span>

@@ -5,8 +5,8 @@
   width: 100%;
   padding: 14px 16px;
   border-radius: var(--radius-md);
-  background: var(--color-surface-strong);
-  border: 1px solid var(--color-border);
+  background: var(--player-surface, var(--color-surface-strong));
+  border: 1px solid var(--player-border, var(--color-border));
 }
 
 .player-play {
@@ -17,7 +17,7 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: var(--gradient-primary);
+  background: var(--color-accent);
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -35,7 +35,7 @@
   height: 0;
   border-style: solid;
   border-width: 5px 0 5px 8px;
-  border-color: transparent transparent transparent #fff;
+  border-color: transparent transparent transparent var(--player-glyph, #fff);
 }
 
 .icon-pause {
@@ -52,7 +52,7 @@
   content: '';
   width: 3px;
   height: 10px;
-  background: #fff;
+  background: var(--player-glyph, #fff);
   border-radius: 1px;
 }
 
@@ -61,7 +61,7 @@
   position: relative;
   height: 6px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--player-track, rgba(255, 238, 220, 0.1));
   cursor: pointer;
 }
 
@@ -71,14 +71,14 @@
   left: 0;
   bottom: 0;
   border-radius: 3px;
-  background: var(--gradient-primary);
+  background: var(--color-accent);
 }
 
 .player-time {
   flex: none;
   min-width: 34px;
   font-size: 0.72rem;
-  color: var(--color-text-muted);
+  color: var(--player-time, var(--color-text-muted));
   font-variant-numeric: tabular-nums;
   text-align: right;
 }

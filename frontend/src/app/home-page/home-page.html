@@ -4,7 +4,7 @@
 		}
 
 		@if (userService.currentUser(); as user) {
-			<h1>{{ 'home.greeting' | translate }} <span class="gradient-text">{{ user.username }}</span> 👋</h1>
+			<h1>{{ 'home.greeting' | translate }} <span class="gradient-text">{{ user.username }}</span></h1>
 
 			@if (user.partner; as partner) {
 				<div class="card couple-card">
@@ -105,32 +105,35 @@
 				<div class="feed-grid">
 					@for (post of feed(); track post.id + post.type) {
 						<div class="post-tile-wrap">
-							<div class="card post-tile">
-								@if (post.type === 'photo') {
-									<img [src]="post.thumbnailUrl || post.imageUrl" [alt]="post.caption || ''" class="post-tile-image" loading="lazy"
-										(click)="openLightbox(post)"
-										[title]="'memories.openFullscreen' | translate">
-									<span class="post-tile-caption">{{ post.caption || ('memories.untitledPhoto' | translate) }}</span>
-								} @else {
-									<div class="post-tile-audio">
+							<div class="polaroid">
+								<div class="polaroid-media" [class.polaroid-media-audio]="post.type === 'audio'">
+									@if (post.type === 'photo') {
+										<img [src]="post.thumbnailUrl || post.imageUrl" [alt]="post.caption || ''" class="post-tile-image" loading="lazy"
+											(click)="openLightbox(post)"
+											[title]="'memories.openFullscreen' | translate">
+									} @else {
 										<app-audio-player [src]="post.audioUrl!" />
+									}
+
+									<div class="post-tile-actions">
+										<a class="tile-download-btn" [href]="post.downloadUrl" (click)="$event.stopPropagation()">{{ 'memories.downloadButton' | translate }}</a>
+										<button type="button" class="tile-action-btn tile-action-danger" [title]="'events.deleteButton' | translate" (click)="confirmDeletePost(post); $event.stopPropagation()">
+											<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+												<path d="M3 6h18" />
+												<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+												<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+												<line x1="10" y1="11" x2="10" y2="17" />
+												<line x1="14" y1="11" x2="14" y2="17" />
+											</svg>
+										</button>
 									</div>
-									<span class="post-tile-caption">{{ post.caption || ('memories.untitledAudio' | translate) }}</span>
-								}
-								<div class="post-tile-actions">
-									<a class="tile-download-btn" [href]="post.downloadUrl" (click)="$event.stopPropagation()">{{ 'memories.downloadButton' | translate }}</a>
-									<button type="button" class="tile-action-btn tile-action-danger" [title]="'events.deleteButton' | translate" (click)="confirmDeletePost(post); $event.stopPropagation()">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-										<path d="M3 6h18" />
-										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-										<line x1="10" y1="11" x2="10" y2="17" />
-										<line x1="14" y1="11" x2="14" y2="17" />
-									</svg>
-								</button>
 								</div>
+
+								<p class="polaroid-caption">
+									{{ post.caption || ((post.type === 'photo' ? 'memories.untitledPhoto' : 'memories.untitledAudio') | translate) }}
+								</p>
+								<p class="polaroid-date">{{ post.date | date:'dd.MM.yyyy.' }}</p>
 							</div>
-							<span class="post-tile-date">{{ post.date | date:'dd.MM.yyyy.' }}</span>
 						</div>
 					}
 				</div>
@@ -139,9 +142,9 @@
 				<div class="card empty-state">
 					<p>{{ 'home.emptyDesc' | translate }}</p>
 					<div class="mini-collage">
-						<span class="mini-swatch mini-swatch-photo">🖼️</span>
-						<span class="mini-swatch mini-swatch-audio">🎧</span>
-						<span class="mini-swatch mini-swatch-wish">📝</span>
+						<span class="mini-swatch mini-swatch-photo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="M21 16l-5-5L5 20" /></svg></span>
+						<span class="mini-swatch mini-swatch-audio"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 14v-3a8 8 0 0 1 16 0v3" /><rect x="2.5" y="13" width="4" height="7" rx="1.6" /><rect x="17.5" y="13" width="4" height="7" rx="1.6" /></svg></span>
+						<span class="mini-swatch mini-swatch-wish"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" /><path d="M9 9h6" /></svg></span>
 					</div>
 					<a routerLink="/memories" class="btn btn-primary">{{ 'home.addFirstMemory' | translate }}</a>
 				</div>

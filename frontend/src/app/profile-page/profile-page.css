@@ -70,7 +70,7 @@ h1 {
 .field input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 238, 220, 0.025);
 }
 
 .subsection {
@@ -80,13 +80,13 @@ h1 {
 }
 
 .subsection:first-of-type {
-  background: rgba(255, 255, 255, 0.015);
+  background: rgba(255, 238, 220, 0.02);
   border: 1px solid var(--color-border);
 }
 
 .subsection-editable {
-  background: rgba(139, 92, 246, 0.05);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(193, 115, 74, 0.06);
+  border: 1px solid rgba(193, 115, 74, 0.24);
   margin-bottom: 0;
 }
 
@@ -119,7 +119,7 @@ h1 {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-pink);
+  background: var(--color-accent);
   flex-shrink: 0;
 }
 
@@ -142,7 +142,7 @@ h1 {
 }
 
 .subsection-partner {
-  background: rgba(255, 255, 255, 0.015);
+  background: rgba(255, 238, 220, 0.02);
   border: 1px solid var(--color-border);
 }
 
@@ -177,12 +177,12 @@ h1 {
 .code-value {
   font-family: var(--font-display);
   font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  background: var(--color-surface-strong);
-  border: 1px solid var(--color-border);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  background: rgba(255, 238, 220, 0.05);
+  border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-sm);
-  padding: 8px 16px;
+  padding: 9px 18px;
 }
 
 .code-expiry {
@@ -223,7 +223,7 @@ h1 {
 
 .danger-card {
   padding: 24px 32px;
-  border-color: rgba(248, 113, 113, 0.25);
+  border-color: rgba(184, 86, 74, 0.3);
 }
 
 .danger-row {
@@ -252,7 +252,7 @@ h1 {
 .danger-divider {
   margin: 20px 0;
   border: none;
-  border-top: 1px solid rgba(248, 113, 113, 0.2);
+  border-top: 1px solid rgba(184, 86, 74, 0.24);
 }
 
 @media (max-width: 640px) {

@@ -26,6 +26,12 @@ interface UploadItem {
   status: 'pending' | 'uploading' | 'done' | 'error';
 }
 
+interface MemoryMonth {
+  key: string;
+  label: string;
+  posts: FeedPost[];
+}
+
 @Component({
   imports: [DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker],
   selector: 'app-memories-page',
@@ -96,6 +102,29 @@ export class MemoriesPage {
 
   pagedFeed = computed<FeedPost[]>(() =>
     this.feedItems().map(item => toFeedPost(item, path => this.photoService.fullUrl(path))));
+
+  groupedFeed = computed<MemoryMonth[]>(() => {
+    const months: MemoryMonth[] = [];
+
+    for (const post of this.pagedFeed()) {
+      const [year, month] = post.date.split('-');
+      const key = `${year}-${month}`;
+      const current = months[months.length - 1];
+
+      if (current?.key === key) {
+        current.posts.push(post);
+        continue;
+      }
+
+      months.push({
+        key,
+        label: `${this.i18n.t(MemoriesPage.MONTH_KEYS[Number(month) - 1])} ${year}`,
+        posts: [post],
+      });
+    }
+
+    return months;
+  });
 
   yearOptions = computed<SelectOption[]>(() => [
     { value: 'all', label: this.i18n.t('events.allYears') },

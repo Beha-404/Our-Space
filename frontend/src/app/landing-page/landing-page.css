@@ -97,16 +97,6 @@
   flex-direction: column;
 }
 
-.preview-shot-wrap::before {
-  content: '';
-  position: absolute;
-  inset: -20px;
-  background: var(--gradient-primary);
-  opacity: 0.22;
-  filter: blur(40px);
-  z-index: -1;
-}
-
 .mock {
   flex: 1;
   display: flex;
@@ -118,7 +108,6 @@
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  backdrop-filter: blur(8px);
 }
 
 .mock-head {
@@ -134,10 +123,10 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  font-size: 1rem;
   border-radius: 50%;
-  background: var(--color-surface-strong);
-  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(193, 115, 74, 0.35);
 }
 
 .mock-titles {
@@ -175,7 +164,7 @@
   padding: 0;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background-image: url('/preview/couple.jpg'), var(--gradient-primary);
+  background-image: url('/preview/couple.jpg'), var(--gradient-accent);
   background-size: cover;
   background-position: center;
   cursor: zoom-in;
@@ -205,7 +194,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--gradient-primary);
+  background: var(--color-accent);
   position: relative;
 }
 
@@ -231,7 +220,7 @@
 .mock-wave i {
   flex: 1;
   border-radius: 2px;
-  background: var(--color-purple);
+  background: var(--color-accent);
   opacity: 0.75;
 }
 
@@ -272,8 +261,8 @@
   width: 52px;
   height: 52px;
   border-radius: var(--radius-sm);
-  background: var(--gradient-primary);
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .mock-date strong {
@@ -336,17 +325,13 @@
 }
 
 .step-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--gradient-primary);
-  color: #0a0c18;
+  display: block;
   font-family: var(--font-display);
-  font-weight: 700;
-  margin-bottom: 14px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-accent);
+  margin-bottom: 10px;
 }
 
 .step h3 {
@@ -371,9 +356,14 @@
 }
 
 .feature-icon {
-  font-size: 1.8rem;
   display: block;
+  color: var(--color-accent);
   margin-bottom: 12px;
+}
+
+.feature-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .feature-card h3 {
