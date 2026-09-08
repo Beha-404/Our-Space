@@ -70,6 +70,7 @@ public class MemoryFeedService(
                 ThumbnailUrl = p.ThumbnailPath,
                 MediumUrl = p.MediumPath,
                 Caption = p.Caption,
+                Status = "ready",
                 Date = p.TakenAt,
                 UploadedByUsername = p.UploadedByUser.Username,
                 CreatedAt = p.CreatedAt,
