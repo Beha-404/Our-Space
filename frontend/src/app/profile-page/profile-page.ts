@@ -38,6 +38,8 @@ export class ProfilePage {
   usernameError = computed(() =>
     this.usernameTouched() && !this.formData().username.trim() ? 'profile.errUsernameRequired' : '');
 
+  usernameValid = computed(() => this.usernameTouched() && !this.usernameError() && !!this.formData().username.trim());
+
   editingEmail = signal(false);
   newEmail = signal('');
   emailSending = signal(false);
@@ -51,6 +53,8 @@ export class ProfilePage {
     if (!value) return 'auth.errEmailRequired';
     return isValidEmail(value) ? '' : 'auth.errInvalidEmail';
   });
+
+  newEmailValid = computed(() => this.newEmailTouched() && !this.newEmailError() && !!this.newEmail().trim());
 
   confirmCode = signal('');
   confirmingEmail = signal(false);
@@ -69,6 +73,8 @@ export class ProfilePage {
 
   pairInputError = computed(() =>
     this.pairInputTouched() && !this.pairInput().trim() ? 'profile.pairErrorEmpty' : '');
+
+  pairInputValid = computed(() => this.pairInputTouched() && !this.pairInputError() && !!this.pairInput().trim());
 
   deleteConfirming = signal(false);
   deleteErrorKey = signal('');

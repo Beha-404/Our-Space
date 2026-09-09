@@ -71,6 +71,7 @@ export class MemoriesPage {
     this.uploadDate.set('');
     this.uploadCaption.set('');
     this.uploadCaptionTouched.set(false);
+    this.uploadSubmitted.set(false);
     this.uploadErrorKey.set('');
   }
 
@@ -85,6 +86,17 @@ export class MemoriesPage {
 
   uploadCaptionError = computed(() =>
     this.uploadCaptionTouched() && !this.uploadCaption().trim() ? 'memories.errTitleRequired' : '');
+
+  uploadCaptionValid = computed(() =>
+    this.uploadCaptionTouched() && !this.uploadCaptionError() && !!this.uploadCaption().trim());
+
+  uploadDateValid = computed(() => !!this.uploadDate());
+  uploadFileValid = computed(() => this.uploadQueue().length > 0);
+
+  uploadSubmitted = signal(false);
+
+  showUploadFillAllError = computed(() => this.uploadSubmitted() &&
+    (this.uploadQueue().length === 0 || !this.uploadDate() || !!this.uploadCaptionError()));
 
   sortOrder = signal<SortOrder>('newest');
 
@@ -200,6 +212,7 @@ export class MemoriesPage {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
 
+    this.uploadErrorKey.set('');
     this.selectedFile.set(files[0] ?? null);
     this.uploadQueue.set(files.map(file => ({ file, progress: 0, status: 'pending' as const })));
 
@@ -217,13 +230,13 @@ export class MemoriesPage {
 
   upload(): void {
     this.uploadCaptionTouched.set(true);
+    this.uploadSubmitted.set(true);
 
     const queue = this.uploadQueue();
     const date = this.uploadDate();
     const caption = this.uploadCaption().trim();
 
     if (queue.length === 0 || !date || this.uploadCaptionError()) {
-      this.uploadErrorKey.set('memories.errFillAll');
       return;
     }
 

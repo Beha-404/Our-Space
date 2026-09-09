@@ -83,6 +83,8 @@ export class WishlistPage {
   newWishError = computed(() =>
     this.newWishTouched() && !this.newWish().trim() ? 'wishlist.errEmpty' : '');
 
+  newWishValid = computed(() => this.newWishTouched() && !this.newWishError() && !!this.newWish().trim());
+
   wishPendingDelete = signal<Wish | null>(null);
 
   constructor() {

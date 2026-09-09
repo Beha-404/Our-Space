@@ -11,9 +11,12 @@
 		} @else {
 			<div class="card add-wish-card">
 				<div class="add-wish-row">
-					<input type="text" [placeholder]="'wishlist.addPlaceholder' | translate" [class.invalid]="newWishError()"
-						[value]="newWish()" (input)="newWish.set($any($event.target).value)"
-						(blur)="newWishTouched.set(true)" (keyup.enter)="addWish()">
+					<div class="wish-input-wrap">
+						<input type="text" [placeholder]="'wishlist.addPlaceholder' | translate" [class.invalid]="newWishError()" [class.valid]="newWishValid()"
+							[value]="newWish()" (input)="newWish.set($any($event.target).value)"
+							(blur)="newWishTouched.set(true)" (keyup.enter)="addWish()">
+						@if (newWishValid()) { <svg class="field-valid-icon field-valid-icon-inset" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+					</div>
 					<button class="btn btn-primary" (click)="addWish()" [disabled]="adding()">
 						{{ (adding() ? 'wishlist.adding' : 'wishlist.addButton') | translate }}
 					</button>

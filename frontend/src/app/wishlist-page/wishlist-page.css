@@ -29,16 +29,28 @@ h1 {
   gap: 12px;
 }
 
-.add-wish-row input {
+.wish-input-wrap {
+  position: relative;
   flex: 1;
   min-width: 0;
+}
+
+.field-valid-icon-inset {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.add-wish-row input {
+  width: 100%;
   font-family: var(--font-body);
   font-size: 1rem;
   color: var(--color-text);
   background: rgba(255, 238, 220, 0.04);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 12px 34px 12px 14px;
   outline: none;
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }

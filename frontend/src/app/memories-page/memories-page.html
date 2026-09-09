@@ -38,7 +38,10 @@
 
 					<div class="field-row">
 						<div class="field">
-							<label for="file">{{ uploadType() === 'photo' ? ('memories.pickPhoto' | translate) : ('memories.pickAudio' | translate) }}</label>
+							<label for="file">
+								{{ uploadType() === 'photo' ? ('memories.pickPhoto' | translate) : ('memories.pickAudio' | translate) }}
+								@if (uploadFileValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+							</label>
 							<input id="file" #fileInput type="file" multiple [accept]="uploadType() === 'photo' ? 'image/*' : 'audio/*,video/mp4'" (change)="onFileSelected($event)">
 							@if (previewUrl()) {
 								<img [src]="previewUrl()" alt="" class="upload-preview">
@@ -64,21 +67,29 @@
 							}
 						</div>
 						<div class="field">
-							<label for="uploadDate">{{ uploadType() === 'photo' ? ('memories.takenAt' | translate) : ('memories.recordedAt' | translate) }}</label>
+							<label for="uploadDate">
+								{{ uploadType() === 'photo' ? ('memories.takenAt' | translate) : ('memories.recordedAt' | translate) }}
+								@if (uploadDateValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+							</label>
 							<app-date-picker fieldId="uploadDate" [value]="uploadDate()" (valueChange)="uploadDate.set($event)" />
 						</div>
 					</div>
 
 					<div class="field">
-						<label for="caption">{{ 'memories.captionLabel' | translate }}</label>
-						<input id="caption" type="text" [placeholder]="'memories.captionPlaceholder' | translate" [class.invalid]="uploadCaptionError()"
+						<label for="caption">
+							{{ 'memories.captionLabel' | translate }}
+							@if (uploadCaptionValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+						</label>
+						<input id="caption" type="text" [placeholder]="'memories.captionPlaceholder' | translate" [class.invalid]="uploadCaptionError()" [class.valid]="uploadCaptionValid()"
 							[value]="uploadCaption()" (input)="uploadCaption.set($any($event.target).value)" (blur)="uploadCaptionTouched.set(true)">
 						@if (uploadCaptionError()) {
 							<span class="field-error">{{ uploadCaptionError() | translate }}</span>
 						}
 					</div>
 
-					@if (uploadErrorKey()) {
+					@if (showUploadFillAllError()) {
+						<div class="alert alert-error">{{ 'memories.errFillAll' | translate }}</div>
+					} @else if (uploadErrorKey()) {
 						<div class="alert alert-error">{{ uploadErrorKey() | translate }}</div>
 					}
 

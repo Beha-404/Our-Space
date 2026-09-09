@@ -118,9 +118,16 @@ export class EventsPage {
   adding = signal(false);
   addErrorKey = signal('');
   titleTouched = signal(false);
+  addSubmitted = signal(false);
 
   titleError = computed(() =>
     this.titleTouched() && !this.formData().title.trim() ? 'events.errTitleRequired' : '');
+
+  titleValid = computed(() => this.titleTouched() && !this.titleError() && !!this.formData().title.trim());
+  eventDateValid = computed(() => !!this.formData().eventDate);
+
+  showAddFillAllError = computed(() =>
+    this.addSubmitted() && !!(this.titleError() || !this.formData().eventDate));
 
   openAddForm(): void {
     this.showAddForm.set(true);
@@ -130,6 +137,7 @@ export class EventsPage {
     this.showAddForm.set(false);
     this.formData.set({ title: '', description: '', eventDate: '' });
     this.titleTouched.set(false);
+    this.addSubmitted.set(false);
     this.addErrorKey.set('');
   }
 
@@ -138,9 +146,16 @@ export class EventsPage {
   saving = signal(false);
   editErrorKey = signal('');
   editTitleTouched = signal(false);
+  editSubmitted = signal(false);
 
   editTitleError = computed(() =>
     this.editTitleTouched() && !this.editFormData().title.trim() ? 'events.errTitleRequired' : '');
+
+  editTitleValid = computed(() => this.editTitleTouched() && !this.editTitleError() && !!this.editFormData().title.trim());
+  editEventDateValid = computed(() => !!this.editFormData().eventDate);
+
+  showEditFillAllError = computed(() =>
+    this.editSubmitted() && !!(this.editTitleError() || !this.editFormData().eventDate));
 
   constructor() {
     this.userService.ensureCurrentUser().subscribe(user => {
@@ -151,6 +166,7 @@ export class EventsPage {
 
   updateField(field: 'title' | 'description' | 'eventDate', value: string): void {
     this.formData.update(data => ({ ...data, [field]: value }));
+    this.addErrorKey.set('');
   }
 
   loadEvents(): void {
@@ -171,9 +187,9 @@ export class EventsPage {
 
   addEvent(): void {
     this.titleTouched.set(true);
+    this.addSubmitted.set(true);
     const data = this.formData();
     if (this.titleError() || !data.eventDate) {
-      this.addErrorKey.set('auth.errFillAll');
       return;
     }
 
@@ -227,6 +243,7 @@ export class EventsPage {
   startEdit(event: EventItem): void {
     this.editErrorKey.set('');
     this.editTitleTouched.set(false);
+    this.editSubmitted.set(false);
     this.editFormData.set({
       title: event.title,
       description: event.description ?? '',
@@ -241,13 +258,14 @@ export class EventsPage {
 
   updateEditField(field: 'title' | 'description' | 'eventDate', value: string): void {
     this.editFormData.update(data => ({ ...data, [field]: value }));
+    this.editErrorKey.set('');
   }
 
   saveEdit(id: number): void {
     this.editTitleTouched.set(true);
+    this.editSubmitted.set(true);
     const data = this.editFormData();
     if (this.editTitleError() || !data.eventDate) {
-      this.editErrorKey.set('auth.errFillAll');
       return;
     }
 

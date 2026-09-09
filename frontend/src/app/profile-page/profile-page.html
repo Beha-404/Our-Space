@@ -23,8 +23,11 @@
 
 							<div class="basic-info-fields">
 								<div class="field">
-									<label for="username">{{ 'profile.usernameLabel' | translate }}</label>
-									<input id="username" type="text" [value]="formData().username" [class.invalid]="usernameError()"
+									<label for="username">
+										{{ 'profile.usernameLabel' | translate }}
+										@if (usernameValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+									</label>
+									<input id="username" type="text" [value]="formData().username" [class.invalid]="usernameError()" [class.valid]="usernameValid()"
 										(input)="updateField('username', $any($event.target).value)" (blur)="usernameTouched.set(true)">
 									@if (usernameError()) {
 										<span class="field-error">{{ usernameError() | translate }}</span>
@@ -103,10 +106,13 @@
 								</div>
 
 								<div class="pairing-block">
-									<h4>{{ 'profile.enterCodeTitle' | translate }}</h4>
+									<h4 id="pairCodeLabel">
+										{{ 'profile.enterCodeTitle' | translate }}
+										@if (pairInputValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+									</h4>
 									<div class="field">
-										<input type="text" [placeholder]="'profile.codePlaceholder' | translate" [value]="pairInput()"
-											[class.invalid]="pairInputError()"
+										<input id="pairCode" aria-labelledby="pairCodeLabel" type="text" [placeholder]="'profile.codePlaceholder' | translate" [value]="pairInput()"
+											[class.invalid]="pairInputError()" [class.valid]="pairInputValid()"
 											(input)="pairInput.set($any($event.target).value)" (blur)="pairInputTouched.set(true)">
 										@if (pairInputError()) {
 											<span class="field-error">{{ pairInputError() | translate }}</span>
@@ -168,8 +174,11 @@
 							</div>
 						} @else if (editingEmail()) {
 							<div class="field">
-								<label for="newEmail">{{ 'profile.newEmailLabel' | translate }}</label>
-								<input id="newEmail" type="email" [placeholder]="'profile.newEmailPlaceholder' | translate" [class.invalid]="newEmailError()"
+								<label for="newEmail">
+									{{ 'profile.newEmailLabel' | translate }}
+									@if (newEmailValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+								</label>
+								<input id="newEmail" type="email" [placeholder]="'profile.newEmailPlaceholder' | translate" [class.invalid]="newEmailError()" [class.valid]="newEmailValid()"
 									[value]="newEmail()" (input)="newEmail.set($any($event.target).value)" (blur)="newEmailTouched.set(true)">
 								@if (newEmailError()) {
 									<span class="field-error">{{ newEmailError() | translate }}</span>

@@ -32,6 +32,7 @@ export class LoginPage {
   usernameTouched = signal(false);
   passwordTouched = signal(false);
   codeTouched = signal(false);
+  submitted = signal(false);
 
   usernameError = computed(() =>
     this.usernameTouched() && !this.loginData().username.trim() ? 'auth.errUsernameRequired' : '');
@@ -42,6 +43,14 @@ export class LoginPage {
   codeError = computed(() =>
     this.codeTouched() && !this.code().trim() ? 'auth.errResetCodeEmpty' : '');
 
+  usernameValid = computed(() =>
+    this.usernameTouched() && !this.usernameError() && !!this.loginData().username.trim());
+
+  passwordValid = computed(() =>
+    this.passwordTouched() && !this.passwordError() && !!this.loginData().password);
+
+  showFillAllError = computed(() => this.submitted() && !!(this.usernameError() || this.passwordError()));
+
   constructor() {
     if (inject(ActivatedRoute).snapshot.queryParamMap.get('reset') === '1') {
       this.infoKey.set('auth.resetSuccess');
@@ -50,14 +59,15 @@ export class LoginPage {
 
   updateField(field: 'username' | 'password', value: string): void {
     this.loginData.update(data => ({ ...data, [field]: value }));
+    this.errorKey.set('');
   }
 
   login(): void {
+    this.submitted.set(true);
     this.usernameTouched.set(true);
     this.passwordTouched.set(true);
 
     if (this.usernameError() || this.passwordError()) {
-      this.errorKey.set('auth.errFillAll');
       return;
     }
 

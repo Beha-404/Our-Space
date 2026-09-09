@@ -58,6 +58,11 @@ export class ForgotPasswordPage {
     return this.newPassword() === this.confirmPassword() ? '' : 'auth.errPasswordMismatch';
   });
 
+  emailValid = computed(() => this.emailTouched() && !this.emailError() && !!this.email().trim());
+  newPasswordValid = computed(() => this.newPasswordTouched() && !this.newPasswordError() && !!this.newPassword());
+  confirmPasswordValid = computed(() =>
+    this.confirmPasswordTouched() && !this.confirmPasswordError() && !!this.confirmPassword());
+
   requestCode(): void {
     this.emailTouched.set(true);
 

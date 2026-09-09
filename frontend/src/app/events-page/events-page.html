@@ -22,15 +22,21 @@
 
 					<div class="field-row">
 						<div class="field">
-							<label for="title">{{ 'events.titleLabel' | translate }}</label>
-							<input id="title" type="text" [placeholder]="'events.titlePlaceholder' | translate" [class.invalid]="titleError()"
+							<label for="title">
+								{{ 'events.titleLabel' | translate }}
+								@if (titleValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+							</label>
+							<input id="title" type="text" [placeholder]="'events.titlePlaceholder' | translate" [class.invalid]="titleError()" [class.valid]="titleValid()"
 								[value]="formData().title" (input)="updateField('title', $any($event.target).value)" (blur)="titleTouched.set(true)">
 							@if (titleError()) {
 								<span class="field-error">{{ titleError() | translate }}</span>
 							}
 						</div>
 						<div class="field">
-							<label for="eventDate">{{ 'events.dateLabel' | translate }}</label>
+							<label for="eventDate">
+								{{ 'events.dateLabel' | translate }}
+								@if (eventDateValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+							</label>
 							<app-date-picker fieldId="eventDate" [value]="formData().eventDate"
 								(valueChange)="updateField('eventDate', $event)" />
 						</div>
@@ -42,7 +48,9 @@
 							[value]="formData().description" (input)="updateField('description', $any($event.target).value)">
 					</div>
 
-					@if (addErrorKey()) {
+					@if (showAddFillAllError()) {
+						<div class="alert alert-error">{{ 'auth.errFillAll' | translate }}</div>
+					} @else if (addErrorKey()) {
 						<div class="alert alert-error">{{ addErrorKey() | translate }}</div>
 					}
 
@@ -114,23 +122,31 @@
 						<div class="card event-card event-card-editing">
 							<div class="field-row">
 								<div class="field">
-									<label>{{ 'events.titleLabel' | translate }}</label>
-									<input type="text" [value]="editFormData().title" [class.invalid]="editTitleError()"
+									<label for="editTitle">
+										{{ 'events.titleLabel' | translate }}
+										@if (editTitleValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+									</label>
+									<input id="editTitle" type="text" [value]="editFormData().title" [class.invalid]="editTitleError()" [class.valid]="editTitleValid()"
 									(input)="updateEditField('title', $any($event.target).value)" (blur)="editTitleTouched.set(true)">
 								@if (editTitleError()) {
 									<span class="field-error">{{ editTitleError() | translate }}</span>
 								}
 								</div>
 								<div class="field">
-									<label>{{ 'events.dateLabel' | translate }}</label>
-									<app-date-picker [value]="editFormData().eventDate" (valueChange)="updateEditField('eventDate', $event)" />
+									<label for="editEventDate">
+										{{ 'events.dateLabel' | translate }}
+										@if (editEventDateValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
+									</label>
+									<app-date-picker fieldId="editEventDate" [value]="editFormData().eventDate" (valueChange)="updateEditField('eventDate', $event)" />
 								</div>
 							</div>
 							<div class="field">
-								<label>{{ 'events.descLabel' | translate }}</label>
-								<input type="text" [value]="editFormData().description" (input)="updateEditField('description', $any($event.target).value)">
+								<label for="editDescription">{{ 'events.descLabel' | translate }}</label>
+								<input id="editDescription" type="text" [value]="editFormData().description" (input)="updateEditField('description', $any($event.target).value)">
 							</div>
-							@if (editErrorKey()) {
+							@if (showEditFillAllError()) {
+								<div class="alert alert-error">{{ 'auth.errFillAll' | translate }}</div>
+							} @else if (editErrorKey()) {
 								<div class="alert alert-error">{{ editErrorKey() | translate }}</div>
 							}
 							<div class="edit-actions">

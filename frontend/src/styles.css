@@ -129,9 +129,17 @@ button {
 }
 
 .field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--color-text-muted);
+}
+
+.field-valid-icon {
+  color: var(--color-success);
+  flex-shrink: 0;
 }
 
 .field input,
@@ -166,6 +174,11 @@ button {
 .field input.invalid,
 .field textarea.invalid {
   border-color: var(--color-danger);
+}
+
+.field input.valid,
+.field textarea.valid {
+  border-color: rgba(138, 155, 99, 0.5);
 }
 
 .field-error {

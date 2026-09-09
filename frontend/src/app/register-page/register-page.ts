@@ -34,6 +34,7 @@ export class RegisterPage {
   });
 
   errorKey = signal('');
+  submitted = signal(false);
 
   usernameError = computed(() => {
     if (!this.touched().username) return '';
@@ -61,8 +62,24 @@ export class RegisterPage {
     return password === confirmPassword ? '' : 'auth.errPasswordMismatch';
   });
 
+  usernameValid = computed(() =>
+    this.touched().username && !this.usernameError() && !!this.registerData().username.trim());
+
+  emailValid = computed(() =>
+    this.touched().email && !this.emailError() && !!this.registerData().email.trim());
+
+  passwordValid = computed(() =>
+    this.touched().password && !this.passwordError() && !!this.registerData().password);
+
+  confirmPasswordValid = computed(() =>
+    this.touched().confirmPassword && !this.confirmPasswordError() && !!this.registerData().confirmPassword);
+
+  showFillAllError = computed(() => this.submitted() &&
+    !!(this.usernameError() || this.emailError() || this.passwordError() || this.confirmPasswordError()));
+
   updateField(field: Field, value: string): void {
     this.registerData.update(data => ({ ...data, [field]: value }));
+    this.errorKey.set('');
   }
 
   markTouched(field: Field): void {
@@ -71,10 +88,10 @@ export class RegisterPage {
 
   register(): void {
     this.errorKey.set('');
+    this.submitted.set(true);
     this.touched.set({ username: true, email: true, password: true, confirmPassword: true });
 
     if (this.usernameError() || this.emailError() || this.passwordError() || this.confirmPasswordError()) {
-      this.errorKey.set('auth.errFillAll');
       return;
     }
 
