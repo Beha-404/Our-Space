@@ -515,6 +515,7 @@ button {
 .polaroid-caption {
   font-family: var(--font-display);
   font-style: italic;
+  font-weight: 600;
   font-size: 0.84rem;
   color: var(--color-ink);
   text-align: center;
@@ -525,6 +526,7 @@ button {
 }
 
 .polaroid-date {
+  font-weight: 600;
   font-size: 0.68rem;
   color: #8a7460;
   text-align: center;
