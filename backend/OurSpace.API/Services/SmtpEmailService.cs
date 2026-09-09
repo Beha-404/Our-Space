@@ -57,39 +57,39 @@ internal static class EmailTemplate
             var match = CodeLine.Match(paragraph);
             if (match.Success)
             {
-                content.Append($"""<p style="margin:0 0 8px;font-size:14px;color:#9aa3c0;font-family:Arial,Helvetica,sans-serif;">{WebUtility.HtmlEncode(match.Groups["label"].Value)}</p>""");
-                content.Append($"""<div style="margin:0 0 24px;padding:16px 24px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:16px;text-align:center;font-size:32px;font-weight:800;letter-spacing:8px;color:#f2f4fb;font-family:Arial,Helvetica,sans-serif;">{WebUtility.HtmlEncode(match.Groups["code"].Value)}</div>""");
+                content.Append($"""<p style="margin:0 0 8px;font-size:14px;color:#8a7c6c;font-family:Arial,Helvetica,sans-serif;">{WebUtility.HtmlEncode(match.Groups["label"].Value)}</p>""");
+                content.Append($"""<div style="margin:0 0 24px;padding:16px 24px;background:#2b2018;border:1px dashed #4a3b2c;border-radius:12px;text-align:center;font-size:32px;font-weight:600;letter-spacing:8px;color:#f3ece2;font-family:Georgia,'Times New Roman',serif;">{WebUtility.HtmlEncode(match.Groups["code"].Value)}</div>""");
             }
             else
             {
                 var encoded = WebUtility.HtmlEncode(paragraph).Replace("\n", "<br>");
-                content.Append($"""<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#9aa3c0;font-family:Arial,Helvetica,sans-serif;">{encoded}</p>""");
+                content.Append($"""<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#b3a494;font-family:Arial,Helvetica,sans-serif;">{encoded}</p>""");
             }
         }
 
         return $"""
             <!DOCTYPE html>
             <html>
-              <body style="margin:0;padding:0;background-color:#0a0c18;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0c18;padding:40px 20px;">
+              <body style="margin:0;padding:0;background-color:#1d1712;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#1d1712;padding:40px 20px;">
                   <tr>
                     <td align="center">
-                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#12142a;border:1px solid rgba(255,255,255,0.08);border-radius:24px;overflow:hidden;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#241c15;border:1px solid #3a2e22;border-radius:16px;overflow:hidden;">
                         <tr>
-                          <td style="padding:28px 32px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);">
-                            <span style="font-size:18px;color:#ff5da2;font-family:Georgia,serif;">&#10022;</span>
-                            <span style="font-size:18px;font-weight:700;color:#ff5da2;margin-left:6px;font-family:Arial,Helvetica,sans-serif;">OurSpace</span>
+                          <td style="padding:28px 32px;text-align:center;border-bottom:1px solid #3a2e22;">
+                            <span style="font-size:18px;color:#c1734a;font-family:Georgia,serif;">&#10022;</span>
+                            <span style="font-size:18px;font-weight:700;color:#c1734a;margin-left:6px;font-family:Georgia,'Times New Roman',serif;">OurSpace</span>
                           </td>
                         </tr>
                         <tr>
                           <td style="padding:32px;">
-                            <h1 style="margin:0 0 20px;font-size:20px;font-weight:700;color:#f2f4fb;font-family:Arial,Helvetica,sans-serif;">{WebUtility.HtmlEncode(subject)}</h1>
+                            <h1 style="margin:0 0 20px;font-size:20px;font-weight:600;color:#f3ece2;font-family:Georgia,'Times New Roman',serif;">{WebUtility.HtmlEncode(subject)}</h1>
                             {content}
                           </td>
                         </tr>
                         <tr>
-                          <td style="padding:18px 32px 26px;border-top:1px solid rgba(255,255,255,0.06);">
-                            <p style="margin:0;font-size:12px;color:#6b7395;font-family:Arial,Helvetica,sans-serif;">Ovaj mail je automatski poslan sa OurSpace aplikacije.</p>
+                          <td style="padding:18px 32px 26px;border-top:1px solid #3a2e22;">
+                            <p style="margin:0;font-size:12px;color:#8a7c6c;font-family:Arial,Helvetica,sans-serif;">Ovaj mail je automatski poslan sa OurSpace aplikacije.</p>
                           </td>
                         </tr>
                       </table>
