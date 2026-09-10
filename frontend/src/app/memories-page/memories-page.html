@@ -71,7 +71,7 @@
 								{{ uploadType() === 'photo' ? ('memories.takenAt' | translate) : ('memories.recordedAt' | translate) }}
 								@if (uploadDateValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
 							</label>
-							<app-date-picker fieldId="uploadDate" [value]="uploadDate()" (valueChange)="uploadDate.set($event)" />
+							<app-date-picker fieldId="uploadDate" [value]="uploadDate()" (valueChange)="updateUploadDate($event)" />
 						</div>
 					</div>
 
@@ -81,7 +81,7 @@
 							@if (uploadCaptionValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
 						</label>
 						<input id="caption" type="text" [placeholder]="'memories.captionPlaceholder' | translate" [class.invalid]="uploadCaptionError()" [class.valid]="uploadCaptionValid()"
-							[value]="uploadCaption()" (input)="uploadCaption.set($any($event.target).value)" (blur)="uploadCaptionTouched.set(true)">
+							[value]="uploadCaption()" (input)="updateUploadCaption($any($event.target).value)" (blur)="uploadCaptionTouched.set(true)">
 						@if (uploadCaptionError()) {
 							<span class="field-error">{{ uploadCaptionError() | translate }}</span>
 						}

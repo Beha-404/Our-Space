@@ -63,6 +63,26 @@ export class ForgotPasswordPage {
   confirmPasswordValid = computed(() =>
     this.confirmPasswordTouched() && !this.confirmPasswordError() && !!this.confirmPassword());
 
+  updateEmail(value: string): void {
+    this.email.set(value);
+    this.errorKey.set('');
+  }
+
+  updateCode(value: string): void {
+    this.code.set(value);
+    this.errorKey.set('');
+  }
+
+  updateNewPassword(value: string): void {
+    this.newPassword.set(value);
+    this.errorKey.set('');
+  }
+
+  updateConfirmPassword(value: string): void {
+    this.confirmPassword.set(value);
+    this.errorKey.set('');
+  }
+
   requestCode(): void {
     this.emailTouched.set(true);
 

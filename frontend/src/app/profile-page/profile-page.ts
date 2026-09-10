@@ -100,6 +100,8 @@ export class ProfilePage {
 
   updateField(field: 'username', value: string): void {
     this.formData.update(data => ({ ...data, [field]: value }));
+    this.saveErrorKey.set('');
+    this.saveMessageKey.set('');
   }
 
   saveProfile(): void {
@@ -139,6 +141,11 @@ export class ProfilePage {
     this.editingEmail.set(false);
   }
 
+  updateNewEmail(value: string): void {
+    this.newEmail.set(value);
+    this.emailErrorKey.set('');
+  }
+
   requestEmailChange(): void {
     this.newEmailTouched.set(true);
     if (this.newEmailError()) return;
@@ -164,6 +171,11 @@ export class ProfilePage {
         this.toast.error(key);
       }
     });
+  }
+
+  updateConfirmCode(value: string): void {
+    this.confirmCode.set(value);
+    this.confirmErrorKey.set('');
   }
 
   confirmEmailChange(): void {
@@ -260,6 +272,11 @@ export class ProfilePage {
     });
   }
 
+  updatePairInput(value: string): void {
+    this.pairInput.set(value);
+    this.pairErrorKey.set('');
+  }
+
   copyCode(): void {
     const code = this.pairingCode()?.code;
     if (!code) return;
@@ -302,6 +319,11 @@ export class ProfilePage {
 
   cancelEditRelationshipDate(): void {
     this.editingRelationshipDate.set(false);
+  }
+
+  updateRelationshipDateEdit(value: string): void {
+    this.relationshipDateEdit.set(value);
+    this.relationshipDateErrorKey.set('');
   }
 
   saveRelationshipDate(): void {

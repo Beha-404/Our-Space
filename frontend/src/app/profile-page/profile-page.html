@@ -86,7 +86,7 @@
 										}
 									} @else {
 										<div class="date-edit-row">
-											<app-date-picker [value]="relationshipDateEdit()" (valueChange)="relationshipDateEdit.set($event)" />
+											<app-date-picker [value]="relationshipDateEdit()" (valueChange)="updateRelationshipDateEdit($event)" />
 											<button class="btn btn-primary btn-sm" (click)="saveRelationshipDate()" [disabled]="relationshipDateSaving()">
 												{{ (relationshipDateSaving() ? 'profile.saving' : 'profile.saveDate') | translate }}
 											</button>
@@ -127,7 +127,7 @@
 									<div class="field">
 										<input id="pairCode" aria-labelledby="pairCodeLabel" type="text" [placeholder]="'profile.codePlaceholder' | translate" [value]="pairInput()"
 											[class.invalid]="pairInputError()" [class.valid]="pairInputValid()"
-											(input)="pairInput.set($any($event.target).value)" (blur)="pairInputTouched.set(true)">
+											(input)="updatePairInput($any($event.target).value)" (blur)="pairInputTouched.set(true)">
 										@if (pairInputError()) {
 											<span class="field-error">{{ pairInputError() | translate }}</span>
 										}
@@ -169,7 +169,7 @@
 								<div class="field">
 									<label for="confirmCode">{{ 'profile.confirmCodeLabel' | translate }}</label>
 									<app-otp-input fieldId="confirmCode" [value]="confirmCode()" [invalid]="!!confirmCodeError()"
-										(valueChange)="confirmCode.set($event)" (blurred)="confirmCodeTouched.set(true)" />
+										(valueChange)="updateConfirmCode($event)" (blurred)="confirmCodeTouched.set(true)" />
 									@if (confirmCodeError()) {
 										<span class="field-error">{{ confirmCodeError() | translate }}</span>
 									}
@@ -193,7 +193,7 @@
 									@if (newEmailValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
 								</label>
 								<input id="newEmail" type="email" [placeholder]="'profile.newEmailPlaceholder' | translate" [class.invalid]="newEmailError()" [class.valid]="newEmailValid()"
-									[value]="newEmail()" (input)="newEmail.set($any($event.target).value)" (blur)="newEmailTouched.set(true)">
+									[value]="newEmail()" (input)="updateNewEmail($any($event.target).value)" (blur)="newEmailTouched.set(true)">
 								@if (newEmailError()) {
 									<span class="field-error">{{ newEmailError() | translate }}</span>
 								}

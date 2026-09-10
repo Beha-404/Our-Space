@@ -200,6 +200,16 @@ export class MemoriesPage {
     });
   }
 
+  updateUploadCaption(value: string): void {
+    this.uploadCaption.set(value);
+    this.uploadErrorKey.set('');
+  }
+
+  updateUploadDate(value: string): void {
+    this.uploadDate.set(value);
+    this.uploadErrorKey.set('');
+  }
+
   setUploadType(type: UploadType): void {
     this.uploadType.set(type);
     this.clearSelectedFile();

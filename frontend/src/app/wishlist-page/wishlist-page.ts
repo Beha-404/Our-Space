@@ -85,6 +85,11 @@ export class WishlistPage {
 
   newWishValid = computed(() => this.newWishTouched() && !this.newWishError() && !!this.newWish().trim());
 
+  updateNewWish(value: string): void {
+    this.newWish.set(value);
+    this.addErrorKey.set('');
+  }
+
   wishPendingDelete = signal<Wish | null>(null);
 
   constructor() {
