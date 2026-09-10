@@ -12,7 +12,7 @@ type Dict = Record<string, unknown>;
 
 export const translations: Record<Lang, Dict> = {
   bs: {
-    nav: { home: 'Početna', memories: 'Uspomene', events: 'Događaji', wishlist: 'Lista želja', logout: 'Odjava' },
+    nav: { home: 'Početna', memories: 'Uspomene', events: 'Događaji', wishlist: 'Lista želja', profile: 'Profil', logout: 'Odjava' },
     landing: {
       navLogin: 'Prijava',
       navRegister: 'Registracija',
@@ -319,7 +319,7 @@ export const translations: Record<Lang, Dict> = {
     },
   },
   en: {
-    nav: { home: 'Home', memories: 'Memories', events: 'Events', wishlist: 'Wishlist', logout: 'Log out' },
+    nav: { home: 'Home', memories: 'Memories', events: 'Events', wishlist: 'Wishlist', profile: 'Profile', logout: 'Log out' },
     landing: {
       navLogin: 'Log in',
       navRegister: 'Sign up',
@@ -626,7 +626,7 @@ export const translations: Record<Lang, Dict> = {
     },
   },
   es: {
-    nav: { home: 'Inicio', memories: 'Recuerdos', events: 'Eventos', wishlist: 'Lista de deseos', logout: 'Cerrar sesión' },
+    nav: { home: 'Inicio', memories: 'Recuerdos', events: 'Eventos', wishlist: 'Lista de deseos', profile: 'Perfil', logout: 'Cerrar sesión' },
     landing: {
       navLogin: 'Iniciar sesión',
       navRegister: 'Registrarse',

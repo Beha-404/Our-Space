@@ -106,6 +106,10 @@
     display: none;
   }
 
+  .user-link {
+    padding: 4px;
+  }
+
   .bottom-nav {
     display: flex;
     position: fixed;
