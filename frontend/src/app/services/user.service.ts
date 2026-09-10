@@ -91,9 +91,9 @@ export class UserService {
         );
     }
 
-    uploadProfilePicture(file: File): Observable<HttpEvent<User>> {
+    uploadProfilePicture(file: Blob): Observable<HttpEvent<User>> {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', file, 'avatar.jpg');
 
         return this.http.post<User>(`${this.apiUrl}/user/profile-picture`, formData, {
             reportProgress: true,

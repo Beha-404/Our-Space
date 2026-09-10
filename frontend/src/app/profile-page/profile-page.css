@@ -65,8 +65,14 @@ h1 {
 .picture-upload-progress {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100px;
+  gap: 6px;
+  width: 130px;
+}
+
+.picture-upload-text {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
 }
 
 .picture-upload-bar {

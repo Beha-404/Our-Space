@@ -1,0 +1,62 @@
+.cropper-card {
+  max-width: 320px;
+}
+
+.cropper-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 18px;
+}
+
+.cropper-viewport {
+  position: relative;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-bg-2);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.cropper-viewport:active {
+  cursor: grabbing;
+}
+
+.cropper-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cropper-image.ready {
+  opacity: 1;
+}
+
+.cropper-mask {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--color-border-strong);
+  pointer-events: none;
+}
+
+.cropper-zoom-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 22px;
+  color: var(--color-text-faint);
+}
+
+.cropper-zoom-slider {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-bg-2);
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}

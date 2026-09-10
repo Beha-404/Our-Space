@@ -1,9 +1,10 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
-import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Avatar } from '../shared/avatar/avatar';
+import { AvatarCropper } from '../shared/avatar-cropper/avatar-cropper';
 import { DatePicker } from '../shared/date-picker/date-picker';
 import { OtpInput } from '../shared/otp-input/otp-input';
 import { AuthService } from '../services/auth.service';
@@ -12,7 +13,7 @@ import { ToastService } from '../shared/toast/toast.service';
 import { isValidEmail } from '../shared/validators';
 
 @Component({
-  imports: [DatePipe, TranslatePipe, Avatar, DatePicker, OtpInput],
+  imports: [DatePipe, TranslatePipe, Avatar, AvatarCropper, DatePicker, OtpInput],
   selector: 'app-profile-page',
   styleUrl: './profile-page.css',
   templateUrl: './profile-page.html',
@@ -25,7 +26,7 @@ export class ProfilePage {
 
   currentUser = this.userService.currentUser;
 
-  pictureFileInput = viewChild<ElementRef<HTMLInputElement>>('pictureFileInput');
+  cropFile = signal<File | null>(null);
   uploadingPicture = signal(false);
   pictureUploadProgress = signal(0);
   pictureErrorKey = signal('');
@@ -205,20 +206,29 @@ export class ProfilePage {
   onPictureSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
+    input.value = '';
     if (!file) return;
 
+    this.pictureErrorKey.set('');
+    this.cropFile.set(file);
+  }
+
+  onCropCancelled(): void {
+    this.cropFile.set(null);
+  }
+
+  onCropConfirmed(blob: Blob): void {
+    this.cropFile.set(null);
     this.uploadingPicture.set(true);
     this.pictureUploadProgress.set(0);
     this.pictureErrorKey.set('');
 
-    this.userService.uploadProfilePicture(file).subscribe({
+    this.userService.uploadProfilePicture(blob).subscribe({
       next: event => {
         if (event.type === HttpEventType.UploadProgress && event.total) {
           this.pictureUploadProgress.set(Math.round(100 * event.loaded / event.total));
         } else if (event.type === HttpEventType.Response) {
           this.uploadingPicture.set(false);
-          const fileInput = this.pictureFileInput()?.nativeElement;
-          if (fileInput) fileInput.value = '';
           this.toast.success('toast.pictureUpdated');
         }
       },

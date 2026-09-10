@@ -1,0 +1,33 @@
+<div class="modal-backdrop" (click)="cancel()">
+	<div class="modal-card card cropper-card" (click)="$event.stopPropagation()">
+		<h3>{{ 'profile.cropTitle' | translate }}</h3>
+		<p class="cropper-hint">{{ 'profile.cropHint' | translate }}</p>
+
+		<div class="cropper-viewport" [style.width.px]="viewportSize" [style.height.px]="viewportSize"
+			(pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+			(pointerup)="onPointerUp()" (pointercancel)="onPointerUp()">
+			<img #image [src]="imageUrl()" (load)="onImageLoad()" class="cropper-image"
+				[class.ready]="imageReady()"
+				[style.width.px]="displayWidth()" [style.height.px]="displayHeight()"
+				[style.transform]="'translate(' + imageLeft() + 'px, ' + imageTop() + 'px)'"
+				draggable="false" alt="">
+			<div class="cropper-mask"></div>
+		</div>
+
+		<div class="cropper-zoom-row">
+			<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7">
+				<circle cx="10" cy="10" r="6" /><path d="M20 20l-4.5-4.5" />
+			</svg>
+			<input type="range" class="cropper-zoom-slider" min="1" max="3" step="0.01"
+				[value]="zoom()" (input)="onZoomInput($any($event.target).value)">
+			<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+				<circle cx="10" cy="10" r="7" /><path d="M20 20l-4.5-4.5" /><path d="M10 7v6M7 10h6" />
+			</svg>
+		</div>
+
+		<div class="modal-actions">
+			<button class="btn btn-ghost btn-sm" (click)="cancel()">{{ 'profile.cancelButton' | translate }}</button>
+			<button class="btn btn-primary btn-sm" [disabled]="!imageReady()" (click)="confirm()">{{ 'profile.cropConfirmButton' | translate }}</button>
+		</div>
+	</div>
+</div>

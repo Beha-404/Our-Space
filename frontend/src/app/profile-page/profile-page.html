@@ -12,9 +12,10 @@
 						<div class="basic-info-row">
 							<div class="avatar-col">
 								<app-avatar [name]="user.username" [pictureUrl]="user.profilePictureUrl" [size]="84"></app-avatar>
-								<input #pictureFileInput type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)" [disabled]="uploadingPicture()">
+								<input type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)" [disabled]="uploadingPicture()">
 								@if (uploadingPicture()) {
 									<div class="picture-upload-progress">
+										<span class="picture-upload-text">{{ 'profile.uploadingPicture' | translate }}</span>
 										<span class="picture-upload-bar">
 											<span class="picture-upload-fill" [style.width.%]="pictureUploadProgress()"></span>
 										</span>
@@ -27,6 +28,10 @@
 								}
 								@if (pictureErrorKey()) {
 									<span class="picture-error">{{ pictureErrorKey() | translate }}</span>
+								}
+
+								@if (cropFile(); as file) {
+									<app-avatar-cropper [file]="file" (cropped)="onCropConfirmed($event)" (cancelled)="onCropCancelled()" />
 								}
 							</div>
 
