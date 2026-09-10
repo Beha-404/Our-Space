@@ -12,10 +12,19 @@
 						<div class="basic-info-row">
 							<div class="avatar-col">
 								<app-avatar [name]="user.username" [pictureUrl]="user.profilePictureUrl" [size]="84"></app-avatar>
-								<input #pictureFileInput type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)">
-								<label for="pictureFile" class="btn btn-ghost btn-sm">
-									{{ (uploadingPicture() ? 'profile.uploadingPicture' : 'profile.changePicture') | translate }}
-								</label>
+								<input #pictureFileInput type="file" accept="image/*" id="pictureFile" class="picture-file-input" (change)="onPictureSelected($event)" [disabled]="uploadingPicture()">
+								@if (uploadingPicture()) {
+									<div class="picture-upload-progress">
+										<span class="picture-upload-bar">
+											<span class="picture-upload-fill" [style.width.%]="pictureUploadProgress()"></span>
+										</span>
+										<span class="picture-upload-state">{{ pictureUploadProgress() }}%</span>
+									</div>
+								} @else {
+									<label for="pictureFile" class="btn btn-ghost btn-sm">
+										{{ 'profile.changePicture' | translate }}
+									</label>
+								}
 								@if (pictureErrorKey()) {
 									<span class="picture-error">{{ pictureErrorKey() | translate }}</span>
 								}

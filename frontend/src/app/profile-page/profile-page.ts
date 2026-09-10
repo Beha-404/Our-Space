@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
@@ -27,6 +27,7 @@ export class ProfilePage {
 
   pictureFileInput = viewChild<ElementRef<HTMLInputElement>>('pictureFileInput');
   uploadingPicture = signal(false);
+  pictureUploadProgress = signal(0);
   pictureErrorKey = signal('');
 
   formData = signal({ username: '' });
@@ -207,14 +208,19 @@ export class ProfilePage {
     if (!file) return;
 
     this.uploadingPicture.set(true);
+    this.pictureUploadProgress.set(0);
     this.pictureErrorKey.set('');
 
     this.userService.uploadProfilePicture(file).subscribe({
-      next: () => {
-        this.uploadingPicture.set(false);
-        const fileInput = this.pictureFileInput()?.nativeElement;
-        if (fileInput) fileInput.value = '';
-        this.toast.success('toast.pictureUpdated');
+      next: event => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          this.pictureUploadProgress.set(Math.round(100 * event.loaded / event.total));
+        } else if (event.type === HttpEventType.Response) {
+          this.uploadingPicture.set(false);
+          const fileInput = this.pictureFileInput()?.nativeElement;
+          if (fileInput) fileInput.value = '';
+          this.toast.success('toast.pictureUpdated');
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.uploadingPicture.set(false);

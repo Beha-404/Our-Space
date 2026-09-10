@@ -18,7 +18,7 @@ public class PhotoService(
     IStorageQuotaService quota,
     ICoupleContext coupleContext) : IPhotoService
 {
-    private const long MaxFileSizeBytes = 10 * 1024 * 1024;
+    private const long MaxFileSizeBytes = 20 * 1024 * 1024;
     private const int ThumbnailWidth = 640;
     private const int MediumWidth = 1600;
     private const int MaxPageSize = 500;

@@ -1,4 +1,4 @@
-﻿import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
 import { config } from '../config';
@@ -91,12 +91,19 @@ export class UserService {
         );
     }
 
-    uploadProfilePicture(file: File) {
+    uploadProfilePicture(file: File): Observable<HttpEvent<User>> {
         const formData = new FormData();
         formData.append('file', file);
 
-        return this.http.post<User>(`${this.apiUrl}/user/profile-picture`, formData).pipe(
-            tap(user => this.currentUser.set(user))
+        return this.http.post<User>(`${this.apiUrl}/user/profile-picture`, formData, {
+            reportProgress: true,
+            observe: 'events',
+        }).pipe(
+            tap(event => {
+                if (event.type === HttpEventType.Response && event.body) {
+                    this.currentUser.set(event.body);
+                }
+            })
         );
     }
 }

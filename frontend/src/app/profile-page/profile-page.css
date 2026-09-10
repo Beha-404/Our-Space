@@ -62,6 +62,34 @@ h1 {
   max-width: 140px;
 }
 
+.picture-upload-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100px;
+}
+
+.picture-upload-bar {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-bg-2);
+  overflow: hidden;
+}
+
+.picture-upload-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.15s linear;
+}
+
+.picture-upload-state {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
 .profile-form {
   flex: 1;
   min-width: 0;

@@ -14,7 +14,7 @@ namespace OurSpace.API.Controllers;
 public class PhotosController(IPhotoService photoService, ILocalizer localizer) : ControllerBase
 {
     [HttpPost]
-    [RequestSizeLimit(10 * 1024 * 1024)]
+    [RequestSizeLimit(20 * 1024 * 1024)]
     public async Task<ActionResult<PhotoDto>> Upload(
         [FromForm] IFormFile file,
         [FromForm] DateOnly takenAt,

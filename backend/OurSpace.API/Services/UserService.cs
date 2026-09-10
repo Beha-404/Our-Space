@@ -17,7 +17,7 @@ public partial class UserService(
     IEmailQueue emailQueue,
     IFileUrlSigner urlSigner) : IUserService
 {
-    private const long MaxFileSizeBytes = 5 * 1024 * 1024;
+    private const long MaxFileSizeBytes = 20 * 1024 * 1024;
     private const int MaxUsernameLength = 30;
     private const int MaxEmailLength = 254;
 

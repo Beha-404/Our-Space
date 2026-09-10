@@ -30,7 +30,7 @@ public class UserController(IUserService userService, ILocalizer localizer) : Co
     }
 
     [HttpPost("profile-picture")]
-    [RequestSizeLimit(5 * 1024 * 1024)]
+    [RequestSizeLimit(20 * 1024 * 1024)]
     public async Task<ActionResult<UserDto>> UpdateProfilePicture([FromForm] IFormFile file)
     {
         if (file is null)

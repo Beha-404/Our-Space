@@ -58,9 +58,9 @@ public static class Messages
             "The file is empty.",
             "El archivo está vacío."),
         ["User.PictureTooLarge"] = Lang(
-            "Slika je prevelika (maksimalno 5MB).",
-            "The picture is too large (max 5MB).",
-            "La imagen es demasiado grande (máx. 5MB)."),
+            "Slika je prevelika (maksimalno 20MB).",
+            "The picture is too large (max 20MB).",
+            "La imagen es demasiado grande (máx. 20MB)."),
         ["User.PictureUnsupportedFormat"] = Lang(
             "Nepodržan format slike. Dozvoljeno: JPEG, PNG, WEBP, GIF.",
             "Unsupported picture format. Allowed: JPEG, PNG, WEBP, GIF.",
@@ -156,9 +156,9 @@ public static class Messages
             "Out of space. The limit is {0}MB and only {1}MB is left. Delete something and try again.",
             "Sin espacio. El límite es {0}MB y solo quedan {1}MB. Elimina algo e inténtalo de nuevo."),
         ["Photo.TooLarge"] = Lang(
-            "Slika je prevelika (maksimalno 10MB).",
-            "The picture is too large (max 10MB).",
-            "La imagen es demasiado grande (máx. 10MB)."),
+            "Slika je prevelika (maksimalno 20MB).",
+            "The picture is too large (max 20MB).",
+            "La imagen es demasiado grande (máx. 20MB)."),
         ["Photo.UnsupportedFormat"] = Lang(
             "Nepodržan format slike. Dozvoljeno: JPEG, PNG, WEBP, GIF.",
             "Unsupported picture format. Allowed: JPEG, PNG, WEBP, GIF.",
