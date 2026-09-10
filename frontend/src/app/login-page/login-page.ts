@@ -43,12 +43,6 @@ export class LoginPage {
   codeError = computed(() =>
     this.codeTouched() && !this.code().trim() ? 'auth.errResetCodeEmpty' : '');
 
-  usernameValid = computed(() =>
-    this.usernameTouched() && !this.usernameError() && !!this.loginData().username.trim());
-
-  passwordValid = computed(() =>
-    this.passwordTouched() && !this.passwordError() && !!this.loginData().password);
-
   showFillAllError = computed(() => this.submitted() && !!(this.usernameError() || this.passwordError()));
 
   constructor() {

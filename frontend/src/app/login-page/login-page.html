@@ -14,12 +14,9 @@
 		@if (step() === 'credentials') {
 			<form (submit)="login(); $event.preventDefault()">
 				<div class="field">
-					<label for="username">
-						{{ 'auth.usernameLabel' | translate }}
-						@if (usernameValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
-					</label>
+					<label for="username">{{ 'auth.usernameLabel' | translate }}</label>
 					<input id="username" type="text" autocomplete="username" [value]="loginData().username"
-						[class.invalid]="usernameError()" [class.valid]="usernameValid()"
+						[class.invalid]="usernameError()"
 						(input)="updateField('username', $any($event.target).value)" (blur)="usernameTouched.set(true)">
 					@if (usernameError()) {
 						<span class="field-error">{{ usernameError() | translate }}</span>
@@ -27,14 +24,11 @@
 				</div>
 
 				<div class="field">
-					<label for="password">
-						{{ 'auth.passwordLabel' | translate }}
-						@if (passwordValid()) { <svg class="field-valid-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
-					</label>
+					<label for="password">{{ 'auth.passwordLabel' | translate }}</label>
 					<div class="password-wrap">
 						<input id="password" [type]="showPassword() ? 'text' : 'password'"
 							autocomplete="current-password" [value]="loginData().password"
-							[class.invalid]="passwordError()" [class.valid]="passwordValid()"
+							[class.invalid]="passwordError()"
 							(input)="updateField('password', $any($event.target).value)" (blur)="passwordTouched.set(true)">
 						<button type="button" class="password-toggle" [class.active]="showPassword()"
 							(pointerdown)="showPassword.set(true)"
