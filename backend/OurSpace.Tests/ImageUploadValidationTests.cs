@@ -75,7 +75,7 @@ public class ImageUploadValidationTests
 
         var user = await response.Content.ReadFromJsonAsync<UserDto>();
 
-        Assert.Contains(".png?", user!.ProfilePictureUrl);
+        Assert.Contains(".webp?", user!.ProfilePictureUrl);
         Assert.DoesNotContain(".html", user.ProfilePictureUrl);
 
         DeleteStoredFile(factory, user.ProfilePictureUrl!);

@@ -7,6 +7,8 @@ using OurSpace.API.Common.Localization;
 using OurSpace.API.Data;
 using OurSpace.API.Models.DTOs.User;
 using OurSpace.API.Models.Entities;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace OurSpace.API.Services;
 
@@ -18,6 +20,7 @@ public partial class UserService(
     IFileUrlSigner urlSigner) : IUserService
 {
     private const long MaxFileSizeBytes = 20 * 1024 * 1024;
+    private const int AvatarMaxSize = 400;
     private const int MaxUsernameLength = 30;
     private const int MaxEmailLength = 254;
 
@@ -137,14 +140,29 @@ public partial class UserService(
         if (file.Length > MaxFileSizeBytes)
             throw new BadRequestException(localizer.T("User.PictureTooLarge"));
 
-        var extension = await ImageFormats.ResolveExtensionAsync(file)
+        _ = await ImageFormats.ResolveExtensionAsync(file)
             ?? throw new BadRequestException(localizer.T("User.PictureUnsupportedFormat"));
 
         var user = await GetUserOrThrow(userId);
         var oldPictureUrl = user.ProfilePictureUrl;
 
-        await using var uploadStream = file.OpenReadStream();
-        var stored = await fileStorage.SaveAsync(uploadStream, "avatars", extension);
+        StoredFile stored;
+
+        await using (var uploadStream = file.OpenReadStream())
+        using (var image = await Image.LoadAsync(uploadStream))
+        {
+            image.Mutate(x => x.AutoOrient().Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Max,
+                Size = new Size(AvatarMaxSize, AvatarMaxSize),
+            }));
+
+            await using var buffer = new MemoryStream();
+            await image.SaveAsWebpAsync(buffer);
+            buffer.Position = 0;
+
+            stored = await fileStorage.SaveAsync(buffer, "avatars", ".webp");
+        }
 
         user.ProfilePictureUrl = stored.Path;
         user.UpdatedAt = DateTime.UtcNow;
