@@ -81,6 +81,62 @@ public class ImageUploadValidationTests
         DeleteStoredFile(factory, user.ProfilePictureUrl!);
     }
 
+    [Fact]
+    public async Task Avatar_Upload_Accepts_A_Photo_Larger_Than_The_Old_5MB_Limit()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = TestWorld.ClientFor(factory, world.AnaToken);
+        var bytes = LargeNoisePng(2000);
+        Assert.True(bytes.Length > 5 * 1024 * 1024, "test fixture should exceed the old 5MB limit");
+
+        var response = await client.PostAsync("/api/user/profile-picture", AvatarForm(bytes, "big.png", "image/png"));
+        response.EnsureSuccessStatusCode();
+
+        var user = await response.Content.ReadFromJsonAsync<UserDto>();
+        DeleteStoredFile(factory, user!.ProfilePictureUrl!);
+    }
+
+    [Fact]
+    public async Task Avatar_Upload_Resizes_The_Stored_Image_Instead_Of_Keeping_The_Original()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = TestWorld.ClientFor(factory, world.AnaToken);
+        var bytes = LargeNoisePng(2000);
+
+        var response = await client.PostAsync("/api/user/profile-picture", AvatarForm(bytes, "big.png", "image/png"));
+        response.EnsureSuccessStatusCode();
+        var user = await response.Content.ReadFromJsonAsync<UserDto>();
+
+        var root = factory.Services.GetRequiredService<IWebHostEnvironment>().ContentRootPath;
+        var relative = user!.ProfilePictureUrl!.Split('?')[0].TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+        var storedBytes = await File.ReadAllBytesAsync(Path.Combine(root, relative));
+
+        using var stored = Image.Load(storedBytes);
+        Assert.True(stored.Width <= 400 && stored.Height <= 400);
+        Assert.True(storedBytes.Length < bytes.Length / 10);
+
+        DeleteStoredFile(factory, user.ProfilePictureUrl!);
+    }
+
+    private static byte[] LargeNoisePng(int size)
+    {
+        var rnd = new Random(42);
+        var pixels = new byte[size * size * 4];
+        rnd.NextBytes(pixels);
+        for (var i = 3; i < pixels.Length; i += 4) pixels[i] = 255;
+
+        using var image = Image.LoadPixelData<Rgba32>(pixels, size, size);
+        using var buffer = new MemoryStream();
+
+        image.SaveAsPng(buffer);
+
+        return buffer.ToArray();
+    }
+
     private static void DeleteStoredFile(OurSpaceFactory factory, string signedUrl)
     {
         var root = factory.Services.GetRequiredService<IWebHostEnvironment>().ContentRootPath;
