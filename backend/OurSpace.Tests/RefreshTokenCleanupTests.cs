@@ -89,7 +89,7 @@ public class RefreshTokenCleanupTests
 
         var user = await db.Users.SingleAsync(u => u.Id == userId);
 
-        await auth.LoginAsync(new LoginRequest(user.Username, Password));
+        await auth.LoginAsync(new LoginRequest(user.Username, Password), deviceToken: null);
     }
 
     private static async Task<List<string>> TokensAsync(OurSpaceFactory factory, int userId)

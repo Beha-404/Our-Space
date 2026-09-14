@@ -19,6 +19,7 @@ public class AuthController(
     ILocalizer localizer) : ControllerBase
 {
     private string CookieName => cookieOptions.Value.Secure ? "__Secure-osRefresh" : "osRefresh";
+    private string DeviceCookieName => cookieOptions.Value.Secure ? "__Secure-osDevice" : "osDevice";
 
     [HttpPost("register")]
     [EnableRateLimiting(RateLimitPolicies.Login)]
@@ -33,7 +34,8 @@ public class AuthController(
     [EnableRateLimiting(RateLimitPolicies.Login)]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
-        var outcome = await authService.LoginAsync(request);
+        var deviceToken = Request.Cookies[DeviceCookieName];
+        var outcome = await authService.LoginAsync(request, deviceToken);
 
         if (outcome.RequiresTwoFactor)
             return Ok(new LoginResponse(true, null));
@@ -47,8 +49,12 @@ public class AuthController(
     public async Task<ActionResult<AuthResponse>> VerifyLogin(VerifyLoginRequest request)
     {
         var result = await authService.VerifyLoginAsync(request);
-        SetRefreshCookie(result.RefreshToken);
-        return Ok(result.Response);
+        SetRefreshCookie(result.Result.RefreshToken);
+
+        if (result.DeviceToken is not null)
+            SetDeviceCookie(result.DeviceToken);
+
+        return Ok(result.Result.Response);
     }
 
     [HttpPost("forgot-password")]
@@ -65,6 +71,7 @@ public class AuthController(
     {
         await authService.ResetPasswordAsync(request);
         ClearRefreshCookie();
+        ClearDeviceCookie();
         return NoContent();
     }
 
@@ -100,6 +107,17 @@ public class AuthController(
     private void ClearRefreshCookie()
     {
         Response.Cookies.Append(CookieName, string.Empty, BuildCookieOptions(DateTimeOffset.UnixEpoch));
+    }
+
+    private void SetDeviceCookie(string deviceToken)
+    {
+        Response.Cookies.Append(DeviceCookieName, deviceToken, BuildCookieOptions(
+            DateTimeOffset.UtcNow.AddDays(jwtOptions.Value.TrustedDeviceDays)));
+    }
+
+    private void ClearDeviceCookie()
+    {
+        Response.Cookies.Append(DeviceCookieName, string.Empty, BuildCookieOptions(DateTimeOffset.UnixEpoch));
     }
 
     private CookieOptions BuildCookieOptions(DateTimeOffset expires)

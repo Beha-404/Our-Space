@@ -9,4 +9,5 @@ public class JwtOptions
     public required string Audience { get; set; }
     public int AccessTokenMinutes { get; set; } = 15;
     public int RefreshTokenDays { get; set; } = 30;
+    public int TrustedDeviceDays { get; set; } = 60;
 }

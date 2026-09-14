@@ -26,8 +26,8 @@ export class AuthService {
         );
     }
 
-    verifyLogin(username: string, code: string) {
-        return this.http.post<AuthResponse>(`${this.apiUrl}/auth/verify-login`, { username, code }, { withCredentials: true }).pipe(
+    verifyLogin(username: string, code: string, rememberDevice: boolean) {
+        return this.http.post<AuthResponse>(`${this.apiUrl}/auth/verify-login`, { username, code, rememberDevice }, { withCredentials: true }).pipe(
             tap(response => this.accessToken = response.token)
         );
     }

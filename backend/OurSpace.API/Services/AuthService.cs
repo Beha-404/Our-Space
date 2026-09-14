@@ -82,7 +82,7 @@ public partial class AuthService(
         return await IssueTokensAsync(user);
     }
 
-    public async Task<LoginOutcome> LoginAsync(LoginRequest request)
+    public async Task<LoginOutcome> LoginAsync(LoginRequest request, string? deviceToken)
     {
         await attemptLimiter.EnsureAllowedAsync(
             "login", request.Username.Trim().ToLowerInvariant(), MaxLoginAttempts, LoginAttemptWindow);
@@ -95,6 +95,9 @@ public partial class AuthService(
             throw new UnauthorizedAppException(localizer.T("Auth.LoginFailed"));
 
         if (!authOptions.Value.TwoFactorEnabled)
+            return new LoginOutcome(false, await IssueTokensAsync(user));
+
+        if (!string.IsNullOrEmpty(deviceToken) && await IsTrustedDeviceAsync(user.Id, deviceToken))
             return new LoginOutcome(false, await IssueTokensAsync(user));
 
         var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
@@ -110,7 +113,7 @@ public partial class AuthService(
         return new LoginOutcome(true, null);
     }
 
-    public async Task<AuthResult> VerifyLoginAsync(VerifyLoginRequest request)
+    public async Task<VerifyLoginResult> VerifyLoginAsync(VerifyLoginRequest request)
     {
         var user = await db.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
 
@@ -132,9 +135,29 @@ public partial class AuthService(
         }
 
         ClearLoginCode(user);
+
+        string? deviceToken = null;
+        if (request.RememberDevice)
+        {
+            deviceToken = tokenService.GenerateRefreshToken();
+            db.TrustedDevices.Add(new TrustedDevice
+            {
+                Token = deviceToken,
+                UserId = user.Id,
+                ExpiresAt = tokenService.TrustedDeviceExpiresAt(),
+            });
+        }
+
         await db.SaveChangesAsync();
 
-        return await IssueTokensAsync(user);
+        var result = await IssueTokensAsync(user);
+        return new VerifyLoginResult(result, deviceToken);
+    }
+
+    private async Task<bool> IsTrustedDeviceAsync(int userId, string token)
+    {
+        var device = await db.TrustedDevices.SingleOrDefaultAsync(d => d.Token == token);
+        return device is not null && device.UserId == userId && device.IsActive;
     }
 
     private static bool VerifyPassword(string password, string? storedHash)
@@ -249,6 +272,13 @@ public partial class AuthService(
         foreach (var token in activeTokens)
             token.RevokedAt = DateTime.UtcNow;
 
+        var activeTrustedDevices = await db.TrustedDevices
+            .Where(d => d.UserId == user.Id && d.RevokedAt == null)
+            .ToListAsync();
+
+        foreach (var device in activeTrustedDevices)
+            device.RevokedAt = DateTime.UtcNow;
+
         await db.SaveChangesAsync();
     }
 
@@ -261,7 +291,7 @@ public partial class AuthService(
 
     private async Task<AuthResult> IssueTokensAsync(User user)
     {
-        await PruneRefreshTokensAsync(user.Id);
+        await PruneStaleTokensAsync(user.Id);
 
         var accessToken = tokenService.GenerateAccessToken(user);
         var refreshToken = tokenService.GenerateRefreshToken();
@@ -285,7 +315,7 @@ public partial class AuthService(
         return new AuthResult(response, refreshToken);
     }
 
-    private async Task PruneRefreshTokensAsync(int userId)
+    private async Task PruneStaleTokensAsync(int userId)
     {
         var now = DateTime.UtcNow;
         var revokedCutoff = now - RevokedTokenRetention;
@@ -293,6 +323,11 @@ public partial class AuthService(
         await db.RefreshTokens
             .Where(r => r.UserId == userId
                 && (r.ExpiresAt < now || (r.RevokedAt != null && r.RevokedAt < revokedCutoff)))
+            .ExecuteDeleteAsync();
+
+        await db.TrustedDevices
+            .Where(d => d.UserId == userId
+                && (d.ExpiresAt < now || (d.RevokedAt != null && d.RevokedAt < revokedCutoff)))
             .ExecuteDeleteAsync();
     }
 

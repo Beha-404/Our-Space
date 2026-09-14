@@ -15,4 +15,6 @@ public record LoginOutcome(bool RequiresTwoFactor, AuthResult? Result);
 
 public record LoginResponse(bool RequiresTwoFactor, AuthResponse? Auth);
 
-public record VerifyLoginRequest(string Username, string Code);
+public record VerifyLoginRequest(string Username, string Code, bool RememberDevice = false);
+
+public record VerifyLoginResult(AuthResult Result, string? DeviceToken);

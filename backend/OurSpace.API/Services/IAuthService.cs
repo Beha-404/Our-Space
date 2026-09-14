@@ -5,10 +5,10 @@ namespace OurSpace.API.Services;
 public interface IAuthService
 {
     Task<AuthResult> RegisterAsync(RegisterRequest request);
-    Task<LoginOutcome> LoginAsync(LoginRequest request);
+    Task<LoginOutcome> LoginAsync(LoginRequest request, string? deviceToken);
     Task<AuthResult> RefreshAsync(string refreshToken);
     Task LogoutAsync(string refreshToken);
-    Task<AuthResult> VerifyLoginAsync(VerifyLoginRequest request);
+    Task<VerifyLoginResult> VerifyLoginAsync(VerifyLoginRequest request);
 
     Task RequestPasswordResetAsync(string email);
     Task ResetPasswordAsync(ResetPasswordRequest request);

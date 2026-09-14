@@ -42,4 +42,6 @@ public class TokenService(IOptions<JwtOptions> jwtOptions) : ITokenService
     public DateTime AccessTokenExpiresAt() => DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);
 
     public DateTime RefreshTokenExpiresAt() => DateTime.UtcNow.AddDays(_options.RefreshTokenDays);
+
+    public DateTime TrustedDeviceExpiresAt() => DateTime.UtcNow.AddDays(_options.TrustedDeviceDays);
 }

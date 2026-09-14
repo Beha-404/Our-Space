@@ -8,4 +8,5 @@ public interface ITokenService
     string GenerateRefreshToken();
     DateTime AccessTokenExpiresAt();
     DateTime RefreshTokenExpiresAt();
+    DateTime TrustedDeviceExpiresAt();
 }

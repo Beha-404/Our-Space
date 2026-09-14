@@ -71,6 +71,11 @@
 					}
 				</div>
 
+				<label class="checkbox-field">
+					<input type="checkbox" [checked]="rememberDevice()" (change)="rememberDevice.set($any($event.target).checked)">
+					{{ 'auth.rememberDevice' | translate }}
+				</label>
+
 				@if (errorKey()) {
 					<div class="alert alert-error">{{ errorKey() | translate }}</div>
 				}

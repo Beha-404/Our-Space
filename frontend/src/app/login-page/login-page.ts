@@ -27,6 +27,7 @@ export class LoginPage {
   showPassword = signal(false);
   step = signal<'credentials' | 'code'>('credentials');
   code = signal('');
+  rememberDevice = signal(false);
   busy = signal(false);
 
   usernameTouched = signal(false);
@@ -109,7 +110,7 @@ export class LoginPage {
     this.errorKey.set('');
     this.busy.set(true);
 
-    this.authService.verifyLogin(this.loginData().username, code).subscribe({
+    this.authService.verifyLogin(this.loginData().username, code, this.rememberDevice()).subscribe({
       next: () => {
         this.toast.success('toast.loginSuccess');
         this.router.navigate(['/home']);
@@ -127,6 +128,7 @@ export class LoginPage {
     this.step.set('credentials');
     this.code.set('');
     this.codeTouched.set(false);
+    this.rememberDevice.set(false);
     this.errorKey.set('');
     this.infoKey.set('');
   }
