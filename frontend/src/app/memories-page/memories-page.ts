@@ -1,6 +1,7 @@
 ﻿import { DatePipe } from '@angular/common';
 import { HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { catchError, concatMap, from, Observable, of, tap } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
@@ -33,7 +34,7 @@ interface MemoryMonth {
 }
 
 @Component({
-  imports: [DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker],
+  imports: [DatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker, RouterLink],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',

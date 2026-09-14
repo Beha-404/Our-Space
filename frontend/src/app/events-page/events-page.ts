@@ -1,6 +1,7 @@
 ﻿import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
@@ -10,7 +11,7 @@ import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
-  imports: [DatePipe, TranslatePipe, Skeleton, DatePicker],
+  imports: [DatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink],
   selector: 'app-events-page',
   styleUrl: './events-page.css',
   templateUrl: './events-page.html',

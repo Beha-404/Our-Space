@@ -28,7 +28,11 @@ h1 {
 }
 
 .notice-card p {
-  margin: 0;
+  margin: 0 0 16px;
+}
+
+.notice-card-cta {
+  display: inline-block;
 }
 
 .memories-actions {
