@@ -10,8 +10,10 @@
 				<div class="card couple-card">
 					<app-avatar [name]="partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="56"></app-avatar>
 					<div>
-						<p class="couple-label">{{ 'profile.partnerTitle' | translate }}</p>
-						<h3 class="couple-names">{{ partner.username }}</h3>
+						<h3 class="couple-names">
+							<span class="couple-label">{{ 'profile.partnerTitle' | translate }}:</span>
+							{{ partner.username }}
+						</h3>
 						@if (daysTogether() !== null) {
 							<p class="days-together">{{ 'home.togetherPrefix' | translate }} <strong>{{ daysTogether() }}</strong> {{ 'home.togetherSuffix' | translate }}</p>
 						}
