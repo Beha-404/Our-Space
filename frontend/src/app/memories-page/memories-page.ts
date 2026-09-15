@@ -1,7 +1,7 @@
 ﻿import { DatePipe } from '@angular/common';
 import { HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, concatMap, from, Observable, of, tap } from 'rxjs';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
@@ -14,6 +14,7 @@ import { toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { DatePicker } from '../shared/date-picker/date-picker';
 import { Lightbox } from '../shared/lightbox/lightbox';
+import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { SelectDropdown, SelectOption } from '../shared/select-dropdown/select-dropdown';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
@@ -47,6 +48,9 @@ export class MemoriesPage {
   private userService = inject(UserService);
   private i18n = inject(TranslationService);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
+
+  private static readonly MAX_HIGHLIGHT_SEARCH_PAGES = 25;
 
   fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
@@ -170,13 +174,51 @@ export class MemoriesPage {
 
   constructor() {
     this.userService.ensureCurrentUser().subscribe(user => {
-      if (user.partner) this.loadPage(1);
-      else this.loading.set(false);
+      if (user.partner) {
+        this.loadPage(1);
+        this.highlightFromQueryParams();
+      } else {
+        this.loading.set(false);
+      }
     });
   }
 
   loadAll(): void {
     this.loadPage(1);
+  }
+
+  private highlightFromQueryParams(): void {
+    const idParam = this.route.snapshot.queryParamMap.get('highlight');
+    const type = this.route.snapshot.queryParamMap.get('type') as 'photo' | 'audio' | null;
+    if (!idParam || !type) return;
+
+    this.findHighlightPage(Number(idParam), type, 1);
+  }
+
+  private findHighlightPage(id: number, type: 'photo' | 'audio', page: number): void {
+    if (page > MemoriesPage.MAX_HIGHLIGHT_SEARCH_PAGES) return;
+
+    this.memoryFeed.getPage({
+      page,
+      pageSize: MemoriesPage.PAGE_SIZE,
+      sort: 'newest',
+      year: 'all',
+      month: 'all',
+      type: 'all',
+    }).subscribe({
+      next: feed => {
+        if (feed.items.some(item => item.id === id && item.type === type)) {
+          this.sortOrder.set('newest');
+          this.feedYearFilter.set('all');
+          this.feedMonthFilter.set('all');
+          this.loadPage(page);
+          scrollAndHighlight(`post-${type}-${id}`);
+        } else if (feed.hasMore) {
+          this.findHighlightPage(id, type, page + 1);
+        }
+      },
+      error: () => {}
+    });
   }
 
   private loadPage(page: number): void {

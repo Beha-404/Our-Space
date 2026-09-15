@@ -7,7 +7,12 @@ using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
-public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer localizer, ICoupleContext coupleContext) : IEventService
+public class EventService(
+    AppDbContext db,
+    IEmailQueue emailQueue,
+    INotificationService notifications,
+    ILocalizer localizer,
+    ICoupleContext coupleContext) : IEventService
 {
     private const int MaxTitleLength = 200;
     private const int MaxDescriptionLength = 2000;
@@ -31,7 +36,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
         await db.SaveChangesAsync();
 
         var creator = ActingUser(couple, userId);
-        await NotifyPartnerAsync(couple, userId, creator.Username, ev.Title, EventChangeType.Created);
+        await NotifyPartnerAsync(couple, userId, creator.Username, ev, EventChangeType.Created);
         return ToDto(ev, creator.Username);
     }
 
@@ -72,7 +77,7 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
 
         await db.SaveChangesAsync();
 
-        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, ev.Title, EventChangeType.Updated);
+        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, ev, EventChangeType.Updated);
 
         return ToDto(ev, ev.CreatedByUser.Username);
     }
@@ -87,11 +92,10 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
         if (ev.CoupleId != couple.Id)
             throw new NotFoundException(localizer.T("Event.NotFound"));
 
-        var title = ev.Title;
         db.Events.Remove(ev);
         await db.SaveChangesAsync();
 
-        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, title, EventChangeType.Deleted);
+        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, ev, EventChangeType.Deleted);
     }
 
     private void ValidateTitleAndDescription(CreateEventRequest request)
@@ -114,22 +118,27 @@ public class EventService(AppDbContext db, IEmailQueue emailQueue, ILocalizer lo
     private static User ActingUser(Couple couple, int userId) =>
         couple.User1Id == userId ? couple.User1 : couple.User2;
 
-    private async Task NotifyPartnerAsync(Couple couple, int actingUserId, string actorUsername, string eventTitle, EventChangeType change)
+    private async Task NotifyPartnerAsync(Couple couple, int actingUserId, string actorUsername, Event ev, EventChangeType change)
     {
-        var (subjectKey, bodyKey) = change switch
+        var (subjectKey, bodyKey, notificationType) = change switch
         {
-            EventChangeType.Created => ("Email.EventCreated.Subject", "Email.EventCreated.Body"),
-            EventChangeType.Updated => ("Email.EventUpdated.Subject", "Email.EventUpdated.Body"),
-            EventChangeType.Deleted => ("Email.EventDeleted.Subject", "Email.EventDeleted.Body"),
+            EventChangeType.Created => ("Email.EventCreated.Subject", "Email.EventCreated.Body", NotificationType.EventCreated),
+            EventChangeType.Updated => ("Email.EventUpdated.Subject", "Email.EventUpdated.Body", NotificationType.EventUpdated),
+            EventChangeType.Deleted => ("Email.EventDeleted.Subject", "Email.EventDeleted.Body", NotificationType.EventDeleted),
             _ => throw new ArgumentOutOfRangeException(nameof(change)),
         };
 
         var recipients = new[] { couple.User1, couple.User2 }.Where(u => u.Id != actingUserId);
         foreach (var user in recipients)
         {
-            var subject = localizer.For(subjectKey, user.PreferredLanguage, eventTitle);
-            var body = localizer.For(bodyKey, user.PreferredLanguage, actorUsername, eventTitle);
+            var dateText = ev.EventDate.ToString("dd.MM.yyyy.");
+            var subject = localizer.For(subjectKey, user.PreferredLanguage, ev.Title);
+            var body = localizer.For(bodyKey, user.PreferredLanguage, actorUsername, dateText);
+            if (!string.IsNullOrWhiteSpace(ev.Description))
+                body += "\n\n" + ev.Description;
+
             await emailQueue.EnqueueAsync(user.Email, subject, body);
+            await notifications.NotifyAsync(user.Id, actingUserId, notificationType, "event", ev.Id, ev.Title);
         }
     }
 

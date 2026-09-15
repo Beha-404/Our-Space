@@ -16,7 +16,8 @@ public class AudioService(
     IStorageQuotaService quota,
     IFFmpegReadiness ffmpeg,
     IBackgroundJobQueue jobQueue,
-    ICoupleContext coupleContext) : IAudioService
+    ICoupleContext coupleContext,
+    INotificationService notifications) : IAudioService
 {
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -81,6 +82,10 @@ public class AudioService(
                 new AudioConversionPayload(audio.Id, stored.Path),
                 userId);
         }
+
+        var partnerId = await coupleContext.GetPartnerUserIdAsync(userId);
+        if (partnerId is not null)
+            await notifications.NotifyAsync(partnerId.Value, userId, NotificationType.AudioAdded, "audio", audio.Id, audio.Caption);
 
         return ToDto(audio, username);
     }

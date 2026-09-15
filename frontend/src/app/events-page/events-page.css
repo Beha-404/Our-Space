@@ -24,7 +24,7 @@ h1 {
 
 .events-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin: 36px 0 18px;
   flex-wrap: wrap;

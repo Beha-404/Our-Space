@@ -280,24 +280,24 @@ public static class Messages
 
         ["Email.EventCreated.Subject"] = Lang("Novi događaj: {0}", "New event: {0}", "Nuevo evento: {0}"),
         ["Email.EventCreated.Body"] = Lang(
-            "{0} je dodao/la novi događaj \"{1}\".",
-            "{0} added a new event \"{1}\".",
-            "{0} agregó un nuevo evento \"{1}\"."),
+            "{0} je upravo dodao/la ovaj događaj, zakazan za {1}",
+            "{0} just added this event, scheduled for {1}",
+            "{0} acaba de agregar este evento, programado para {1}"),
         ["Email.EventUpdated.Subject"] = Lang("Događaj izmijenjen: {0}", "Event updated: {0}", "Evento actualizado: {0}"),
         ["Email.EventUpdated.Body"] = Lang(
-            "{0} je izmijenio/la događaj \"{1}\".",
-            "{0} updated the event \"{1}\".",
-            "{0} actualizó el evento \"{1}\"."),
+            "{0} je izmijenio/la ovaj događaj. Novi datum: {1}",
+            "{0} updated this event. New date: {1}",
+            "{0} actualizó este evento. Nueva fecha: {1}"),
         ["Email.EventDeleted.Subject"] = Lang("Događaj obrisan: {0}", "Event deleted: {0}", "Evento eliminado: {0}"),
         ["Email.EventDeleted.Body"] = Lang(
-            "{0} je obrisao/la događaj \"{1}\".",
-            "{0} deleted the event \"{1}\".",
-            "{0} eliminó el evento \"{1}\"."),
+            "{0} je obrisao/la ovaj događaj, koji je bio zakazan za {1}",
+            "{0} deleted this event, which was scheduled for {1}",
+            "{0} eliminó este evento, que estaba programado para {1}"),
         ["Email.Reminder.Subject"] = Lang("Podsjetnik: {0}", "Reminder: {0}", "Recordatorio: {0}"),
         ["Email.Reminder.Body"] = Lang(
-            "Događaj \"{0}\" je zakazan za {1}.",
-            "The event \"{0}\" is scheduled for {1}.",
-            "El evento \"{0}\" está programado para {1}."),
+            "Ovo je podsjetnik da je događaj zakazan za {0}",
+            "This is a reminder that the event is scheduled for {0}",
+            "Este es un recordatorio de que el evento está programado para {0}"),
 
         ["Email.StorageQuotaReached.Subject"] = Lang(
             "Vaš prostor za uspomene je pun",

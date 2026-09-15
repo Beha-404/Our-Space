@@ -18,6 +18,7 @@ public class ResendEmailService(HttpClient httpClient, IOptions<EmailOptions> op
                 to = new[] { toEmail },
                 subject,
                 text = body,
+                html = EmailTemplate.Render(subject, body),
             };
 
             var response = await httpClient.PostAsJsonAsync("emails", payload);

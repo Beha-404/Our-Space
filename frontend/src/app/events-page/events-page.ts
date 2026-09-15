@@ -1,12 +1,13 @@
 ﻿import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, ElementRef, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { UserService } from '../services/user.service';
 import { DatePicker } from '../shared/date-picker/date-picker';
+import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 
@@ -25,6 +26,7 @@ export class EventsPage {
   private userService = inject(UserService);
   private host = inject(ElementRef<HTMLElement>);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
@@ -176,9 +178,22 @@ export class EventsPage {
       next: (events) => {
         this.events.set(events);
         this.loading.set(false);
+        this.highlightFromQueryParams();
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  private highlightFromQueryParams(): void {
+    const idParam = this.route.snapshot.queryParamMap.get('highlight');
+    if (!idParam) return;
+
+    const id = Number(idParam);
+    const index = this.filteredSortedEvents().findIndex(e => e.id === id);
+    if (index === -1) return;
+
+    this.goToEventsPage(Math.ceil((index + 1) / EventsPage.EVENTS_PER_PAGE));
+    scrollAndHighlight(`event-${id}`);
   }
 
   daysUntil(eventDate: string): number {

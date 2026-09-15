@@ -76,7 +76,7 @@ public class EventReminderBackgroundService(
             foreach (var (email, language) in recipients)
             {
                 var subject = localizer.For("Email.Reminder.Subject", language, ev.Title);
-                var body = localizer.For("Email.Reminder.Body", language, ev.Title, eventDateText);
+                var body = localizer.For("Email.Reminder.Body", language, eventDateText);
                 await emailQueue.EnqueueAsync(email, subject, body);
             }
         }

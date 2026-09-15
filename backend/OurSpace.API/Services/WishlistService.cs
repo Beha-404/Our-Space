@@ -7,7 +7,7 @@ using OurSpace.API.Models.Entities;
 
 namespace OurSpace.API.Services;
 
-public class WishlistService(AppDbContext db, ILocalizer localizer, ICoupleContext coupleContext) : IWishlistService
+public class WishlistService(AppDbContext db, ILocalizer localizer, ICoupleContext coupleContext, INotificationService notifications) : IWishlistService
 {
     private const int MaxTitleLength = 200;
 
@@ -30,6 +30,10 @@ public class WishlistService(AppDbContext db, ILocalizer localizer, ICoupleConte
 
         db.WishlistItems.Add(wish);
         await db.SaveChangesAsync();
+
+        var partnerId = await coupleContext.GetPartnerUserIdAsync(userId);
+        if (partnerId is not null)
+            await notifications.NotifyAsync(partnerId.Value, userId, NotificationType.WishAdded, "wish", wish.Id, wish.Title);
 
         return ToDto(wish, username);
     }

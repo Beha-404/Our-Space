@@ -16,7 +16,8 @@ public class PhotoService(
     ILocalizer localizer,
     IFileUrlSigner urlSigner,
     IStorageQuotaService quota,
-    ICoupleContext coupleContext) : IPhotoService
+    ICoupleContext coupleContext,
+    INotificationService notifications) : IPhotoService
 {
     private const long MaxFileSizeBytes = 20 * 1024 * 1024;
     private const int ThumbnailWidth = 640;
@@ -69,6 +70,10 @@ public class PhotoService(
 
             db.Photos.Add(photo);
             await db.SaveChangesAsync();
+
+            var partnerId = await coupleContext.GetPartnerUserIdAsync(userId);
+            if (partnerId is not null)
+                await notifications.NotifyAsync(partnerId.Value, userId, NotificationType.PhotoAdded, "photo", photo.Id, photo.Caption);
 
             return ToDto(photo, username);
         }

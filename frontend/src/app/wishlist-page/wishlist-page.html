@@ -48,7 +48,7 @@
 			} @else {
 				<div class="wish-list">
 					@for (wish of pagedWishes(); track wish.id) {
-						<div class="card wish-row" [class.wish-done]="wish.isFulfilled">
+						<div class="card wish-row" [id]="'wish-' + wish.id" [class.wish-done]="wish.isFulfilled">
 							<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
 								{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
 							</span>

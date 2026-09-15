@@ -13,6 +13,17 @@ type Dict = Record<string, unknown>;
 export const translations: Record<Lang, Dict> = {
   bs: {
     nav: { home: 'Početna', memories: 'Uspomene', events: 'Događaji', wishlist: 'Lista želja', profile: 'Profil', logout: 'Odjava' },
+    notifications: {
+      title: 'Obavještenja',
+      empty: 'Nema novih obavještenja.',
+      markAllRead: 'Označi sve pročitano',
+      msgEventCreated: 'je dodao/la novi događaj',
+      msgEventUpdated: 'je izmijenio/la događaj',
+      msgEventDeleted: 'je obrisao/la događaj',
+      msgPhotoAdded: 'je dodao/la novu sliku',
+      msgAudioAdded: 'je dodao/la novu audio poruku',
+      msgWishAdded: 'je dodao/la novu želju',
+    },
     landing: {
       navLogin: 'Prijava',
       navRegister: 'Registracija',
@@ -321,6 +332,17 @@ export const translations: Record<Lang, Dict> = {
   },
   en: {
     nav: { home: 'Home', memories: 'Memories', events: 'Events', wishlist: 'Wishlist', profile: 'Profile', logout: 'Log out' },
+    notifications: {
+      title: 'Notifications',
+      empty: 'No notifications yet.',
+      markAllRead: 'Mark all read',
+      msgEventCreated: 'added a new event',
+      msgEventUpdated: 'updated an event',
+      msgEventDeleted: 'deleted an event',
+      msgPhotoAdded: 'added a new photo',
+      msgAudioAdded: 'added a new audio message',
+      msgWishAdded: 'added a new wish',
+    },
     landing: {
       navLogin: 'Log in',
       navRegister: 'Sign up',
@@ -629,6 +651,17 @@ export const translations: Record<Lang, Dict> = {
   },
   es: {
     nav: { home: 'Inicio', memories: 'Recuerdos', events: 'Eventos', wishlist: 'Lista de deseos', profile: 'Perfil', logout: 'Cerrar sesión' },
+    notifications: {
+      title: 'Notificaciones',
+      empty: 'No hay notificaciones nuevas.',
+      markAllRead: 'Marcar todo como leído',
+      msgEventCreated: 'agregó un nuevo evento',
+      msgEventUpdated: 'actualizó un evento',
+      msgEventDeleted: 'eliminó un evento',
+      msgPhotoAdded: 'agregó una nueva foto',
+      msgAudioAdded: 'agregó un nuevo mensaje de audio',
+      msgWishAdded: 'agregó un nuevo deseo',
+    },
     landing: {
       navLogin: 'Iniciar sesión',
       navRegister: 'Registrarse',

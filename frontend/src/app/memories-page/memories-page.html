@@ -129,7 +129,7 @@
 
 					<div class="feed-grid">
 						@for (post of group.posts; track post.id + post.type) {
-							<div class="post-tile-wrap">
+							<div class="post-tile-wrap" [id]="'post-' + post.type + '-' + post.id">
 								<div class="polaroid">
 									<div class="polaroid-media" [class.polaroid-media-audio]="post.type === 'audio'">
 										@if (post.type === 'photo') {

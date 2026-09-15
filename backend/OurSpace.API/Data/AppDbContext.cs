@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Photo> Photos => Set<Photo>();
     public DbSet<AudioMessage> AudioMessages => Set<AudioMessage>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
     public DbSet<JobLease> JobLeases => Set<JobLease>();
     public DbSet<AttemptCounter> AttemptCounters => Set<AttemptCounter>();
@@ -133,6 +134,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(w => new { w.CoupleId, w.IsFulfilled, w.CreatedAt });
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(n => n.EntityType).HasMaxLength(20);
+            entity.Property(n => n.EntityTitle).HasMaxLength(200);
+
+            entity.HasOne(n => n.RecipientUser)
+                .WithMany()
+                .HasForeignKey(n => n.RecipientUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(n => n.ActorUser)
+                .WithMany()
+                .HasForeignKey(n => n.ActorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(n => new { n.RecipientUserId, n.ReadAt, n.CreatedAt });
         });
 
         modelBuilder.Entity<OutboxEmail>(entity =>

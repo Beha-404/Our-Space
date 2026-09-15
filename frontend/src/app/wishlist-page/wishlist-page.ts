@@ -1,11 +1,12 @@
 ﻿import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Wish } from '../interfaces/wish';
 import { UserService } from '../services/user.service';
 import { WishlistService } from '../services/wishlist.service';
+import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 
@@ -19,6 +20,7 @@ export class WishlistPage {
   private wishlistService = inject(WishlistService);
   private userService = inject(UserService);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
@@ -106,9 +108,22 @@ export class WishlistPage {
       next: (wishes) => {
         this.wishes.set(wishes);
         this.loading.set(false);
+        this.highlightFromQueryParams();
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  private highlightFromQueryParams(): void {
+    const idParam = this.route.snapshot.queryParamMap.get('highlight');
+    if (!idParam) return;
+
+    const id = Number(idParam);
+    const index = this.filteredWishes().findIndex(w => w.id === id);
+    if (index === -1) return;
+
+    this.goToWishPage(Math.ceil((index + 1) / WishlistPage.WISH_PER_PAGE));
+    scrollAndHighlight(`wish-${id}`);
   }
 
   addWish(): void {

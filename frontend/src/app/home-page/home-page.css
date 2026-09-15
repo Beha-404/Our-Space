@@ -20,7 +20,7 @@ h1 {
 
 .events-preview-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin: 36px 0 14px;
 }
@@ -229,7 +229,7 @@ h1 {
 
 .feed-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin: 36px 0 14px;
 }
