@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { config } from '../config';
 import { WishlistPage } from './wishlist-page';
 
@@ -11,7 +12,15 @@ describe('WishlistPage add-wish form', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [WishlistPage],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+      ],
     }).compileComponents();
 
     component = TestBed.createComponent(WishlistPage).componentInstance;

@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { config } from '../config';
 import { MemoriesPage } from './memories-page';
 
@@ -11,7 +12,15 @@ describe('MemoriesPage upload form', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MemoriesPage],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+      ],
     }).compileComponents();
 
     component = TestBed.createComponent(MemoriesPage).componentInstance;
