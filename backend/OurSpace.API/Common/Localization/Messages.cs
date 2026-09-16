@@ -237,6 +237,47 @@ public static class Messages
             "Želja nije pronađena.",
             "Wish not found.",
             "Deseo no encontrado."),
+        ["Capsule.TitleRequired"] = Lang(
+            "Kapsula mora imati naziv.",
+            "The capsule needs a title.",
+            "La cápsula necesita un título."),
+        ["Capsule.TitleTooLong"] = Lang(
+            "Naziv kapsule može imati najviše 200 karaktera.",
+            "Capsule title can be at most 200 characters.",
+            "El título de la cápsula puede tener como máximo 200 caracteres."),
+        ["Capsule.MessageRequired"] = Lang(
+            "Napiši poruku koju pečatiš.",
+            "Write the message you're sealing.",
+            "Escribe el mensaje que vas a sellar."),
+        ["Capsule.MessageTooLong"] = Lang(
+            "Poruka može imati najviše 5000 karaktera.",
+            "The message can be at most 5000 characters.",
+            "El mensaje puede tener como máximo 5000 caracteres."),
+        ["Capsule.OpenDateInPast"] = Lang(
+            "Datum otvaranja mora biti u budućnosti.",
+            "The opening date has to be in the future.",
+            "La fecha de apertura debe estar en el futuro."),
+        ["Capsule.OpenDateTooFar"] = Lang(
+            "Datum otvaranja je predaleko u budućnosti.",
+            "That opening date is too far in the future.",
+            "Esa fecha de apertura está demasiado lejos en el futuro."),
+        ["Capsule.NotFound"] = Lang(
+            "Kapsula nije pronađena.",
+            "Capsule not found.",
+            "Cápsula no encontrada."),
+        ["Capsule.NeedPartner"] = Lang(
+            "Moraš biti uparen/a sa partnerom da bi pečatio/la kapsulu.",
+            "You need to be paired with a partner to seal a capsule.",
+            "Debes estar emparejado/a con una pareja para sellar una cápsula."),
+        ["Capsule.StillSealed"] = Lang(
+            "Kapsula je još zapečaćena.",
+            "This capsule is still sealed.",
+            "Esta cápsula todavía está sellada."),
+        ["Capsule.CannotDeleteSealed"] = Lang(
+            "Ne možeš obrisati zapečaćenu kapsulu koju nisi ti napisao/la.",
+            "You can't delete a sealed capsule you didn't write.",
+            "No puedes eliminar una cápsula sellada que no escribiste."),
+
         ["Wish.NeedPartner"] = Lang(
             "Moraš biti uparen/a sa partnerom da bi dodao/la želju.",
             "You need to be paired with a partner to add a wish.",
@@ -298,6 +339,15 @@ public static class Messages
             "Ovo je podsjetnik da je događaj zakazan za {0}",
             "This is a reminder that the event is scheduled for {0}",
             "Este es un recordatorio de que el evento está programado para {0}"),
+
+        ["Email.CapsuleUnlocked.Subject"] = Lang(
+            "Vaša kapsula se otvorila: {0}",
+            "Your capsule has opened: {0}",
+            "Su cápsula se ha abierto: {0}"),
+        ["Email.CapsuleUnlocked.Body"] = Lang(
+            "Zapečatili ste je {0} i čekala je do danas. Otvorite je zajedno u aplikaciji.",
+            "You sealed it on {0} and it waited until today. Open it together in the app.",
+            "La sellaron el {0} y esperó hasta hoy. Ábranla juntos en la aplicación."),
 
         ["Email.StorageQuotaReached.Subject"] = Lang(
             "Vaš prostor za uspomene je pun",

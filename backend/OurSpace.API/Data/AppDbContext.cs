@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AudioMessage> AudioMessages => Set<AudioMessage>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<TimeCapsule> TimeCapsules => Set<TimeCapsule>();
     public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
     public DbSet<JobLease> JobLeases => Set<JobLease>();
     public DbSet<AttemptCounter> AttemptCounters => Set<AttemptCounter>();
@@ -134,6 +135,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(w => new { w.CoupleId, w.IsFulfilled, w.CreatedAt });
+        });
+
+        modelBuilder.Entity<TimeCapsule>(entity =>
+        {
+            entity.Property(c => c.Title).HasMaxLength(200);
+            entity.Property(c => c.Message).HasMaxLength(5000);
+
+            entity.HasOne(c => c.Couple)
+                .WithMany()
+                .HasForeignKey(c => c.CoupleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(c => c.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(c => c.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(c => new { c.CoupleId, c.OpenAt });
         });
 
         modelBuilder.Entity<Notification>(entity =>

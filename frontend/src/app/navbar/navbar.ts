@@ -15,6 +15,8 @@ const TYPE_MESSAGE_KEYS: Record<AppNotification['type'], string> = {
   PhotoAdded: 'notifications.msgPhotoAdded',
   AudioAdded: 'notifications.msgAudioAdded',
   WishAdded: 'notifications.msgWishAdded',
+  CapsuleSealed: 'notifications.msgCapsuleSealed',
+  CapsuleUnlocked: 'notifications.msgCapsuleUnlocked',
 };
 
 @Component({
@@ -71,6 +73,8 @@ export class Navbar implements OnDestroy {
       this.router.navigate(['/memories'], { queryParams: { highlight: notification.entityId, type: notification.entityType } });
     } else if (notification.entityType === 'wish') {
       this.router.navigate(['/wishlist'], { queryParams: { highlight: notification.entityId } });
+    } else if (notification.entityType === 'capsule') {
+      this.router.navigate(['/capsules'], { queryParams: { highlight: notification.entityId } });
     }
   }
 }

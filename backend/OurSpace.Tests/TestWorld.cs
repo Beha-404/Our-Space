@@ -13,6 +13,8 @@ public record SeededWorld(
     int AudioId,
     int WishId,
     int NotificationId,
+    int SealedCapsuleId,
+    int OpenCapsuleId,
     string AnaToken,
     string MarkoToken,
     string LejlaToken);
@@ -23,6 +25,10 @@ public static class TestWorld
     public const string PhotoCaption = "Piknik";
     public const string AudioCaption = "Laku noć";
     public const string WishTitle = "Put u Mostar";
+    public const string SealedCapsuleTitle = "Za našu petu godišnjicu";
+    public const string SealedCapsuleMessage = "Ovo niko ne smije pročitati prije vremena.";
+    public const string OpenCapsuleTitle = "Prošlogodišnje pismo";
+    public const string OpenCapsuleMessage = "Ovo se smije pročitati.";
 
     public static async Task<SeededWorld> SeedAsync(OurSpaceFactory factory)
     {
@@ -97,6 +103,26 @@ public static class TestWorld
         };
 
         db.Notifications.Add(notification);
+
+        var sealedCapsule = new TimeCapsule
+        {
+            CoupleId = coupleA.Id,
+            CreatedByUserId = ana.Id,
+            Title = SealedCapsuleTitle,
+            Message = SealedCapsuleMessage,
+            OpenAt = DateTime.UtcNow.AddYears(1),
+        };
+
+        var openCapsule = new TimeCapsule
+        {
+            CoupleId = coupleA.Id,
+            CreatedByUserId = ana.Id,
+            Title = OpenCapsuleTitle,
+            Message = OpenCapsuleMessage,
+            OpenAt = DateTime.UtcNow.AddDays(-1),
+        };
+
+        db.TimeCapsules.AddRange(sealedCapsule, openCapsule);
         await db.SaveChangesAsync();
 
         return new SeededWorld(
@@ -105,6 +131,8 @@ public static class TestWorld
             audio.Id,
             wish.Id,
             notification.Id,
+            sealedCapsule.Id,
+            openCapsule.Id,
             tokens.GenerateAccessToken(ana),
             tokens.GenerateAccessToken(marko),
             tokens.GenerateAccessToken(lejla));

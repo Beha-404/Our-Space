@@ -8,6 +8,8 @@ public enum NotificationType
     PhotoAdded,
     AudioAdded,
     WishAdded,
+    CapsuleSealed,
+    CapsuleUnlocked,
 }
 
 public class Notification

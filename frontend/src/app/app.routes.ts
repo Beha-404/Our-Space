@@ -49,6 +49,10 @@ export const routes: Routes = [
                 path: 'wishlist',
                 loadComponent: () => import('./wishlist-page/wishlist-page').then(m => m.WishlistPage)
             },
+            {
+                path: 'capsules',
+                loadComponent: () => import('./capsules-page/capsules-page').then(m => m.CapsulesPage)
+            },
         ]
     },
     {

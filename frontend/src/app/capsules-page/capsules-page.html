@@ -1,0 +1,166 @@
+<div class="container stagger capsules-content">
+	<h1>{{ 'capsules.title' | translate }}</h1>
+	<p class="subtitle">{{ 'capsules.subtitle' | translate }}</p>
+
+	@if (!userLoaded()) {
+		<app-skeleton [count]="3" variant="row" />
+	} @else if (!isPaired()) {
+		<div class="card notice-card">
+			<p>{{ 'capsules.needPartner' | translate }}</p>
+			<a routerLink="/profile" class="btn btn-primary btn-sm notice-card-cta">{{ 'home.connectCta' | translate }}</a>
+		</div>
+	} @else {
+		@if (!showForm()) {
+			<button type="button" class="btn btn-primary seal-btn" (click)="openForm()">
+				+ {{ 'capsules.sealButton' | translate }}
+			</button>
+		} @else {
+			<div class="card seal-card">
+				<div class="seal-card-head">
+					<h4>{{ 'capsules.newTitle' | translate }}</h4>
+					<button type="button" class="link-btn" (click)="closeForm()">{{ 'profile.cancelButton' | translate }}</button>
+				</div>
+
+				<div class="field">
+					<label for="capsuleTitle">{{ 'capsules.titleLabel' | translate }}</label>
+					<input id="capsuleTitle" type="text" [placeholder]="'capsules.titlePlaceholder' | translate"
+						[class.invalid]="titleError()" [value]="formData().title"
+						(input)="updateField('title', $any($event.target).value)" (blur)="titleTouched.set(true)">
+					@if (titleError()) {
+						<span class="field-error">{{ titleError() | translate }}</span>
+					}
+				</div>
+
+				<div class="field">
+					<label for="capsuleMessage">{{ 'capsules.messageLabel' | translate }}</label>
+					<textarea id="capsuleMessage" rows="5" [placeholder]="'capsules.messagePlaceholder' | translate"
+						[class.invalid]="messageError()" [value]="formData().message"
+						(input)="updateField('message', $any($event.target).value)" (blur)="messageTouched.set(true)"></textarea>
+					@if (messageError()) {
+						<span class="field-error">{{ messageError() | translate }}</span>
+					}
+				</div>
+
+				<div class="field">
+					<label>{{ 'capsules.opensLabel' | translate }}</label>
+					<div class="mode-toggle">
+						<button type="button" class="mode-btn" [class.active]="openMode() === 'date'" (click)="setOpenMode('date')">
+							{{ 'capsules.modeDate' | translate }}
+						</button>
+						<button type="button" class="mode-btn" [class.active]="openMode() === 'anytime'" (click)="setOpenMode('anytime')">
+							{{ 'capsules.modeAnytime' | translate }}
+						</button>
+					</div>
+
+					@if (openMode() === 'date') {
+						<app-date-picker fieldId="capsuleDate" [value]="formData().openAt"
+							(valueChange)="updateField('openAt', $event)" />
+					} @else {
+						<p class="hint mode-hint">{{ 'capsules.modeAnytimeHint' | translate }}</p>
+					}
+				</div>
+
+				@if (showFillAllError()) {
+					<div class="alert alert-error">{{ 'auth.errFillAll' | translate }}</div>
+				} @else if (errorKey()) {
+					<div class="alert alert-error">{{ errorKey() | translate }}</div>
+				}
+
+				<div class="seal-card-footer">
+					<span class="hint">{{ 'capsules.sealHint' | translate }}</span>
+					<button class="btn btn-primary" (click)="seal()" [disabled]="saving()">
+						{{ (saving() ? 'capsules.sealing' : 'capsules.sealButton') | translate }}
+					</button>
+				</div>
+			</div>
+		}
+
+		@if (loading()) {
+			<app-skeleton [count]="3" variant="row" />
+		} @else if (capsules().length === 0) {
+			<p class="muted-hint">{{ 'capsules.empty' | translate }}</p>
+		}
+
+		@if (sealed().length > 0) {
+			<h2 class="section-title">{{ 'capsules.sealedTitle' | translate }}</h2>
+			<div class="capsule-list">
+				@for (capsule of sealed(); track capsule.id) {
+					<div class="card capsule-card" [id]="'capsule-' + capsule.id">
+						<span class="wax" aria-hidden="true">✦</span>
+						<div class="capsule-info">
+							<h3>{{ capsule.title }}</h3>
+							@if (capsule.openAt) {
+								<span class="capsule-meta">
+									{{ 'capsules.opensOn' | translate }} {{ capsule.openAt | date:'longDate' }}
+									· {{ 'events.inPrefix' | translate }} {{ daysUntil(capsule.openAt) }} {{ 'events.daysLeft' | translate }}
+								</span>
+							} @else {
+								<span class="capsule-meta">{{ 'capsules.opensAnytime' | translate }}</span>
+							}
+							<span class="capsule-meta">{{ 'capsules.sealedBy' | translate }} {{ capsule.createdByUsername }}</span>
+						</div>
+						<div class="capsule-actions">
+							@if (capsule.canOpenNow) {
+								<button type="button" class="btn btn-primary btn-sm" [disabled]="openingId() === capsule.id"
+									(click)="openCapsule(capsule)">
+									{{ (openingId() === capsule.id ? 'capsules.opening' : 'capsules.openNow') | translate }}
+								</button>
+							}
+							@if (canDelete(capsule)) {
+								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(capsule)"
+									[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M3 6h18" />
+										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+									</svg>
+								</button>
+							}
+						</div>
+					</div>
+				}
+			</div>
+		}
+
+		@if (opened().length > 0) {
+			<h2 class="section-title">{{ 'capsules.openedTitle' | translate }}</h2>
+			<div class="capsule-list">
+				@for (capsule of opened(); track capsule.id) {
+					<div class="card capsule-letter" [id]="'capsule-' + capsule.id">
+						<div class="letter-head">
+							<h3>{{ capsule.title }}</h3>
+							@if (canDelete(capsule)) {
+								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(capsule)"
+									[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M3 6h18" />
+										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+									</svg>
+								</button>
+							}
+						</div>
+						<p class="letter-body">{{ capsule.message }}</p>
+						<span class="capsule-meta">
+							{{ 'capsules.sealedBy' | translate }} {{ capsule.createdByUsername }}
+							· {{ 'capsules.sealedOn' | translate }} {{ capsule.createdAt | date:'longDate' }}
+						</span>
+					</div>
+				}
+			</div>
+		}
+	}
+
+	@if (capsulePendingDelete()) {
+		<div class="modal-backdrop" (click)="cancelDelete()">
+			<div class="modal-card card" (click)="$event.stopPropagation()">
+				<h3>{{ 'capsules.confirmDeleteTitle' | translate }}</h3>
+				<p>{{ 'capsules.confirmDeleteDesc' | translate }}</p>
+				<div class="modal-actions">
+					<button class="btn btn-ghost btn-sm" (click)="cancelDelete()">{{ 'profile.cancelButton' | translate }}</button>
+					<button class="btn btn-danger btn-sm" (click)="deleteCapsule()">{{ 'profile.confirmDeleteButton' | translate }}</button>
+				</div>
+			</div>
+		</div>
+	}
+</div>
