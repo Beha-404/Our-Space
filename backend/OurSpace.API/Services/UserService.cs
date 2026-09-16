@@ -208,6 +208,10 @@ public partial class UserService(
             db.Couples.Remove(couple);
         }
 
+        await db.Notifications
+            .Where(n => n.RecipientUserId == userId || n.ActorUserId == userId)
+            .ExecuteDeleteAsync();
+
         db.Users.Remove(user);
         await db.SaveChangesAsync();
 
@@ -283,6 +287,13 @@ public partial class UserService(
             .Where(a => a.CoupleId == couple.Id)
             .Select(a => a.FilePath)
             .ToListAsync();
+
+        var partnerId = couple.User1Id == userId ? couple.User2Id : couple.User1Id;
+
+        await db.Notifications
+            .Where(n => (n.RecipientUserId == userId && n.ActorUserId == partnerId)
+                || (n.RecipientUserId == partnerId && n.ActorUserId == userId))
+            .ExecuteDeleteAsync();
 
         db.Couples.Remove(couple);
         await db.SaveChangesAsync();

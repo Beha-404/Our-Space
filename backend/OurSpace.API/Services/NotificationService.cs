@@ -8,6 +8,7 @@ namespace OurSpace.API.Services;
 public class NotificationService(AppDbContext db) : INotificationService
 {
     private const int MaxRecent = 30;
+    private static readonly TimeSpan ReadNotificationRetention = TimeSpan.FromDays(30);
 
     public async Task NotifyAsync(int recipientUserId, int actorUserId, NotificationType type, string entityType, int entityId, string entityTitle)
     {
@@ -22,6 +23,16 @@ public class NotificationService(AppDbContext db) : INotificationService
         });
 
         await db.SaveChangesAsync();
+        await PruneReadNotificationsAsync(recipientUserId);
+    }
+
+    private async Task PruneReadNotificationsAsync(int recipientUserId)
+    {
+        var cutoff = DateTime.UtcNow - ReadNotificationRetention;
+
+        await db.Notifications
+            .Where(n => n.RecipientUserId == recipientUserId && n.ReadAt != null && n.ReadAt < cutoff)
+            .ExecuteDeleteAsync();
     }
 
     public async Task<List<NotificationDto>> GetRecentAsync(int userId) =>

@@ -11,6 +11,8 @@ public class AuthorizationRequiredTests
     [InlineData("/api/audio")]
     [InlineData("/api/wishlist")]
     [InlineData("/api/export/memories")]
+    [InlineData("/api/notifications")]
+    [InlineData("/api/notifications/unread-count")]
     public async Task Endpoint_Rejects_Request_Without_Token(string route)
     {
         using var factory = new OurSpaceFactory();
@@ -28,6 +30,8 @@ public class AuthorizationRequiredTests
     [InlineData("/api/audio")]
     [InlineData("/api/wishlist")]
     [InlineData("/api/export/memories")]
+    [InlineData("/api/notifications")]
+    [InlineData("/api/notifications/unread-count")]
     public async Task Endpoint_Rejects_Forged_Token(string route)
     {
         using var factory = new OurSpaceFactory();

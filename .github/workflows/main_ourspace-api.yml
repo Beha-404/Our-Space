@@ -24,10 +24,10 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.400'
 
@@ -41,7 +41,7 @@ jobs:
         run: dotnet publish backend/OurSpace.API/OurSpace.API.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CF92014A011A4F9384285E0090D016FD }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6358D1D5BE1F4157971E956369E95640 }}

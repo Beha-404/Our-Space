@@ -12,6 +12,7 @@ public record SeededWorld(
     int PhotoId,
     int AudioId,
     int WishId,
+    int NotificationId,
     string AnaToken,
     string MarkoToken,
     string LejlaToken);
@@ -85,11 +86,25 @@ public static class TestWorld
         db.WishlistItems.Add(wish);
         await db.SaveChangesAsync();
 
+        var notification = new Notification
+        {
+            RecipientUserId = marko.Id,
+            ActorUserId = ana.Id,
+            Type = NotificationType.EventCreated,
+            EntityType = "event",
+            EntityId = ev.Id,
+            EntityTitle = EventTitle,
+        };
+
+        db.Notifications.Add(notification);
+        await db.SaveChangesAsync();
+
         return new SeededWorld(
             ev.Id,
             photo.Id,
             audio.Id,
             wish.Id,
+            notification.Id,
             tokens.GenerateAccessToken(ana),
             tokens.GenerateAccessToken(marko),
             tokens.GenerateAccessToken(lejla));
@@ -113,6 +128,9 @@ public static class TestWorld
 
     public static async Task<WishlistItem?> FindWishAsync(OurSpaceFactory factory, int wishId) =>
         await QueryAsync(factory, db => db.WishlistItems.SingleOrDefaultAsync(w => w.Id == wishId));
+
+    public static async Task<Notification?> FindNotificationAsync(OurSpaceFactory factory, int notificationId) =>
+        await QueryAsync(factory, db => db.Notifications.SingleOrDefaultAsync(n => n.Id == notificationId));
 
     private static async Task<T> QueryAsync<T>(OurSpaceFactory factory, Func<AppDbContext, Task<T>> query)
     {
