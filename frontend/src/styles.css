@@ -32,6 +32,13 @@
   --shadow-glow: 0 0 48px rgba(193, 115, 74, 0.13);
   --shadow-card: 0 10px 26px rgba(0, 0, 0, 0.34);
 
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 420ms;
+  --motion-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --motion-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-stagger: 55ms;
+
   color-scheme: dark;
 }
 
@@ -58,6 +65,24 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background: radial-gradient(ellipse at top, var(--color-bg-2) 0%, var(--color-bg) 62%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(34% 28% at 20% 16%, rgba(193, 115, 74, 0.16), transparent 70%),
+    radial-gradient(30% 26% at 80% 74%, rgba(138, 155, 99, 0.09), transparent 70%);
+  filter: blur(22px);
+  animation: ambientDrift 26s ease-in-out infinite alternate;
+}
+
+@keyframes ambientDrift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to { transform: translate3d(3%, 2%, 0) scale(1.08); }
 }
 
 h1, h2, h3, h4 {
@@ -421,6 +446,41 @@ button {
   to { opacity: 1; transform: none; }
 }
 
+.stagger > * {
+  animation: rise var(--motion-slow) var(--motion-soft) both;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 55ms; }
+.stagger > *:nth-child(3) { animation-delay: 110ms; }
+.stagger > *:nth-child(4) { animation-delay: 165ms; }
+.stagger > *:nth-child(5) { animation-delay: 220ms; }
+.stagger > *:nth-child(6) { animation-delay: 275ms; }
+.stagger > *:nth-child(7) { animation-delay: 330ms; }
+.stagger > *:nth-child(n+8) { animation-delay: 385ms; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+::view-transition-old(root) {
+  animation: viewOut var(--motion-base) var(--motion-soft) both;
+}
+
+::view-transition-new(root) {
+  animation: viewIn var(--motion-base) var(--motion-soft) both;
+}
+
+@keyframes viewOut {
+  to { opacity: 0; }
+}
+
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
 .highlight-flash {
   animation: highlightFlash 2.2s ease-out;
 }
@@ -506,6 +566,13 @@ button {
   .post-tile-wrap:nth-child(3n + 3) .polaroid {
     transform: none;
     transition: none;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

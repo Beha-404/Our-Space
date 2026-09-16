@@ -11,5 +11,6 @@ public record HomeDto(
     List<WishDto> RecentWishes,
     List<PhotoDto> Photos,
     List<AudioDto> Audio,
-    int TotalMemories
+    int TotalMemories,
+    List<MemoryRow> OnThisDay
 );

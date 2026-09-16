@@ -8,6 +8,7 @@ namespace OurSpace.API.Services;
 public interface IMemoryFeedService
 {
     Task<MemoryFeedDto> GetPageAsync(int userId, MemoryFeedQuery query);
+    Task<List<MemoryRow>> GetOnThisDayAsync(int userId);
 }
 
 public record MemoryFeedQuery(
@@ -24,6 +25,7 @@ public class MemoryFeedService(
     IFileUrlSigner urlSigner) : IMemoryFeedService
 {
     private const int MaxPageSize = 60;
+    private const int OnThisDayLimit = 12;
 
     public async Task<MemoryFeedDto> GetPageAsync(int userId, MemoryFeedQuery query)
     {
@@ -56,6 +58,29 @@ public class MemoryFeedService(
         var years = page == 1 ? await GetYearsAsync(coupleId) : null;
 
         return new MemoryFeedDto(items, hasMore, years);
+    }
+
+    public async Task<List<MemoryRow>> GetOnThisDayAsync(int userId)
+    {
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Photo.NeedPartner");
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var items = await BuildFeedQuery(coupleId, new MemoryFeedQuery())
+            .Where(m => m.Date.Month == today.Month
+                && m.Date.Day == today.Day
+                && m.Date.Year < today.Year)
+            .OrderByDescending(m => m.Date)
+            .Take(OnThisDayLimit)
+            .ToListAsync();
+
+        foreach (var item in items)
+        {
+            item.Url = urlSigner.Sign(item.Url);
+            item.ThumbnailUrl = urlSigner.Sign(item.ThumbnailUrl);
+            item.MediumUrl = urlSigner.Sign(item.MediumUrl);
+        }
+
+        return items;
     }
 
     private IQueryable<MemoryRow> BuildFeedQuery(int coupleId, MemoryFeedQuery query)

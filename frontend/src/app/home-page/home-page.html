@@ -1,4 +1,4 @@
-<div class="container fade-in home-content">
+<div class="container stagger home-content">
 		@if (!userService.currentUser()) {
 			<app-skeleton [count]="2" variant="post" />
 		}
@@ -23,18 +23,53 @@
 					</div>
 				</div>
 
+				@if (onThisDayPosts().length > 0) {
+					<div class="events-preview-row">
+						<h2 class="section-title no-margin">{{ 'home.onThisDayTitle' | translate }}</h2>
+					</div>
+					<div class="onthisday-rail">
+						@for (post of onThisDayPosts(); track post.id + post.type) {
+							<figure class="onthisday-card">
+								<span class="onthisday-badge">
+									{{ 'home.agoPrefix' | translate }} {{ yearsAgo(post.date) }} {{ yearsAgoKey(post.date) | translate }}
+								</span>
+								@if (post.type === 'photo') {
+									<img [src]="post.thumbnailUrl || post.imageUrl" [alt]="post.caption || ''" loading="lazy"
+										(click)="openLightbox(post)" [title]="'memories.openFullscreen' | translate">
+								} @else {
+									<app-audio-player [src]="post.audioUrl!" />
+								}
+								<figcaption>
+									<strong>{{ post.caption || ((post.type === 'photo' ? 'memories.untitledPhoto' : 'memories.untitledAudio') | translate) }}</strong>
+									<span>{{ post.date | date:'dd.MM.yyyy.' }}</span>
+								</figcaption>
+							</figure>
+						}
+					</div>
+				}
+
 				<div class="events-preview-row">
 					<h2 class="section-title no-margin">{{ 'home.upcomingEventsTitle' | translate }}</h2>
 					<a routerLink="/events" class="link-btn">{{ 'home.viewAllEvents' | translate }}</a>
 				</div>
 				@if (upcomingEvents().length > 0) {
 					<div class="events-preview">
-						@for (event of upcomingEvents(); track event.id) {
+						@for (event of upcomingEvents(); track event.id; let first = $first) {
 							<div class="card event-card">
-								<div class="event-date-badge">
-									<span class="event-day">{{ event.eventDate | date:'d' }}</span>
-									<span class="event-month">{{ event.eventDate | date:'MMM' }}</span>
-								</div>
+								@if (first && daysUntil(event.eventDate) >= 0) {
+									<div class="event-ring" [style.--ring-offset]="ringOffset(event.eventDate)">
+										<svg viewBox="0 0 62 62" width="56" height="56" aria-hidden="true">
+											<circle cx="31" cy="31" r="26" fill="none" stroke="var(--color-border-strong)" stroke-width="4"></circle>
+											<circle class="arc" cx="31" cy="31" r="26" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round"></circle>
+										</svg>
+										<span class="event-ring-num">{{ daysUntil(event.eventDate) }}</span>
+									</div>
+								} @else {
+									<div class="event-date-badge">
+										<span class="event-day">{{ event.eventDate | date:'d' }}</span>
+										<span class="event-month">{{ event.eventDate | date:'MMM' }}</span>
+									</div>
+								}
 								<div class="event-info">
 									<h3>{{ event.title }}</h3>
 									@if (event.description) {

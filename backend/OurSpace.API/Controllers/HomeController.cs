@@ -17,7 +17,8 @@ public class HomeController(
     IEventService eventService,
     IWishlistService wishlistService,
     IPhotoService photoService,
-    IAudioService audioService) : ControllerBase
+    IAudioService audioService,
+    IMemoryFeedService memoryFeedService) : ControllerBase
 {
     private const int PreviewSize = 10;
     private const int EventPreviewSize = 3;
@@ -30,13 +31,14 @@ public class HomeController(
         var user = await userService.GetCurrentAsync(userId);
 
         if (user.Partner is null)
-            return Ok(new HomeDto(user, [], [], [], [], 0));
+            return Ok(new HomeDto(user, [], [], [], [], 0, []));
 
         var events = await eventService.GetUpcomingAsync(userId);
         var wishes = await wishlistService.GetAllAsync(userId);
         var photos = await photoService.GetAllAsync(userId, 1, PreviewSize);
         var audio = await audioService.GetAllAsync(userId, 1, PreviewSize);
         var totalMemories = await photoService.GetCountAsync(userId) + await audioService.GetCountAsync(userId);
+        var onThisDay = await memoryFeedService.GetOnThisDayAsync(userId);
 
         return Ok(new HomeDto(
             user,
@@ -44,6 +46,7 @@ public class HomeController(
             wishes.Take(WishPreviewSize).ToList(),
             photos.Items,
             audio.Items,
-            totalMemories));
+            totalMemories,
+            onThisDay));
     }
 }

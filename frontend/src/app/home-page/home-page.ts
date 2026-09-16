@@ -8,7 +8,8 @@ import { PhotoService } from '../services/photo.service';
 import { AudioService } from '../services/audio.service';
 import { UserService } from '../services/user.service';
 import { Wish } from '../interfaces/wish';
-import { buildFeedPosts, FeedPost } from '../shared/build-feed-posts';
+import { buildFeedPosts, toFeedPost, FeedPost } from '../shared/build-feed-posts';
+import { MemoryItem } from '../services/memory-feed.service';
 import { Photo } from '../interfaces/photo';
 import { AudioMessage } from '../interfaces/audio';
 import { Avatar } from '../shared/avatar/avatar';
@@ -33,6 +34,21 @@ export class HomePage {
   audioItems = signal<AudioMessage[]>([]);
   wishes = signal<Wish[]>([]);
   totalMemories = signal<number | null>(null);
+  onThisDay = signal<MemoryItem[]>([]);
+
+  onThisDayPosts = computed<FeedPost[]>(() =>
+    this.onThisDay().map(item => toFeedPost(item, path => this.photoService.fullUrl(path)))
+  );
+
+  yearsAgo(date: string): number {
+    return new Date().getFullYear() - new Date(date).getFullYear();
+  }
+
+  yearsAgoKey(date: string): string {
+    const years = this.yearsAgo(date);
+    if (years === 1) return 'home.yearAgoOne';
+    return years >= 2 && years <= 4 ? 'home.yearAgoFew' : 'home.yearAgoMany';
+  }
 
   recentWishes = computed(() =>
     [...this.wishes()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
@@ -99,6 +115,15 @@ export class HomePage {
     return Math.round(diffMs / (1000 * 60 * 60 * 24));
   }
 
+  private static readonly RING_CIRCUMFERENCE = 163.36;
+  private static readonly RING_HORIZON_DAYS = 30;
+
+  ringOffset(eventDate: string): number {
+    const days = Math.max(0, this.daysUntil(eventDate));
+    const filled = Math.max(0, 1 - days / HomePage.RING_HORIZON_DAYS);
+    return HomePage.RING_CIRCUMFERENCE * (1 - filled);
+  }
+
   daysTogether = computed(() => {
     const partner = this.userService.currentUser()?.partner;
     if (!partner?.relationshipStartDate) return null;
@@ -120,6 +145,7 @@ export class HomePage {
       this.photos.set(summary.photos);
       this.audioItems.set(summary.audio);
       this.totalMemories.set(summary.user.partner ? summary.totalMemories : null);
+      this.onThisDay.set(summary.onThisDay ?? []);
     });
   }
 }

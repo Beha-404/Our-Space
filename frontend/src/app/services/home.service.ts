@@ -6,6 +6,7 @@ import { EventItem } from '../interfaces/event';
 import { Photo } from '../interfaces/photo';
 import { User } from '../interfaces/user';
 import { Wish } from '../interfaces/wish';
+import { MemoryItem } from './memory-feed.service';
 
 export interface HomeSummary {
     user: User;
@@ -14,6 +15,7 @@ export interface HomeSummary {
     photos: Photo[];
     audio: AudioMessage[];
     totalMemories: number;
+    onThisDay: MemoryItem[];
 }
 
 @Injectable({ providedIn: 'root' })
