@@ -1,5 +1,6 @@
 using OurSpace.API.Models.DTOs.Event;
 using OurSpace.API.Models.DTOs.Memory;
+using OurSpace.API.Models.DTOs.Recap;
 using OurSpace.API.Models.DTOs.User;
 using OurSpace.API.Models.DTOs.Wishlist;
 
@@ -12,5 +13,6 @@ public record HomeDto(
     List<PhotoDto> Photos,
     List<AudioDto> Audio,
     int TotalMemories,
-    List<MemoryRow> OnThisDay
+    List<MemoryRow> OnThisDay,
+    YearTeaserDto? YearTeaser
 );

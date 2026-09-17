@@ -8,6 +8,13 @@ import { User } from '../interfaces/user';
 import { Wish } from '../interfaces/wish';
 import { MemoryItem } from './memory-feed.service';
 
+export interface YearTeaser {
+    year: number;
+    memories: number;
+    busiestMonth: number | null;
+    photoUrls: string[];
+}
+
 export interface HomeSummary {
     user: User;
     upcomingEvents: EventItem[];
@@ -16,6 +23,7 @@ export interface HomeSummary {
     audio: AudioMessage[];
     totalMemories: number;
     onThisDay: MemoryItem[];
+    yearTeaser: YearTeaser | null;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -31,37 +31,6 @@ h1 {
   gap: 10px;
 }
 
-.recap-teaser {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  padding: 14px 20px;
-  margin-top: 16px;
-  border-color: rgba(193, 115, 74, 0.34);
-  transition: transform var(--motion-fast) var(--motion-soft), border-color var(--motion-fast) var(--motion-soft);
-}
-
-.recap-teaser:hover {
-  text-decoration: none;
-  transform: translateY(-2px);
-  border-color: var(--color-accent);
-}
-
-.recap-teaser-year {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--color-text);
-}
-
-.recap-teaser-cta {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--color-accent-strong);
-}
-
 .onthisday-rail {
   display: flex;
   gap: 14px;

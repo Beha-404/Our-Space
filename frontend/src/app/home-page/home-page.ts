@@ -4,7 +4,7 @@ import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
 import { EventItem } from '../interfaces/event';
-import { HomeService } from '../services/home.service';
+import { HomeService, YearTeaser as YearTeaserData } from '../services/home.service';
 import { PhotoService } from '../services/photo.service';
 import { AudioService } from '../services/audio.service';
 import { UserService } from '../services/user.service';
@@ -18,9 +18,10 @@ import { Avatar } from '../shared/avatar/avatar';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { Skeleton } from '../shared/skeleton/skeleton';
+import { YearTeaser } from '../shared/year-teaser/year-teaser';
 
 @Component({
-  imports: [LocalDatePipe, RouterLink, TranslatePipe, Avatar, AudioPlayer, Lightbox, Skeleton],
+  imports: [LocalDatePipe, RouterLink, TranslatePipe, Avatar, AudioPlayer, Lightbox, Skeleton, YearTeaser],
   selector: 'app-home-page',
   styleUrl: './home-page.css',
   templateUrl: './home-page.html',
@@ -38,7 +39,7 @@ export class HomePage {
   wishes = signal<Wish[]>([]);
   totalMemories = signal<number | null>(null);
   onThisDay = signal<MemoryItem[]>([]);
-  readonly currentYear = new Date().getFullYear();
+  yearTeaser = signal<YearTeaserData | null>(null);
 
   onThisDayPosts = computed<FeedPost[]>(() =>
     this.onThisDay().map(item => toFeedPost(item, path => this.photoService.fullUrl(path)))
@@ -148,6 +149,7 @@ export class HomePage {
       this.audioItems.set(summary.audio);
       this.totalMemories.set(summary.user.partner ? summary.totalMemories : null);
       this.onThisDay.set(summary.onThisDay ?? []);
+      this.yearTeaser.set(summary.yearTeaser ?? null);
     });
   }
 }

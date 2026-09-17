@@ -13,3 +13,10 @@ public record RecapDto(
     List<MemoryRow> Highlights,
     List<int> AvailableYears
 );
+
+public record YearTeaserDto(
+    int Year,
+    int Memories,
+    int? BusiestMonth,
+    List<string> PhotoUrls
+);

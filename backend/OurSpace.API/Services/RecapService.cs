@@ -8,6 +8,7 @@ namespace OurSpace.API.Services;
 public interface IRecapService
 {
     Task<RecapDto> GetAsync(int userId, int? year);
+    Task<YearTeaserDto> GetTeaserAsync(int userId);
 }
 
 public class RecapService(
@@ -16,6 +17,7 @@ public class RecapService(
     IFileUrlSigner urlSigner) : IRecapService
 {
     private const int HighlightCount = 6;
+    private const int TeaserPhotoCount = 4;
     private const int HighlightCandidatePool = 120;
 
     public async Task<RecapDto> GetAsync(int userId, int? year)
@@ -23,19 +25,8 @@ public class RecapService(
         var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Photo.NeedPartner");
         var targetYear = year ?? DateTime.UtcNow.Year;
 
-        var photoDates = await db.Photos
-            .Where(p => p.CoupleId == coupleId && p.TakenAt.Year == targetYear)
-            .Select(p => p.TakenAt.Month)
-            .ToListAsync();
-
-        var audioDates = await db.AudioMessages
-            .Where(a => a.CoupleId == coupleId && a.RecordedAt.Year == targetYear)
-            .Select(a => a.RecordedAt.Month)
-            .ToListAsync();
-
-        var perMonth = new int[12];
-        foreach (var month in photoDates.Concat(audioDates))
-            perMonth[month - 1]++;
+        var (photoDates, audioDates) = await GetMemoryMonthsAsync(coupleId, targetYear);
+        var perMonth = CountPerMonth(photoDates.Concat(audioDates));
 
         var events = await db.Events
             .CountAsync(e => e.CoupleId == coupleId && e.EventDate.Year == targetYear);
@@ -54,11 +45,54 @@ public class RecapService(
             wishesFulfilled,
             capsulesSealed,
             perMonth.ToList(),
-            await GetHighlightsAsync(coupleId, targetYear),
+            await GetHighlightsAsync(coupleId, targetYear, HighlightCount),
             await GetAvailableYearsAsync(coupleId));
     }
 
-    private async Task<List<MemoryRow>> GetHighlightsAsync(int coupleId, int year)
+    public async Task<YearTeaserDto> GetTeaserAsync(int userId)
+    {
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Photo.NeedPartner");
+        var year = DateTime.UtcNow.Year;
+
+        var (photoDates, audioDates) = await GetMemoryMonthsAsync(coupleId, year);
+        var perMonth = CountPerMonth(photoDates.Concat(audioDates));
+        var total = perMonth.Sum();
+
+        int? busiestMonth = total == 0 ? null : Array.LastIndexOf(perMonth, perMonth.Max()) + 1;
+
+        var photos = await GetHighlightsAsync(coupleId, year, TeaserPhotoCount);
+        var photoUrls = photos
+            .Select(p => p.ThumbnailUrl ?? p.Url)
+            .ToList();
+
+        return new YearTeaserDto(year, total, busiestMonth, photoUrls);
+    }
+
+    private async Task<(List<int> Photos, List<int> Audio)> GetMemoryMonthsAsync(int coupleId, int year)
+    {
+        var photoMonths = await db.Photos
+            .Where(p => p.CoupleId == coupleId && p.TakenAt.Year == year)
+            .Select(p => p.TakenAt.Month)
+            .ToListAsync();
+
+        var audioMonths = await db.AudioMessages
+            .Where(a => a.CoupleId == coupleId && a.RecordedAt.Year == year)
+            .Select(a => a.RecordedAt.Month)
+            .ToListAsync();
+
+        return (photoMonths, audioMonths);
+    }
+
+    private static int[] CountPerMonth(IEnumerable<int> months)
+    {
+        var perMonth = new int[12];
+        foreach (var month in months)
+            perMonth[month - 1]++;
+
+        return perMonth;
+    }
+
+    private async Task<List<MemoryRow>> GetHighlightsAsync(int coupleId, int year, int count)
     {
         var candidates = await db.Photos
             .Where(p => p.CoupleId == coupleId && p.TakenAt.Year == year)
@@ -78,7 +112,7 @@ public class RecapService(
             })
             .ToListAsync();
 
-        var highlights = SpreadAcrossYear(candidates);
+        var highlights = SpreadAcrossYear(candidates, count);
 
         foreach (var item in highlights)
         {
@@ -90,14 +124,14 @@ public class RecapService(
         return highlights;
     }
 
-    private static List<MemoryRow> SpreadAcrossYear(List<MemoryRow> candidates)
+    private static List<MemoryRow> SpreadAcrossYear(List<MemoryRow> candidates, int count)
     {
-        if (candidates.Count <= HighlightCount)
+        if (candidates.Count <= count)
             return candidates;
 
-        var step = (double)candidates.Count / HighlightCount;
+        var step = (double)candidates.Count / count;
 
-        return Enumerable.Range(0, HighlightCount)
+        return Enumerable.Range(0, count)
             .Select(i => candidates[(int)(i * step)])
             .ToList();
     }

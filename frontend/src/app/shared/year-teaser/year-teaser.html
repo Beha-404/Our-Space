@@ -1,0 +1,25 @@
+<a routerLink="/recap" class="card year-teaser">
+	<div class="stack" aria-hidden="true">
+		@for (url of photos(); track $index) {
+			<div class="polaroid">
+				@if (url) {
+					<img [src]="url" alt="" loading="lazy">
+				} @else {
+					<span class="blank"></span>
+				}
+			</div>
+		}
+	</div>
+	<div class="body">
+		<span class="eyebrow">{{ 'recap.teaserEyebrow' | translate }}</span>
+		<h2 class="title">{{ teaser().year }} · <em>{{ teaser().memories }} {{ memoriesKey() | translate }}</em></h2>
+		<p class="text">
+			@if (monthKey(); as key) {
+				{{ 'recap.teaserBusiest' | translate }} {{ key | translate }}.
+			} @else {
+				{{ 'recap.teaserEmpty' | translate }}
+			}
+		</p>
+		<span class="cta">{{ 'recap.teaserCta' | translate }} <span class="arrow" aria-hidden="true">→</span></span>
+	</div>
+</a>

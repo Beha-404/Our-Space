@@ -23,10 +23,9 @@
 					</div>
 				</div>
 
-				<a routerLink="/recap" class="card recap-teaser">
-					<span class="recap-teaser-year">{{ 'recap.title' | translate }} {{ currentYear }}</span>
-					<span class="recap-teaser-cta">{{ 'recap.homeLink' | translate }} →</span>
-				</a>
+				@if (yearTeaser(); as teaser) {
+					<app-year-teaser [teaser]="teaser" />
+				}
 
 				@if (onThisDayPosts().length > 0) {
 					<div class="events-preview-row">
