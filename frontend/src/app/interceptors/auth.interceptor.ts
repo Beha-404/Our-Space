@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { config } from '../config';
 import { ToastService } from '../shared/toast/toast.service';
 
 const AUTH_ENDPOINTS = [
@@ -19,7 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const toast = inject(ToastService);
 
-  if (AUTH_ENDPOINTS.some(path => req.url.includes(path))) {
+  if (!req.url.startsWith(config.apiUrl) || AUTH_ENDPOINTS.some(path => req.url.includes(path))) {
     return next(req);
   }
 
