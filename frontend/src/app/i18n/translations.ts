@@ -13,6 +13,7 @@ type Dict = Record<string, unknown>;
 export const translations: Record<Lang, Dict> = {
   bs: {
     nav: { home: 'Početna', memories: 'Uspomene', map: 'Mapa', events: 'Događaji', wishlist: 'Lista želja', capsules: 'Vremenske kapsule', profile: 'Profil', logout: 'Odjava' },
+    boot: { title: 'Server se pokreće', text: 'Ako aplikacija neko vrijeme nije korištena, pokretanje može potrajati do minut. Molimo sačekajte…', slow: 'Ovo traje duže nego obično. Pokušajte osvježiti stranicu.', reload: 'Osvježi stranicu' },
     notifications: {
       title: 'Obavještenja',
       empty: 'Nema novih obavještenja.',
@@ -435,6 +436,7 @@ export const translations: Record<Lang, Dict> = {
   },
   en: {
     nav: { home: 'Home', memories: 'Memories', map: 'Map', events: 'Events', wishlist: 'Wishlist', capsules: 'Time capsules', profile: 'Profile', logout: 'Log out' },
+    boot: { title: 'Server is starting', text: 'If the app has not been used for a while, starting up can take up to a minute. Please wait…', slow: 'This is taking longer than usual. Try refreshing the page.', reload: 'Refresh the page' },
     notifications: {
       title: 'Notifications',
       empty: 'No notifications yet.',
@@ -857,6 +859,7 @@ export const translations: Record<Lang, Dict> = {
   },
   es: {
     nav: { home: 'Inicio', memories: 'Recuerdos', map: 'Mapa', events: 'Eventos', wishlist: 'Lista de deseos', capsules: 'Cápsulas del tiempo', profile: 'Perfil', logout: 'Cerrar sesión' },
+    boot: { title: 'El servidor se está iniciando', text: 'Si la aplicación no se ha usado en un tiempo, el inicio puede tardar hasta un minuto. Espera, por favor…', slow: 'Esto está tardando más de lo normal. Intenta recargar la página.', reload: 'Recargar la página' },
     notifications: {
       title: 'Notificaciones',
       empty: 'No hay notificaciones nuevas.',

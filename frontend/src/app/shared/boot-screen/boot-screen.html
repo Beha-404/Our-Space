@@ -1,0 +1,13 @@
+@if (booting() && showNotice()) {
+	<div class="boot-screen" role="status" aria-live="polite">
+		<div class="boot-card">
+			<span class="boot-spinner" aria-hidden="true"></span>
+			<h1>{{ 'boot.title' | translate }}</h1>
+			<p>{{ 'boot.text' | translate }}</p>
+			@if (slow()) {
+				<p class="boot-slow">{{ 'boot.slow' | translate }}</p>
+				<button type="button" class="btn btn-primary" (click)="reload()">{{ 'boot.reload' | translate }}</button>
+			}
+		</div>
+	</div>
+}
