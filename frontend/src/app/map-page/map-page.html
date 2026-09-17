@@ -31,7 +31,12 @@
 			@if (selectedPlace(); as place) {
 				<div class="place-panel">
 					<div class="place-panel-head">
-						<span>{{ place.photos.length }} {{ photosKey(place.photos.length) | translate }}</span>
+						<span class="place-title">
+							@if (placeName(place); as name) {
+								<b class="place-name">{{ name }}</b>
+							}
+							<span>{{ place.photos.length }} {{ photosKey(place.photos.length) | translate }}</span>
+						</span>
 						<button type="button" class="link-btn" (click)="closePlace()" [attr.aria-label]="'map.close' | translate">✕</button>
 					</div>
 					<div class="place-photos">

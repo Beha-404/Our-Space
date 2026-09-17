@@ -93,6 +93,21 @@ h1 {
   border-bottom: 1px solid var(--color-border);
 }
 
+.place-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+.place-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
 .place-photos {
   display: flex;
   gap: 12px;

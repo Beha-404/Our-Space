@@ -183,6 +183,10 @@ public static class Messages
             "Naslov može imati najviše 300 karaktera.",
             "Caption can be at most 300 characters.",
             "El título puede tener como máximo 300 caracteres."),
+        ["Photo.InvalidLocation"] = Lang(
+            "Lokacija nije ispravna. Izaberi mjesto ponovo.",
+            "The location isn't valid. Please choose the place again.",
+            "La ubicación no es válida. Elige el lugar de nuevo."),
 
         ["Audio.FileEmpty"] = Lang(
             "Fajl je prazan.",
@@ -266,9 +270,9 @@ public static class Messages
             "Capsule not found.",
             "Cápsula no encontrada."),
         ["Capsule.NeedPartner"] = Lang(
-            "Moraš biti uparen/a sa partnerom da bi pečatio/la kapsulu.",
-            "You need to be paired with a partner to seal a capsule.",
-            "Debes estar emparejado/a con una pareja para sellar una cápsula."),
+            "Moraš biti uparen/a sa partnerom da bi pravio/la vremensku kapsulu.",
+            "You need to be paired with a partner to create a time capsule.",
+            "Debes estar emparejado/a con una pareja para crear una cápsula del tiempo."),
         ["Capsule.StillSealed"] = Lang(
             "Kapsula je još zapečaćena.",
             "This capsule is still sealed.",
@@ -341,13 +345,13 @@ public static class Messages
             "Este es un recordatorio de que el evento está programado para {0}"),
 
         ["Email.CapsuleUnlocked.Subject"] = Lang(
-            "Vaša kapsula se otvorila: {0}",
-            "Your capsule has opened: {0}",
-            "Su cápsula se ha abierto: {0}"),
+            "Vaša vremenska kapsula se otvorila: {0}",
+            "Your time capsule has opened: {0}",
+            "Su cápsula del tiempo se ha abierto: {0}"),
         ["Email.CapsuleUnlocked.Body"] = Lang(
-            "Zapečatili ste je {0} i čekala je do danas. Otvorite je zajedno u aplikaciji.",
-            "You sealed it on {0} and it waited until today. Open it together in the app.",
-            "La sellaron el {0} y esperó hasta hoy. Ábranla juntos en la aplicación."),
+            "Napravili ste je {0} i čekala je do danas. Otvorite je zajedno u aplikaciji.",
+            "You created it on {0} and it waited until today. Open it together in the app.",
+            "La crearon el {0} y esperó hasta hoy. Ábranla juntos en la aplicación."),
 
         ["Email.StorageQuotaReached.Subject"] = Lang(
             "Vaš prostor za uspomene je pun",

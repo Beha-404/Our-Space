@@ -2,7 +2,7 @@ import { MapPoint } from '../interfaces/memory-map';
 import { groupIntoPlaces } from './map-places';
 
 function point(id: number, latitude: number, longitude: number): MapPoint {
-    return { id, latitude, longitude, thumbnailUrl: null, caption: null, date: '2026-01-01' };
+    return { id, latitude, longitude, thumbnailUrl: null, caption: null, date: '2026-01-01', locationName: null };
 }
 
 describe('groupIntoPlaces', () => {

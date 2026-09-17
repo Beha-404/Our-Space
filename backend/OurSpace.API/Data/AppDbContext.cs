@@ -89,6 +89,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Photo>(entity =>
         {
             entity.Property(p => p.Caption).HasMaxLength(300);
+            entity.Property(p => p.LocationName).HasMaxLength(200);
 
             entity.HasOne(p => p.Couple)
                 .WithMany()

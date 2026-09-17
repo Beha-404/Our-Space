@@ -5,6 +5,7 @@ export interface MapPoint {
     thumbnailUrl: string | null;
     caption: string | null;
     date: string;
+    locationName: string | null;
 }
 
 export interface MemoryMap {

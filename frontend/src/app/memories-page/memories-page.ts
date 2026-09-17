@@ -13,6 +13,8 @@ import { UserService } from '../services/user.service';
 import { toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { DatePicker } from '../shared/date-picker/date-picker';
+import { LocationPicker } from '../shared/location-picker/location-picker';
+import { PickedLocation } from '../shared/location-picker/geocoding';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { SelectDropdown, SelectOption } from '../shared/select-dropdown/select-dropdown';
@@ -35,7 +37,7 @@ interface MemoryMonth {
 }
 
 @Component({
-  imports: [LocalDatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker, LocationPicker, RouterLink],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',
@@ -75,6 +77,7 @@ export class MemoriesPage {
     this.clearSelectedFile();
     this.uploadDate.set('');
     this.uploadCaption.set('');
+    this.uploadLocation.set(null);
     this.uploadCaptionTouched.set(false);
     this.uploadSubmitted.set(false);
     this.uploadErrorKey.set('');
@@ -85,6 +88,7 @@ export class MemoriesPage {
   uploadQueue = signal<UploadItem[]>([]);
   uploadDate = signal('');
   uploadCaption = signal('');
+  uploadLocation = signal<PickedLocation | null>(null);
   uploadCaptionTouched = signal(false);
   uploading = signal(false);
   uploadErrorKey = signal('');
@@ -320,7 +324,7 @@ export class MemoriesPage {
     this.patchQueueItem(index, { status: 'uploading' });
 
     const request$: Observable<HttpEvent<unknown>> = this.uploadType() === 'photo'
-      ? this.photoService.upload(item.file, date, caption)
+      ? this.photoService.upload(item.file, date, caption, this.uploadLocation())
       : this.audioService.upload(item.file, date, caption);
 
     return request$.pipe(

@@ -77,7 +77,7 @@
 
 		@if (loading()) {
 			<app-skeleton [count]="3" variant="row" />
-		} @else if (capsules().length === 0) {
+		} @else if (capsules().length === 0 && !showForm()) {
 			<p class="muted-hint">{{ 'capsules.empty' | translate }}</p>
 		}
 

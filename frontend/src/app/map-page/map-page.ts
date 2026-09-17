@@ -71,6 +71,10 @@ export class MapPage {
     return pluralKey('map.photos', count, this.i18n.lang());
   }
 
+  placeName(place: MapPlace): string | null {
+    return place.photos.find(photo => photo.locationName)?.locationName ?? null;
+  }
+
   closePlace(): void {
     this.selectedPlace.set(null);
   }

@@ -89,6 +89,16 @@
 						}
 					</div>
 
+					@if (uploadType() === 'photo') {
+						<div class="field">
+							<label>{{ 'location.label' | translate }}</label>
+							<app-location-picker [value]="uploadLocation()" (valueChange)="uploadLocation.set($event)" />
+							<span class="field-hint">
+								{{ (uploadQueue().length > 1 ? 'location.appliesToAll' : 'location.optionalHint') | translate }}
+							</span>
+						</div>
+					}
+
 					@if (showUploadFillAllError()) {
 						<div class="alert alert-error">{{ 'memories.errFillAll' | translate }}</div>
 					} @else if (uploadErrorKey()) {

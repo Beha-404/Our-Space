@@ -1,0 +1,186 @@
+:host {
+  display: block;
+}
+
+.add-location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--motion-fast) var(--motion-soft), border-color var(--motion-fast) var(--motion-soft);
+}
+
+.add-location-btn:hover,
+.add-location-btn:focus-visible {
+  color: var(--color-accent-strong);
+  border-color: var(--color-accent);
+}
+
+.location-chip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-strong);
+}
+
+.location-name {
+  flex: 1 1 160px;
+  min-width: 0;
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+}
+
+.location-name small {
+  color: var(--color-text-faint);
+  font-size: 0.78rem;
+}
+
+.link-btn.danger {
+  color: var(--color-danger);
+}
+
+.location-panel {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 12px);
+  background: rgba(255, 238, 220, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: pickerOpen var(--motion-base) var(--motion-soft);
+}
+
+.search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.search-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.results {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+
+.results button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.results button:hover,
+.results button:focus-visible {
+  background: var(--color-surface-strong);
+}
+
+.results b {
+  font-weight: 600;
+}
+
+.results span {
+  font-size: 0.78rem;
+  color: var(--color-text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-note {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.search-note.error {
+  color: var(--color-danger);
+}
+
+.location-map {
+  height: 240px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-2);
+  cursor: crosshair;
+}
+
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.panel-footer .hint {
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+  flex: 1 1 200px;
+}
+
+@keyframes pickerOpen {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+:host ::ng-deep .leaflet-container {
+  font-family: inherit;
+  background: var(--color-bg-2);
+}
+
+:host ::ng-deep .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) sepia(0.35) brightness(0.85) contrast(0.9);
+}
+
+:host ::ng-deep .leaflet-control-attribution {
+  background: rgba(29, 23, 18, 0.8);
+  color: var(--color-text-faint);
+  font-size: 0.65rem;
+}
+
+:host ::ng-deep .leaflet-control-attribution a {
+  color: var(--color-text-muted);
+}
+
+:host ::ng-deep .leaflet-bar a {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+:host ::ng-deep .picker-pin {
+  background: var(--color-accent);
+  border: 3px solid var(--color-paper);
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(193, 115, 74, 0.28), 0 4px 10px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+}

@@ -101,6 +101,7 @@ public class MemoryFeedService(
                 p.ThumbnailPath,
                 p.Caption,
                 p.TakenAt,
+                p.LocationName,
             })
             .ToListAsync();
 
@@ -109,7 +110,7 @@ public class MemoryFeedService(
 
         var points = located
             .Select(p => new MapPointDto(
-                p.Id, p.Latitude, p.Longitude, urlSigner.Sign(p.ThumbnailPath), p.Caption, p.TakenAt))
+                p.Id, p.Latitude, p.Longitude, urlSigner.Sign(p.ThumbnailPath), p.Caption, p.TakenAt, p.LocationName))
             .ToList();
 
         return new MemoryMapDto(points, withoutLocation);

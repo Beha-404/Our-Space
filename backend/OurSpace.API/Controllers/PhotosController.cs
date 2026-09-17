@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OurSpace.API.Common;
@@ -18,13 +19,32 @@ public class PhotosController(IPhotoService photoService, ILocalizer localizer) 
     public async Task<ActionResult<PhotoDto>> Upload(
         [FromForm] IFormFile file,
         [FromForm] DateOnly takenAt,
-        [FromForm] string? caption)
+        [FromForm] string? caption,
+        [FromForm] string? latitude,
+        [FromForm] string? longitude,
+        [FromForm] string? locationName)
     {
         if (file is null)
             throw new BadRequestException(localizer.T("Photo.FileRequired"));
 
-        var dto = await photoService.UploadAsync(this.GetUserId(), file, takenAt, caption);
+        var location = ParseLocation(latitude, longitude, locationName);
+
+        var dto = await photoService.UploadAsync(this.GetUserId(), file, takenAt, caption, location);
         return Created(string.Empty, dto);
+    }
+
+    private ManualLocation? ParseLocation(string? latitude, string? longitude, string? locationName)
+    {
+        if (string.IsNullOrWhiteSpace(latitude) && string.IsNullOrWhiteSpace(longitude))
+            return null;
+
+        if (!double.TryParse(latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var lat)
+            || !double.TryParse(longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var lon))
+        {
+            throw new BadRequestException(localizer.T("Photo.InvalidLocation"));
+        }
+
+        return new ManualLocation(lat, lon, locationName);
     }
 
     [HttpGet]

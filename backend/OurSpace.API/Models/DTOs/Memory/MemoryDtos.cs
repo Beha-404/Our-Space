@@ -26,7 +26,8 @@ public record MapPointDto(
     double Longitude,
     string? ThumbnailUrl,
     string? Caption,
-    DateOnly Date
+    DateOnly Date,
+    string? LocationName
 );
 
 public record MemoryMapDto(

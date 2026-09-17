@@ -24,10 +24,12 @@ public class PhotoService(
     private const int MediumWidth = 1600;
     private const int MaxPageSize = 500;
     private const int MaxCaptionLength = 300;
+    private const int MaxLocationNameLength = 200;
 
-    public async Task<PhotoDto> UploadAsync(int userId, IFormFile file, DateOnly takenAt, string? caption)
+    public async Task<PhotoDto> UploadAsync(int userId, IFormFile file, DateOnly takenAt, string? caption, ManualLocation? manualLocation = null)
     {
         ValidateFile(file);
+        var manual = NormalizeLocation(manualLocation);
 
         if (string.IsNullOrWhiteSpace(caption))
             throw new BadRequestException(localizer.T("Photo.TitleRequired"));
@@ -54,7 +56,8 @@ public class PhotoService(
 
         try
         {
-            (thumbnail, medium, var location) = await GenerateVariantsAsync(file);
+            (thumbnail, medium, var metadataLocation) = await GenerateVariantsAsync(file);
+            var location = manual is null ? metadataLocation : (manual.Latitude, manual.Longitude);
 
             var photo = new Photo
             {
@@ -68,6 +71,7 @@ public class PhotoService(
                 TakenAt = takenAt,
                 Latitude = location?.Latitude,
                 Longitude = location?.Longitude,
+                LocationName = manual?.Name,
             };
 
             db.Photos.Add(photo);
@@ -132,6 +136,26 @@ public class PhotoService(
         await fileStorage.DeleteAsync(photo.FilePath);
         await fileStorage.DeleteAsync(photo.ThumbnailPath);
         if (photo.MediumPath is not null) await fileStorage.DeleteAsync(photo.MediumPath);
+    }
+
+    private ManualLocation? NormalizeLocation(ManualLocation? location)
+    {
+        if (location is null)
+            return null;
+
+        var (latitude, longitude, name) = location;
+
+        if (!double.IsFinite(latitude) || !double.IsFinite(longitude)
+            || latitude is < -90 or > 90 || longitude is < -180 or > 180)
+        {
+            throw new BadRequestException(localizer.T("Photo.InvalidLocation"));
+        }
+
+        var trimmedName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
+        if (trimmedName is { Length: > MaxLocationNameLength })
+            trimmedName = trimmedName[..MaxLocationNameLength];
+
+        return new ManualLocation(Math.Round(latitude, 4), Math.Round(longitude, 4), trimmedName);
     }
 
     private void ValidateFile(IFormFile file)

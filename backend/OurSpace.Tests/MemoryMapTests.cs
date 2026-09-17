@@ -57,17 +57,7 @@ public class MemoryMapTests
         var world = await TestWorld.SeedAsync(factory);
 
         var client = TestWorld.ClientFor(factory, world.AnaToken);
-        var file = new ByteArrayContent(JpegWithGps(43, 51, 35.28, "N", 18, 25, 52.68, "E"));
-        file.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-
-        var form = new MultipartFormDataContent
-        {
-            { file, "file", "trip.jpg" },
-            { new StringContent(DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")), "takenAt" },
-            { new StringContent("Izlet"), "caption" },
-        };
-
-        var response = await client.PostAsync("/api/photos", form);
+        var response = await client.PostAsync("/api/photos", UploadForm(JpegWithGps(43, 51, 35.28, "N", 18, 25, 52.68, "E")));
         response.EnsureSuccessStatusCode();
         var uploaded = await response.Content.ReadFromJsonAsync<PhotoDto>();
 
@@ -76,6 +66,76 @@ public class MemoryMapTests
         Assert.Equal(18.4313, stored.Longitude);
 
         await client.DeleteAsync($"/api/photos/{uploaded.Id}");
+    }
+
+    [Fact]
+    public async Task Manually_Chosen_Place_Is_Saved_For_A_Photo_Without_Gps()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = TestWorld.ClientFor(factory, world.AnaToken);
+        var form = UploadForm(PlainJpeg());
+        form.Add(new StringContent("43.34381"), "latitude");
+        form.Add(new StringContent("17.80786"), "longitude");
+        form.Add(new StringContent("  Mostar  "), "locationName");
+
+        var response = await client.PostAsync("/api/photos", form);
+        response.EnsureSuccessStatusCode();
+        var uploaded = await response.Content.ReadFromJsonAsync<PhotoDto>();
+
+        var stored = await TestWorld.FindPhotoAsync(factory, uploaded!.Id);
+        Assert.Equal(43.3438, stored!.Latitude);
+        Assert.Equal(17.8079, stored.Longitude);
+        Assert.Equal("Mostar", stored.LocationName);
+
+        var map = await client.GetFromJsonAsync<MemoryMapDto>("/api/memories/map");
+        Assert.Contains(map!.Points, p => p.Id == uploaded.Id && p.LocationName == "Mostar");
+
+        await client.DeleteAsync($"/api/photos/{uploaded.Id}");
+    }
+
+    [Fact]
+    public async Task Manually_Chosen_Place_Wins_Over_The_Gps_In_The_File()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = TestWorld.ClientFor(factory, world.AnaToken);
+        var form = UploadForm(JpegWithGps(43, 51, 35.28, "N", 18, 25, 52.68, "E"));
+        form.Add(new StringContent("45.815"), "latitude");
+        form.Add(new StringContent("15.9819"), "longitude");
+
+        var response = await client.PostAsync("/api/photos", form);
+        response.EnsureSuccessStatusCode();
+        var uploaded = await response.Content.ReadFromJsonAsync<PhotoDto>();
+
+        var stored = await TestWorld.FindPhotoAsync(factory, uploaded!.Id);
+        Assert.Equal(45.815, stored!.Latitude);
+        Assert.Equal(15.9819, stored.Longitude);
+
+        await client.DeleteAsync($"/api/photos/{uploaded.Id}");
+    }
+
+    [Theory]
+    [InlineData("91", "18")]
+    [InlineData("43", "181")]
+    [InlineData("abc", "18")]
+    [InlineData("43", "")]
+    [InlineData("NaN", "18")]
+    public async Task Invalid_Manual_Location_Is_Rejected(string latitude, string longitude)
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = TestWorld.ClientFor(factory, world.AnaToken);
+        var form = UploadForm(PlainJpeg());
+        form.Add(new StringContent(latitude), "latitude");
+        form.Add(new StringContent(longitude), "longitude");
+
+        var response = await client.PostAsync("/api/photos", form);
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -125,6 +185,28 @@ public class MemoryMapTests
         });
 
         await db.SaveChangesAsync();
+    }
+
+    private static MultipartFormDataContent UploadForm(byte[] jpeg)
+    {
+        var file = new ByteArrayContent(jpeg);
+        file.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+
+        return new MultipartFormDataContent
+        {
+            { file, "file", "trip.jpg" },
+            { new StringContent(DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")), "takenAt" },
+            { new StringContent("Izlet"), "caption" },
+        };
+    }
+
+    private static byte[] PlainJpeg()
+    {
+        using var image = new Image<Rgba32>(40, 40);
+        using var buffer = new MemoryStream();
+        image.SaveAsJpeg(buffer);
+
+        return buffer.ToArray();
     }
 
     private static byte[] JpegWithGps(

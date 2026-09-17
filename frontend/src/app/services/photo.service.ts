@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { config } from '../config';
 import { Photo } from '../interfaces/photo';
 import { PagedResult } from '../interfaces/paged-result';
+import { PickedLocation } from '../shared/location-picker/geocoding';
 
 @Injectable({ providedIn: 'root' })
 export class PhotoService {
@@ -17,11 +18,16 @@ export class PhotoService {
         return this.http.get<number>(`${this.apiUrl}/photos/count`);
     }
 
-    upload(file: File, takenAt: string, caption: string | null) {
+    upload(file: File, takenAt: string, caption: string | null, location: PickedLocation | null = null) {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('takenAt', takenAt);
         if (caption) formData.append('caption', caption);
+        if (location) {
+            formData.append('latitude', String(location.latitude));
+            formData.append('longitude', String(location.longitude));
+            if (location.name) formData.append('locationName', location.name);
+        }
 
         return this.http.post<Photo>(`${this.apiUrl}/photos`, formData, {
             reportProgress: true,
