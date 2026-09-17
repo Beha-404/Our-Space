@@ -75,13 +75,13 @@
   color: var(--color-accent-strong);
 }
 
-@media (max-width: 1240px) {
+@media (max-width: 1400px) {
   .user-name {
     display: none;
   }
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1280px) {
   .nav-label {
     display: none;
   }

@@ -74,3 +74,75 @@ describe('MemoriesPage upload form', () => {
     expect(component.uploadErrorKey()).toBe('');
   });
 });
+
+describe('MemoriesPage feed toolbar', () => {
+  let component: MemoriesPage;
+  let httpMock: HttpTestingController;
+
+  const emptyFeed = { items: [], hasMore: false, totalCount: 30, years: [] };
+
+  function expectFeedRequest(params: Record<string, string>) {
+    const req = httpMock.expectOne(r => r.url === `${config.apiUrl}/memories`);
+    for (const [key, value] of Object.entries(params)) {
+      expect(req.request.params.get(key)).toBe(value);
+    }
+    req.flush(emptyFeed);
+  }
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MemoriesPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+      ],
+    }).compileComponents();
+
+    component = TestBed.createComponent(MemoriesPage).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${config.apiUrl}/user/current`).flush({ id: 1, username: 'test1', partner: { id: 2, username: 'test2' } });
+    expectFeedRequest({ page: '1', sort: 'newest' });
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('asks the server only for voice letters when that type is chosen', () => {
+    component.setFeedTypeFilter('audio');
+
+    expectFeedRequest({ page: '1', type: 'audio' });
+    expect(component.isFiltered()).toBe(true);
+  });
+
+  it('does not reload when the already selected type is chosen again', () => {
+    component.setFeedTypeFilter('all');
+
+    httpMock.expectNone(r => r.url === `${config.apiUrl}/memories`);
+  });
+
+  it('flips between newest and oldest with one button', () => {
+    component.toggleSortOrder();
+    expectFeedRequest({ sort: 'oldest' });
+
+    component.toggleSortOrder();
+    expectFeedRequest({ sort: 'newest' });
+  });
+
+  it('closes the more menu when clicking anywhere outside it', () => {
+    component.toggleMoreMenu();
+    expect(component.moreMenuOpen()).toBe(true);
+
+    component.onDocumentClick({ target: document.body } as unknown as MouseEvent);
+
+    expect(component.moreMenuOpen()).toBe(false);
+  });
+
+  it('works out the number of pages from the total the server reports', () => {
+    expect(component.totalPages()).toBe(2);
+  });
+});

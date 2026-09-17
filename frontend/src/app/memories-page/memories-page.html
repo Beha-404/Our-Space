@@ -1,6 +1,15 @@
 <div class="container fade-in memories-content">
-		<h1>{{ 'memories.title' | translate }}</h1>
-		<p class="subtitle">{{ 'memories.subtitle' | translate }}</p>
+		<div class="memories-head">
+			<div>
+				<h1>{{ 'memories.title' | translate }}</h1>
+				<p class="subtitle">{{ 'memories.subtitle' | translate }}</p>
+			</div>
+			@if (isPaired() && !showUploadForm()) {
+				<button type="button" class="btn btn-primary add-memory-btn" (click)="openUploadForm()">
+					+ {{ 'memories.uploadButton' | translate }}
+				</button>
+			}
+		</div>
 
 		@if (!userLoaded()) {
 			<app-skeleton [count]="3" variant="row" />
@@ -10,19 +19,7 @@
 				<a routerLink="/profile" class="btn btn-primary btn-sm notice-card-cta">{{ 'home.connectCta' | translate }}</a>
 			</div>
 		} @else {
-			@if (!showUploadForm()) {
-				<div class="memories-actions">
-					<button type="button" class="btn btn-primary add-memory-btn" (click)="openUploadForm()">
-						+ {{ 'memories.uploadButton' | translate }}
-					</button>
-					<a routerLink="/map" class="btn btn-ghost map-btn"><app-nav-icon name="map" /> {{ 'map.openMap' | translate }}</a>
-					@if (pagedFeed().length > 0) {
-						<button type="button" class="btn btn-ghost" [disabled]="exporting()" (click)="exportAll()">
-							{{ (exporting() ? 'memories.exporting' : 'memories.exportButton') | translate }}
-						</button>
-					}
-				</div>
-			} @else {
+			@if (showUploadForm()) {
 				<div class="card upload-card">
 					<div class="upload-card-head">
 						<div class="type-toggle">
@@ -115,24 +112,56 @@
 				</div>
 			}
 
-			<div class="feed-header" id="memories-feed">
-				<h2 class="section-title no-margin">{{ 'memories.feedTitle' | translate }}</h2>
-				<div class="sort-toggle">
-					<button type="button" class="sort-btn" [class.active]="sortOrder() === 'newest'" (click)="setSortOrder('newest')">{{ 'memories.sortNewest' | translate }}</button>
-					<button type="button" class="sort-btn" [class.active]="sortOrder() === 'oldest'" (click)="setSortOrder('oldest')">{{ 'memories.sortOldest' | translate }}</button>
+			<div class="feed-toolbar" id="memories-feed">
+				<div class="toolbar-filters">
+					<div class="type-toggle compact" role="group" [attr.aria-label]="'memories.typeFilterLabel' | translate">
+						@for (option of typeOptions; track option.value) {
+							<button type="button" class="toggle-btn" [class.active]="feedTypeFilter() === option.value"
+								[attr.aria-pressed]="feedTypeFilter() === option.value"
+								(click)="setFeedTypeFilter(option.value)">{{ option.labelKey | translate }}</button>
+						}
+					</div>
+					<app-select-dropdown [options]="yearOptions()" [value]="feedYearFilter()" (selectionChange)="setFeedYearFilter($event)" />
+					<app-select-dropdown [options]="monthOptions()" [value]="feedMonthFilter()" (selectionChange)="setFeedMonthFilter($event)" />
 				</div>
-			</div>
 
-			<div class="feed-filters">
-				<app-select-dropdown [options]="yearOptions()" [value]="feedYearFilter()" (selectionChange)="setFeedYearFilter($event)" />
-				<app-select-dropdown [options]="monthOptions()" [value]="feedMonthFilter()" (selectionChange)="setFeedMonthFilter($event)" />
+				<div class="toolbar-actions">
+					<button type="button" class="toolbar-btn" (click)="toggleSortOrder()" [title]="'memories.sortLabel' | translate">
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M7 4v16" /><path d="M3 16l4 4 4-4" /><path d="M17 20V4" /><path d="M13 8l4-4 4 4" />
+						</svg>
+						{{ (sortOrder() === 'newest' ? 'memories.sortNewest' : 'memories.sortOldest') | translate }}
+					</button>
+
+					@if (availableYears().length > 0) {
+						<div class="more-menu">
+							<button type="button" class="toolbar-btn icon-only" aria-haspopup="menu"
+								[attr.aria-expanded]="moreMenuOpen()" [attr.aria-label]="'memories.moreActions' | translate"
+								(click)="toggleMoreMenu()">
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+									<circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" />
+								</svg>
+							</button>
+							@if (moreMenuOpen()) {
+								<div class="more-dropdown" role="menu">
+									<button type="button" role="menuitem" [disabled]="exporting()" (click)="exportFromMenu()">
+										<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" />
+										</svg>
+										{{ (exporting() ? 'memories.exporting' : 'memories.exportButton') | translate }}
+									</button>
+								</div>
+							}
+						</div>
+					}
+				</div>
 			</div>
 
 			@if (loading()) {
 				<app-skeleton [count]="3" variant="post" />
 			} @else if (pagedFeed().length === 0) {
 				<p class="muted-hint">
-					{{ (isFiltered() ? 'memories.noMemoriesFiltered' : 'memories.noMemories') | translate }}
+					{{ emptyFeedKey() | translate }}
 				</p>
 			} @else {
 				@for (group of groupedFeed(); track group.key) {

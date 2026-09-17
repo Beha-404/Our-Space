@@ -14,7 +14,6 @@ import { toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { DatePicker } from '../shared/date-picker/date-picker';
 import { LocationPicker } from '../shared/location-picker/location-picker';
-import { NavIcon } from '../shared/nav-icon/nav-icon';
 import { pageNumbers } from '../shared/page-numbers';
 import { PickedLocation } from '../shared/location-picker/geocoding';
 import { Lightbox } from '../shared/lightbox/lightbox';
@@ -25,6 +24,7 @@ import { ToastService } from '../shared/toast/toast.service';
 
 type UploadType = 'photo' | 'audio';
 type SortOrder = 'newest' | 'oldest';
+type FeedType = 'all' | 'photo' | 'audio';
 
 interface UploadItem {
   file: File;
@@ -39,10 +39,14 @@ interface MemoryMonth {
 }
 
 @Component({
-  imports: [LocalDatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker, LocationPicker, NavIcon, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker, LocationPicker, RouterLink],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+    '(document:keydown.escape)': 'moreMenuOpen.set(false)',
+  },
 })
 export class MemoriesPage {
   private photoService = inject(PhotoService);
@@ -119,9 +123,24 @@ export class MemoriesPage {
 
   feedYearFilter = signal<number | 'all'>('all');
   feedMonthFilter = signal<number | 'all'>('all');
+  feedTypeFilter = signal<FeedType>('all');
   feedPage = signal(1);
 
-  isFiltered = computed(() => this.feedYearFilter() !== 'all' || this.feedMonthFilter() !== 'all');
+  readonly typeOptions: { value: FeedType; labelKey: string }[] = [
+    { value: 'all', labelKey: 'home.feedFilterAll' },
+    { value: 'photo', labelKey: 'home.feedFilterPhotos' },
+    { value: 'audio', labelKey: 'home.feedFilterAudio' },
+  ];
+
+  isFiltered = computed(() =>
+    this.feedYearFilter() !== 'all' || this.feedMonthFilter() !== 'all' || this.feedTypeFilter() !== 'all');
+
+  emptyFeedKey = computed(() => {
+    const periodFiltered = this.feedYearFilter() !== 'all' || this.feedMonthFilter() !== 'all';
+    if (periodFiltered) return 'memories.noMemoriesFiltered';
+    if (this.feedTypeFilter() !== 'all') return 'home.feedFilterEmpty';
+    return 'memories.noMemories';
+  });
 
   pagedFeed = computed<FeedPost[]>(() =>
     this.feedItems().map(item => toFeedPost(item, path => this.photoService.fullUrl(path))));
@@ -169,9 +188,31 @@ export class MemoriesPage {
     this.loadPage(1);
   }
 
-  setSortOrder(order: SortOrder): void {
-    this.sortOrder.set(order);
+  setFeedTypeFilter(type: FeedType): void {
+    if (type === this.feedTypeFilter()) return;
+    this.feedTypeFilter.set(type);
     this.loadPage(1);
+  }
+
+  toggleSortOrder(): void {
+    this.sortOrder.update(order => order === 'newest' ? 'oldest' : 'newest');
+    this.loadPage(1);
+  }
+
+  moreMenuOpen = signal(false);
+
+  toggleMoreMenu(): void {
+    this.moreMenuOpen.update(open => !open);
+  }
+
+  exportFromMenu(): void {
+    this.moreMenuOpen.set(false);
+    this.exportAll();
+  }
+
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.more-menu')) this.moreMenuOpen.set(false);
   }
 
   totalCount = signal(0);
@@ -227,6 +268,7 @@ export class MemoriesPage {
           this.sortOrder.set('newest');
           this.feedYearFilter.set('all');
           this.feedMonthFilter.set('all');
+          this.feedTypeFilter.set('all');
           this.loadPage(page);
           scrollAndHighlight(`post-${type}-${id}`);
         } else if (feed.hasMore) {
@@ -246,7 +288,7 @@ export class MemoriesPage {
       sort: this.sortOrder(),
       year: this.feedYearFilter(),
       month: this.feedMonthFilter(),
-      type: 'all',
+      type: this.feedTypeFilter(),
     }).subscribe({
       next: feed => {
         this.feedItems.set(feed.items);
