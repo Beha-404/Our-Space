@@ -53,6 +53,10 @@ export const routes: Routes = [
                 path: 'capsules',
                 loadComponent: () => import('./capsules-page/capsules-page').then(m => m.CapsulesPage)
             },
+            {
+                path: 'recap',
+                loadComponent: () => import('./recap-page/recap-page').then(m => m.RecapPage)
+            },
         ]
     },
     {

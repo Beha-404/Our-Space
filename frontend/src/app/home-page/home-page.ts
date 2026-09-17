@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { TranslationService } from '../i18n/translation.service';
 import { EventItem } from '../interfaces/event';
 import { HomeService } from '../services/home.service';
 import { PhotoService } from '../services/photo.service';
@@ -10,6 +11,7 @@ import { UserService } from '../services/user.service';
 import { Wish } from '../interfaces/wish';
 import { buildFeedPosts, toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { MemoryItem } from '../services/memory-feed.service';
+import { pluralKey } from '../shared/plural';
 import { Photo } from '../interfaces/photo';
 import { AudioMessage } from '../interfaces/audio';
 import { Avatar } from '../shared/avatar/avatar';
@@ -26,6 +28,7 @@ import { Skeleton } from '../shared/skeleton/skeleton';
 export class HomePage {
   userService = inject(UserService);
   private homeService = inject(HomeService);
+  private i18n = inject(TranslationService);
   private photoService = inject(PhotoService);
   private audioService = inject(AudioService);
 
@@ -35,6 +38,7 @@ export class HomePage {
   wishes = signal<Wish[]>([]);
   totalMemories = signal<number | null>(null);
   onThisDay = signal<MemoryItem[]>([]);
+  readonly currentYear = new Date().getFullYear();
 
   onThisDayPosts = computed<FeedPost[]>(() =>
     this.onThisDay().map(item => toFeedPost(item, path => this.photoService.fullUrl(path)))
@@ -45,9 +49,7 @@ export class HomePage {
   }
 
   yearsAgoKey(date: string): string {
-    const years = this.yearsAgo(date);
-    if (years === 1) return 'home.yearAgoOne';
-    return years >= 2 && years <= 4 ? 'home.yearAgoFew' : 'home.yearAgoMany';
+    return pluralKey('home.yearAgo', this.yearsAgo(date), this.i18n.lang());
   }
 
   recentWishes = computed(() =>

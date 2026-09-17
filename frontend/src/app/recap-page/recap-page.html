@@ -1,0 +1,81 @@
+<div class="container stagger recap-content">
+	<div class="recap-head">
+		<div>
+			<h1>{{ 'recap.title' | translate }} <span class="recap-year">{{ selectedYear() }}</span></h1>
+			<p class="subtitle">{{ 'recap.subtitle' | translate }}</p>
+		</div>
+		@if (isPaired() && yearOptions().length > 1) {
+			<app-select-dropdown [options]="yearOptions()" [value]="selectedYear()"
+				(selectionChange)="selectYear($any($event))" />
+		}
+	</div>
+
+	@if (!userLoaded() || loading()) {
+		<app-skeleton [count]="3" variant="row" />
+	} @else if (!isPaired()) {
+		<div class="card notice-card">
+			<p>{{ 'recap.needPartner' | translate }}</p>
+			<a routerLink="/profile" class="btn btn-primary btn-sm notice-card-cta">{{ 'home.connectCta' | translate }}</a>
+		</div>
+	} @else if (isEmpty()) {
+		<div class="card empty-recap">
+			<p>{{ 'recap.empty' | translate }}</p>
+			<a routerLink="/memories" class="btn btn-primary btn-sm">{{ 'home.addFirstMemory' | translate }}</a>
+		</div>
+	} @else if (recap(); as data) {
+		<div class="card hero-stat">
+			<span class="hero-number">{{ totalMemories() }}</span>
+			<span class="hero-label">{{ memoriesLabelKey() | translate }}</span>
+		</div>
+
+		@if (highlightUrls().length > 0) {
+			<div class="highlight-strip">
+				@for (url of highlightUrls(); track url) {
+					<img [src]="url" alt="" loading="lazy">
+				}
+			</div>
+		}
+
+		<div class="stat-grid">
+			<div class="card mini-stat">
+				<b>{{ data.photos }}</b>
+				<span>{{ 'recap.photos' | translate }}</span>
+			</div>
+			<div class="card mini-stat">
+				<b>{{ data.audioMessages }}</b>
+				<span>{{ 'recap.audio' | translate }}</span>
+			</div>
+			<div class="card mini-stat">
+				<b>{{ data.events }}</b>
+				<span>{{ 'recap.events' | translate }}</span>
+			</div>
+			<div class="card mini-stat">
+				<b>{{ data.wishesFulfilled }}</b>
+				<span>{{ 'recap.wishesFulfilled' | translate }}</span>
+			</div>
+			<div class="card mini-stat">
+				<b>{{ data.capsulesSealed }}</b>
+				<span>{{ 'recap.capsules' | translate }}</span>
+			</div>
+		</div>
+
+		@if (months().length > 0) {
+			<h2 class="section-title">{{ 'recap.busiestMonths' | translate }}</h2>
+			<div class="card month-chart">
+				@for (month of months(); track month.key) {
+					<div class="month-row">
+						<span class="month-name">{{ month.label }}</span>
+						<span class="month-bar"><i [style.width.%]="month.percent"></i></span>
+						<b class="month-count">{{ month.count }}</b>
+					</div>
+				}
+			</div>
+
+			@if (busiestMonth(); as top) {
+				<p class="muted-hint">
+					{{ 'recap.busiestMonthLine' | translate }} <strong>{{ top.label }}</strong> — {{ top.count }} {{ memoriesWordKey(top.count) | translate }}.
+				</p>
+			}
+		}
+	}
+</div>

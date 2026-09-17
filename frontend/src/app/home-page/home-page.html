@@ -23,6 +23,11 @@
 					</div>
 				</div>
 
+				<a routerLink="/recap" class="card recap-teaser">
+					<span class="recap-teaser-year">{{ 'recap.title' | translate }} {{ currentYear }}</span>
+					<span class="recap-teaser-cta">{{ 'recap.homeLink' | translate }} →</span>
+				</a>
+
 				@if (onThisDayPosts().length > 0) {
 					<div class="events-preview-row">
 						<h2 class="section-title no-margin">{{ 'home.onThisDayTitle' | translate }}</h2>
