@@ -14,6 +14,7 @@ import { toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { DatePicker } from '../shared/date-picker/date-picker';
 import { LocationPicker } from '../shared/location-picker/location-picker';
+import { NavIcon } from '../shared/nav-icon/nav-icon';
 import { PickedLocation } from '../shared/location-picker/geocoding';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { scrollAndHighlight } from '../shared/scroll-and-highlight';
@@ -37,7 +38,7 @@ interface MemoryMonth {
 }
 
 @Component({
-  imports: [LocalDatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker, LocationPicker, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, SelectDropdown, Lightbox, Skeleton, AudioPlayer, DatePicker, LocationPicker, NavIcon, RouterLink],
   selector: 'app-memories-page',
   styleUrl: './memories-page.css',
   templateUrl: './memories-page.html',

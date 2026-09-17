@@ -15,7 +15,7 @@
 					<button type="button" class="btn btn-primary add-memory-btn" (click)="openUploadForm()">
 						+ {{ 'memories.uploadButton' | translate }}
 					</button>
-					<a routerLink="/map" class="btn btn-ghost">{{ 'map.openMap' | translate }}</a>
+					<a routerLink="/map" class="btn btn-ghost map-btn"><app-nav-icon name="map" /> {{ 'map.openMap' | translate }}</a>
 					@if (pagedFeed().length > 0) {
 						<button type="button" class="btn btn-ghost" [disabled]="exporting()" (click)="exportAll()">
 							{{ (exporting() ? 'memories.exporting' : 'memories.exportButton') | translate }}

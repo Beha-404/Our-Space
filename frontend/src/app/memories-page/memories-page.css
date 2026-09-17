@@ -313,3 +313,8 @@ h1 {
 .audio-state.failed {
   color: var(--color-danger, #ff6b6b);
 }
+
+.map-btn app-nav-icon {
+  width: 17px;
+  height: 17px;
+}

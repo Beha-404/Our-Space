@@ -7,6 +7,7 @@ import { AppNotification } from '../interfaces/notification';
 import { NotificationService } from '../services/notification.service';
 import { UserService } from '../services/user.service';
 import { Avatar } from '../shared/avatar/avatar';
+import { NavIcon, NavIconName } from '../shared/nav-icon/nav-icon';
 
 const TYPE_MESSAGE_KEYS: Record<AppNotification['type'], string> = {
   EventCreated: 'notifications.msgEventCreated',
@@ -19,8 +20,14 @@ const TYPE_MESSAGE_KEYS: Record<AppNotification['type'], string> = {
   CapsuleUnlocked: 'notifications.msgCapsuleUnlocked',
 };
 
+interface NavLink {
+  path: string;
+  labelKey: string;
+  icon: NavIconName;
+}
+
 @Component({
-  imports: [LocalDatePipe, RouterLink, RouterLinkActive, TranslatePipe, LanguageSwitcher, Avatar],
+  imports: [LocalDatePipe, RouterLink, RouterLinkActive, TranslatePipe, LanguageSwitcher, Avatar, NavIcon],
   selector: 'app-navbar',
   styleUrl: './navbar.css',
   templateUrl: './navbar.html',
@@ -34,6 +41,15 @@ export class Navbar implements OnDestroy {
   notificationService = inject(NotificationService);
   private router = inject(Router);
   private host = inject(ElementRef<HTMLElement>);
+
+  readonly links: NavLink[] = [
+    { path: '/home', labelKey: 'nav.home', icon: 'home' },
+    { path: '/memories', labelKey: 'nav.memories', icon: 'memories' },
+    { path: '/map', labelKey: 'nav.map', icon: 'map' },
+    { path: '/events', labelKey: 'nav.events', icon: 'events' },
+    { path: '/wishlist', labelKey: 'nav.wishlist', icon: 'wishlist' },
+    { path: '/capsules', labelKey: 'nav.capsules', icon: 'capsules' },
+  ];
 
   notificationsOpen = signal(false);
 

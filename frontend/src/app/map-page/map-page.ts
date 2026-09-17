@@ -22,12 +22,14 @@ const PANEL_OFFSET_PX = 90;
   selector: 'app-map-page',
   styleUrl: './map-page.css',
   templateUrl: './map-page.html',
+  providers: [LocalDatePipe],
 })
 export class MapPage {
   private mapService = inject(MemoryMapService);
   private photoService = inject(PhotoService);
   private userService = inject(UserService);
   private i18n = inject(TranslationService);
+  private localDate = inject(LocalDatePipe);
 
   private mapElement = viewChild<ElementRef<HTMLElement>>('mapElement');
   private map: L.Map | null = null;
@@ -128,6 +130,36 @@ export class MapPage {
     map.panTo(map.unproject(target));
   }
 
+  private tooltipFor(place: MapPlace): HTMLElement {
+    const photos = place.photos;
+    const cover = photos[0];
+    const root = document.createElement('div');
+
+    const title = document.createElement('strong');
+    title.textContent = photos.length === 1
+      ? cover.caption || this.i18n.t('memories.untitledPhoto')
+      : `${photos.length} ${this.i18n.t(this.photosKey(photos.length))}`;
+    root.appendChild(title);
+
+    const name = this.placeName(place);
+    if (name) {
+      const location = document.createElement('span');
+      location.className = 'pin-tooltip-place';
+      location.textContent = name;
+      root.appendChild(location);
+    }
+
+    const dates = photos.map(photo => photo.date).sort();
+    const first = this.localDate.transform(dates[0], 'longDate');
+    const last = this.localDate.transform(dates[dates.length - 1], 'longDate');
+    const date = document.createElement('span');
+    date.className = 'pin-tooltip-date';
+    date.textContent = first === last ? first : `${first} – ${last}`;
+    root.appendChild(date);
+
+    return root;
+  }
+
   private createMarker(place: MapPlace): L.Marker {
     const cover = place.photos[0];
     const pin = document.createElement('div');
@@ -150,6 +182,12 @@ export class MapPage {
     const icon = L.divIcon({ html: pin, className: 'map-pin-wrap', iconSize: [52, 58], iconAnchor: [26, 58] });
 
     return L.marker([place.latitude, place.longitude], { icon, keyboard: true })
+      .bindTooltip(() => this.tooltipFor(place), {
+        direction: 'right',
+        offset: [30, -30],
+        className: 'pin-tooltip',
+        opacity: 1,
+      })
       .on('click', () => {
         this.selectedPlace.set(place);
         this.centerAbovePanel(place);
