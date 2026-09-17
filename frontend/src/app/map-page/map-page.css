@@ -125,12 +125,6 @@ h1 {
   color: var(--color-ink);
   border-radius: 4px;
   text-decoration: none;
-  transition: transform var(--motion-fast) var(--motion-soft);
-}
-
-.place-photo:hover,
-.place-photo:focus-visible {
-  transform: translateY(-3px) rotate(-1deg);
 }
 
 .place-photo img {
@@ -189,12 +183,7 @@ h1 {
 }
 
 :host ::ng-deep .map-pin:hover {
-  animation: pinBreathe 1.8s ease-in-out infinite;
-}
-
-@keyframes pinBreathe {
-  0%, 100% { transform: scale(1.08); }
-  50% { transform: scale(1.16); }
+  transform: translateY(-3px) scale(1.12);
 }
 
 :host ::ng-deep .pin-tooltip {

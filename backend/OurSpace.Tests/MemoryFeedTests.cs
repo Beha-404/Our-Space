@@ -59,5 +59,39 @@ public class MemoryFeedTests
 
         Assert.NotNull(feed);
         Assert.Empty(feed.Items);
+        Assert.Equal(0, feed.TotalCount);
+    }
+
+    [Fact]
+    public async Task Feed_Is_Split_Into_Pages_And_Reports_The_Total()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = TestWorld.ClientFor(factory, world.AnaToken);
+        var first = await client.GetFromJsonAsync<MemoryFeedDto>("/api/memories?page=1&pageSize=1");
+        var second = await client.GetFromJsonAsync<MemoryFeedDto>("/api/memories?page=2&pageSize=1");
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.Single(first.Items);
+        Assert.Single(second.Items);
+        Assert.True(first.HasMore);
+        Assert.False(second.HasMore);
+        Assert.Equal(2, first.TotalCount);
+        Assert.Equal(2, second.TotalCount);
+        Assert.NotEqual((first.Items[0].Type, first.Items[0].Id), (second.Items[0].Type, second.Items[0].Id));
+    }
+
+    [Fact]
+    public async Task Total_Follows_The_Type_Filter()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var client = TestWorld.ClientFor(factory, world.AnaToken);
+        var photos = await client.GetFromJsonAsync<MemoryFeedDto>("/api/memories?type=photo");
+
+        Assert.Equal(1, photos!.TotalCount);
     }
 }

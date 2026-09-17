@@ -15,6 +15,7 @@ import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { DatePicker } from '../shared/date-picker/date-picker';
 import { LocationPicker } from '../shared/location-picker/location-picker';
 import { NavIcon } from '../shared/nav-icon/nav-icon';
+import { pageNumbers } from '../shared/page-numbers';
 import { PickedLocation } from '../shared/location-picker/geocoding';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { scrollAndHighlight } from '../shared/scroll-and-highlight';
@@ -173,8 +174,18 @@ export class MemoriesPage {
     this.loadPage(1);
   }
 
+  totalCount = signal(0);
+
+  totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / MemoriesPage.PAGE_SIZE)));
+
+  feedPageNumbers = computed(() => pageNumbers(this.totalPages(), this.feedPage()));
+
   goToFeedPage(page: number): void {
-    this.loadPage(Math.max(page, 1));
+    const target = Math.min(Math.max(page, 1), this.totalPages());
+    if (target === this.feedPage()) return;
+
+    this.loadPage(target, () =>
+      document.getElementById('memories-feed')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   constructor() {
@@ -226,7 +237,7 @@ export class MemoriesPage {
     });
   }
 
-  private loadPage(page: number): void {
+  private loadPage(page: number, onLoaded?: () => void): void {
     this.loading.set(true);
 
     this.memoryFeed.getPage({
@@ -240,9 +251,11 @@ export class MemoriesPage {
       next: feed => {
         this.feedItems.set(feed.items);
         this.hasMore.set(feed.hasMore);
+        this.totalCount.set(feed.totalCount ?? 0);
         this.feedPage.set(page);
         if (feed.years) this.availableYears.set(feed.years);
         this.loading.set(false);
+        onLoaded?.();
       },
       error: () => this.loading.set(false)
     });

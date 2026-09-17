@@ -37,6 +37,7 @@ public class MemoryFeedService(
         var pageSize = Math.Clamp(query.PageSize, 1, MaxPageSize);
 
         var feed = BuildFeedQuery(coupleId, query);
+        var totalCount = await feed.CountAsync();
 
         feed = query.Sort == "oldest"
             ? feed.OrderBy(m => m.Date).ThenBy(m => m.Id)
@@ -59,7 +60,7 @@ public class MemoryFeedService(
 
         var years = page == 1 ? await GetYearsAsync(coupleId) : null;
 
-        return new MemoryFeedDto(items, hasMore, years);
+        return new MemoryFeedDto(items, hasMore, totalCount, years);
     }
 
     public async Task<List<MemoryRow>> GetOnThisDayAsync(int userId)

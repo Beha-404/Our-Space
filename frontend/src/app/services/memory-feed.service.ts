@@ -18,6 +18,7 @@ export interface MemoryItem {
 export interface MemoryFeed {
     items: MemoryItem[];
     hasMore: boolean;
+    totalCount: number;
     years: number[] | null;
 }
 

@@ -17,6 +17,7 @@ public class MemoryRow
 public record MemoryFeedDto(
     List<MemoryRow> Items,
     bool HasMore,
+    int TotalCount,
     List<int>? Years
 );
 

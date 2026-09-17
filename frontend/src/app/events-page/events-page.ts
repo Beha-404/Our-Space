@@ -7,6 +7,7 @@ import { EventItem } from '../interfaces/event';
 import { EventService } from '../services/event.service';
 import { UserService } from '../services/user.service';
 import { DatePicker } from '../shared/date-picker/date-picker';
+import { pageNumbers } from '../shared/page-numbers';
 import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
@@ -64,26 +65,7 @@ export class EventsPage {
     return this.filteredSortedEvents().slice(start, start + EventsPage.EVENTS_PER_PAGE);
   });
 
-  eventPageNumbers = computed<(number | '…')[]>(() => {
-    const total = this.totalEventsPages();
-    const current = this.currentEventsPage();
-
-    if (total <= 7) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    const keep = new Set<number>([1, total, current - 1, current, current + 1]);
-    const sorted = [...keep].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
-
-    const result: (number | '…')[] = [];
-    let previous = 0;
-    for (const page of sorted) {
-      if (previous && page - previous > 1) result.push('…');
-      result.push(page);
-      previous = page;
-    }
-    return result;
-  });
+  eventPageNumbers = computed(() => pageNumbers(this.totalEventsPages(), this.currentEventsPage()));
 
   goToEventsPage(page: number): void {
     this.eventsPage.set(Math.min(Math.max(page, 1), this.totalEventsPages()));

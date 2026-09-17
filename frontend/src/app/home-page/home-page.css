@@ -52,7 +52,6 @@ h1 {
 }
 
 .onthisday-card:hover {
-  transform: translateY(-3px);
   border-color: var(--color-border-strong);
 }
 
