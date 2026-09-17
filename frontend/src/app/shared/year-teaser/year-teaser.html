@@ -1,12 +1,14 @@
 <a routerLink="/recap" class="card year-teaser">
 	<div class="stack" aria-hidden="true">
 		@for (url of photos(); track $index) {
-			<div class="polaroid">
-				@if (url) {
-					<img [src]="url" alt="" loading="lazy">
-				} @else {
-					<span class="blank"></span>
-				}
+			<div class="teaser-photo">
+				<div class="teaser-float">
+					@if (url) {
+						<img [src]="url" alt="" loading="lazy" decoding="async">
+					} @else {
+						<span class="blank"></span>
+					}
+				</div>
 			</div>
 		}
 	</div>

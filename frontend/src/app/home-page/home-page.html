@@ -59,7 +59,7 @@
 				@if (upcomingEvents().length > 0) {
 					<div class="events-preview">
 						@for (event of upcomingEvents(); track event.id; let first = $first) {
-							<div class="card event-card">
+							<div class="card event-card hover-card">
 								@if (first && daysUntil(event.eventDate) >= 0) {
 									<div class="event-ring" [style.--ring-offset]="ringOffset(event.eventDate)">
 										<svg viewBox="0 0 62 62" width="56" height="56" aria-hidden="true">
@@ -106,7 +106,7 @@
 				@if (recentWishes().length > 0) {
 					<div class="wish-preview-list">
 						@for (wish of recentWishes(); track wish.id) {
-							<div class="card wish-preview-row">
+							<div class="card wish-preview-row hover-card">
 								<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
 									{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
 								</span>

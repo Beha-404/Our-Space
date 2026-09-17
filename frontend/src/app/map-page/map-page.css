@@ -189,16 +189,12 @@ h1 {
 }
 
 :host ::ng-deep .map-pin:hover {
-  transform: scale(1.12);
-  animation: pinWiggle 600ms var(--motion-soft);
+  animation: pinBreathe 1.8s ease-in-out infinite;
 }
 
-@keyframes pinWiggle {
-  0% { transform: scale(1.12) rotate(0deg); }
-  25% { transform: scale(1.14) rotate(-6deg); }
-  55% { transform: scale(1.13) rotate(4deg); }
-  80% { transform: scale(1.12) rotate(-2deg); }
-  100% { transform: scale(1.12) rotate(0deg); }
+@keyframes pinBreathe {
+  0%, 100% { transform: scale(1.08); }
+  50% { transform: scale(1.16); }
 }
 
 :host ::ng-deep .pin-tooltip {

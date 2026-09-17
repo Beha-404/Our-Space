@@ -158,7 +158,8 @@
 							</div>
 						</div>
 					} @else {
-						<div class="card event-card" [id]="'event-' + event.id" [class.event-expired]="daysUntil(event.eventDate) < 0">
+						<div class="card event-card hover-card is-clickable" [id]="'event-' + event.id" [class.event-expired]="daysUntil(event.eventDate) < 0"
+							(click)="startEdit(event)">
 							<div class="event-date-badge">
 								<span class="event-day">{{ event.eventDate | localDate:'d' }}</span>
 								<span class="event-month">{{ event.eventDate | localDate:'MMM' }}</span>
@@ -182,8 +183,8 @@
 								</span>
 							</div>
 							<div class="event-actions">
-								<button class="btn btn-ghost-info btn-sm" (click)="startEdit(event)">{{ 'profile.editDate' | translate }}</button>
-								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(event)"
+								<button class="btn btn-ghost-info btn-sm" (click)="startEdit(event); $event.stopPropagation()">{{ 'profile.editDate' | translate }}</button>
+								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(event); $event.stopPropagation()"
 									[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
 									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 										<path d="M3 6h18" />

@@ -85,7 +85,7 @@
 			<h2 class="section-title">{{ 'capsules.sealedTitle' | translate }}</h2>
 			<div class="capsule-list">
 				@for (capsule of sealed(); track capsule.id) {
-					<div class="card capsule-card" [id]="'capsule-' + capsule.id">
+					<div class="card capsule-card hover-card" [id]="'capsule-' + capsule.id">
 						<span class="wax" aria-hidden="true">✦</span>
 						<div class="capsule-info">
 							<h3>{{ capsule.title }}</h3>
@@ -126,7 +126,7 @@
 			<h2 class="section-title">{{ 'capsules.openedTitle' | translate }}</h2>
 			<div class="capsule-list">
 				@for (capsule of opened(); track capsule.id) {
-					<div class="card capsule-letter" [id]="'capsule-' + capsule.id">
+					<div class="card capsule-letter hover-card" [id]="'capsule-' + capsule.id">
 						<div class="letter-head">
 							<h3>{{ capsule.title }}</h3>
 							@if (canDelete(capsule)) {
