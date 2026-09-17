@@ -30,7 +30,7 @@ public class ExportTests
 
         Assert.Equal(2, archive.Entries.Count);
         Assert.Contains(archive.Entries, e => e.FullName.StartsWith("Slike/"));
-        Assert.Contains(archive.Entries, e => e.FullName.StartsWith("Audio poruke/"));
+        Assert.Contains(archive.Entries, e => e.FullName.StartsWith("Glasovna pisma/"));
     }
 
     [Fact]

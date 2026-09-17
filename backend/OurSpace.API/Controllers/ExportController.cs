@@ -67,7 +67,7 @@ public class ExportController(
 
             foreach (var item in audio)
             {
-                var name = BuildEntryName("Audio poruke", item.RecordedAt.ToString("yyyy-MM-dd"), item.Caption, item.FilePath, usedNames);
+                var name = BuildEntryName("Glasovna pisma", item.RecordedAt.ToString("yyyy-MM-dd"), item.Caption, item.FilePath, usedNames);
                 await AddEntryAsync(archive, name, item.FilePath);
             }
         }

@@ -144,9 +144,9 @@ public static class Messages
             "Your memories are ready to download",
             "Sus recuerdos están listos para descargar"),
         ["Email.ExportReady.Body"] = Lang(
-            "Spakovali smo sve vaše slike i audio poruke ({0}MB).\n\nPreuzmi ovdje: {1}\n\nLink vrijedi ograničeno vrijeme.",
-            "We've packed up all your photos and audio messages ({0}MB).\n\nDownload here: {1}\n\nThe link is valid for a limited time.",
-            "Hemos empaquetado todas sus fotos y audios ({0}MB).\n\nDescarga aquí: {1}\n\nEl enlace es válido por tiempo limitado."),
+            "Spakovali smo sve vaše slike i glasovna pisma ({0}MB).\n\nPreuzmi ovdje: {1}\n\nLink vrijedi ograničeno vrijeme.",
+            "We've packed up all your photos and voice letters ({0}MB).\n\nDownload here: {1}\n\nThe link is valid for a limited time.",
+            "Hemos empaquetado todas sus fotos y cartas de voz ({0}MB).\n\nDescarga aquí: {1}\n\nEl enlace es válido por tiempo limitado."),
         ["Export.NothingToExport"] = Lang(
             "Nemate nijednu uspomenu za izvoz.",
             "You don't have any memories to export yet.",
@@ -213,13 +213,13 @@ public static class Messages
             "Caption can be at most 300 characters.",
             "El título puede tener como máximo 300 caracteres."),
         ["Audio.NeedPartner"] = Lang(
-            "Moraš biti uparen/a sa partnerom da bi dodavao/la audio poruke.",
-            "You need to be paired with a partner to add audio messages.",
-            "Debes estar emparejado/a con una pareja para agregar mensajes de audio."),
+            "Moraš biti uparen/a sa partnerom da bi dodavao/la glasovna pisma.",
+            "You need to be paired with a partner to add voice letters.",
+            "Debes estar emparejado/a con una pareja para agregar cartas de voz."),
         ["Audio.NotFound"] = Lang(
-            "Audio poruka nije pronađena.",
-            "Audio message not found.",
-            "Mensaje de audio no encontrado."),
+            "Glasovno pismo nije pronađeno.",
+            "Voice letter not found.",
+            "Carta de voz no encontrada."),
         ["Audio.FileRequired"] = Lang(
             "Fajl je obavezan.",
             "A file is required.",
@@ -354,9 +354,9 @@ public static class Messages
             "Your memory storage is full",
             "El almacenamiento de sus recuerdos está lleno"),
         ["Email.StorageQuotaReached.Body"] = Lang(
-            "Iskoristili ste cijeli dostupni prostor za slike i audio poruke ({0}GB). Novi uploadi neće uspijevati dok se ne oslobodi prostor.\n\nMožete obrisati neke starije uspomene, ili osoba koja održava aplikaciju može povećati limit u podešavanjima (Storage:QuotaBytesPerCouple) ako je to potrebno.",
-            "You've used up all the available storage for photos and audio messages ({0}GB). New uploads will fail until some space is freed.\n\nYou can delete some older memories, or whoever maintains the app can raise the limit in settings (Storage:QuotaBytesPerCouple) if needed.",
-            "Han utilizado todo el almacenamiento disponible para fotos y audios ({0}GB). Las nuevas subidas fallarán hasta que se libere espacio.\n\nPueden eliminar recuerdos antiguos, o quien mantiene la aplicación puede aumentar el límite en la configuración (Storage:QuotaBytesPerCouple) si es necesario."),
+            "Iskoristili ste cijeli dostupni prostor za slike i glasovna pisma ({0}GB). Novi uploadi neće uspijevati dok se ne oslobodi prostor.\n\nMožete obrisati neke starije uspomene, ili osoba koja održava aplikaciju može povećati limit u podešavanjima (Storage:QuotaBytesPerCouple) ako je to potrebno.",
+            "You've used up all the available storage for photos and voice letters ({0}GB). New uploads will fail until some space is freed.\n\nYou can delete some older memories, or whoever maintains the app can raise the limit in settings (Storage:QuotaBytesPerCouple) if needed.",
+            "Han utilizado todo el almacenamiento disponible para fotos y cartas de voz ({0}GB). Las nuevas subidas fallarán hasta que se libere espacio.\n\nPueden eliminar recuerdos antiguos, o quien mantiene la aplicación puede aumentar el límite en la configuración (Storage:QuotaBytesPerCouple) si es necesario."),
     };
 
     private static IReadOnlyDictionary<string, string> Lang(string bs, string en, string es) =>
