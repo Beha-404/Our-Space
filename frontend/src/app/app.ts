@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AmbientBackground } from './shared/ambient-background/ambient-background';
 import { ToastContainer } from './shared/toast/toast-container';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastContainer],
+  imports: [RouterOutlet, ToastContainer, AmbientBackground],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

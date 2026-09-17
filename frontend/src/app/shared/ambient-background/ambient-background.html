@@ -1,0 +1,16 @@
+<div class="aurora aurora-warm"></div>
+<div class="aurora aurora-sage"></div>
+<div class="aurora aurora-amber"></div>
+
+<div class="motes">
+	@for (mote of motes; track $index) {
+		<span class="mote"
+			[style.left.%]="mote.left"
+			[style.width.px]="mote.size"
+			[style.height.px]="mote.size"
+			[style.--mote-duration]="mote.duration + 's'"
+			[style.--mote-delay]="mote.delay + 's'"
+			[style.--mote-drift]="mote.drift + 'px'"
+			[style.--mote-glow]="mote.glow"></span>
+	}
+</div>
