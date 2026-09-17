@@ -26,4 +26,11 @@ public class MemoriesController(IMemoryFeedService feedService) : ControllerBase
 
         return Ok(feed);
     }
+
+    [HttpGet("map")]
+    public async Task<ActionResult<MemoryMapDto>> GetMap()
+    {
+        var map = await feedService.GetMapAsync(this.GetUserId());
+        return Ok(map);
+    }
 }

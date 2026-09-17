@@ -17,5 +17,8 @@ public class Photo
     public string? Caption { get; set; }
     public DateOnly TakenAt { get; set; }
 
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

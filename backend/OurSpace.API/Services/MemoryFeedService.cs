@@ -9,6 +9,7 @@ public interface IMemoryFeedService
 {
     Task<MemoryFeedDto> GetPageAsync(int userId, MemoryFeedQuery query);
     Task<List<MemoryRow>> GetOnThisDayAsync(int userId);
+    Task<MemoryMapDto> GetMapAsync(int userId);
 }
 
 public record MemoryFeedQuery(
@@ -26,6 +27,7 @@ public class MemoryFeedService(
 {
     private const int MaxPageSize = 60;
     private const int OnThisDayLimit = 12;
+    private const int MaxMapPoints = 500;
 
     public async Task<MemoryFeedDto> GetPageAsync(int userId, MemoryFeedQuery query)
     {
@@ -81,6 +83,36 @@ public class MemoryFeedService(
         }
 
         return items;
+    }
+
+    public async Task<MemoryMapDto> GetMapAsync(int userId)
+    {
+        var coupleId = await coupleContext.GetCoupleIdOrThrow(userId, "Photo.NeedPartner");
+
+        var located = await db.Photos
+            .Where(p => p.CoupleId == coupleId && p.Latitude != null && p.Longitude != null)
+            .OrderByDescending(p => p.TakenAt)
+            .Take(MaxMapPoints)
+            .Select(p => new
+            {
+                p.Id,
+                Latitude = p.Latitude!.Value,
+                Longitude = p.Longitude!.Value,
+                p.ThumbnailPath,
+                p.Caption,
+                p.TakenAt,
+            })
+            .ToListAsync();
+
+        var withoutLocation = await db.Photos
+            .CountAsync(p => p.CoupleId == coupleId && (p.Latitude == null || p.Longitude == null));
+
+        var points = located
+            .Select(p => new MapPointDto(
+                p.Id, p.Latitude, p.Longitude, urlSigner.Sign(p.ThumbnailPath), p.Caption, p.TakenAt))
+            .ToList();
+
+        return new MemoryMapDto(points, withoutLocation);
     }
 
     private IQueryable<MemoryRow> BuildFeedQuery(int coupleId, MemoryFeedQuery query)

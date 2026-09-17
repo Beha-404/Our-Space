@@ -1,0 +1,54 @@
+<div class="container stagger map-content">
+	<div class="map-head">
+		<div>
+			<h1>{{ 'map.title' | translate }}</h1>
+			<p class="subtitle">{{ 'map.subtitle' | translate }}</p>
+		</div>
+		<a routerLink="/memories" class="btn btn-ghost btn-sm">{{ 'map.backToMemories' | translate }}</a>
+	</div>
+
+	@if (!userLoaded() || loading()) {
+		<app-skeleton [count]="1" variant="row" />
+	} @else if (!isPaired()) {
+		<div class="card notice-card">
+			<p>{{ 'map.needPartner' | translate }}</p>
+			<a routerLink="/profile" class="btn btn-primary btn-sm notice-card-cta">{{ 'home.connectCta' | translate }}</a>
+		</div>
+	} @else if (!hasPoints()) {
+		<div class="card empty-map">
+			<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" />
+			</svg>
+			<h2>{{ 'map.emptyTitle' | translate }}</h2>
+			<p>{{ 'map.emptyDesc' | translate }}</p>
+			<p class="hint">{{ 'map.emptyHint' | translate }}</p>
+			<a routerLink="/memories" class="btn btn-primary btn-sm">{{ 'map.addPhoto' | translate }}</a>
+		</div>
+	} @else {
+		<div class="map-frame card">
+			<div #mapElement class="map-canvas"></div>
+
+			@if (selectedPlace(); as place) {
+				<div class="place-panel">
+					<div class="place-panel-head">
+						<span>{{ place.photos.length }} {{ photosKey(place.photos.length) | translate }}</span>
+						<button type="button" class="link-btn" (click)="closePlace()" [attr.aria-label]="'map.close' | translate">✕</button>
+					</div>
+					<div class="place-photos">
+						@for (photo of place.photos; track photo.id) {
+							<a class="place-photo" routerLink="/memories" [queryParams]="{ highlight: photo.id, type: 'photo' }">
+								<img [src]="thumbnail(photo.thumbnailUrl)" alt="" loading="lazy">
+								<span class="place-caption">{{ photo.caption }}</span>
+								<span class="place-date">{{ photo.date | date: 'dd.MM.yyyy.' }}</span>
+							</a>
+						}
+					</div>
+				</div>
+			}
+		</div>
+
+		@if (withoutLocation() > 0) {
+			<p class="map-footnote">{{ 'map.withoutLocation' | translate }}: {{ withoutLocation() }}</p>
+		}
+	}
+</div>

@@ -38,8 +38,13 @@ h1 {
 .memories-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 8px;
+}
+
+.memories-actions .btn {
+  white-space: nowrap;
 }
 
 .upload-card {

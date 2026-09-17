@@ -54,7 +54,7 @@ public class PhotoService(
 
         try
         {
-            (thumbnail, medium) = await GenerateVariantsAsync(file);
+            (thumbnail, medium, var location) = await GenerateVariantsAsync(file);
 
             var photo = new Photo
             {
@@ -66,6 +66,8 @@ public class PhotoService(
                 SizeBytes = original.SizeBytes + thumbnail.SizeBytes + medium.SizeBytes,
                 Caption = caption.Trim(),
                 TakenAt = takenAt,
+                Latitude = location?.Latitude,
+                Longitude = location?.Longitude,
             };
 
             db.Photos.Add(photo);
@@ -141,17 +143,19 @@ public class PhotoService(
             throw new BadRequestException(localizer.T("Photo.TooLarge"));
     }
 
-    private async Task<(StoredFile Thumbnail, StoredFile Medium)> GenerateVariantsAsync(IFormFile file)
+    private async Task<(StoredFile Thumbnail, StoredFile Medium, (double Latitude, double Longitude)? Location)> GenerateVariantsAsync(IFormFile file)
     {
         await using var uploadStream = file.OpenReadStream();
         using var image = await Image.LoadAsync(uploadStream);
+
+        var location = PhotoLocation.Read(image);
 
         image.Mutate(x => x.AutoOrient());
 
         var medium = await SaveResizedAsync(image, MediumWidth, "medium");
         var thumbnail = await SaveResizedAsync(image, ThumbnailWidth, "thumbnails");
 
-        return (thumbnail, medium);
+        return (thumbnail, medium, location);
     }
 
     private async Task<StoredFile> SaveResizedAsync(Image source, int maxSize, string subfolder)

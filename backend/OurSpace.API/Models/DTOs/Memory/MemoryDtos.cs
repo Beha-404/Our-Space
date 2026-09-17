@@ -19,3 +19,17 @@ public record MemoryFeedDto(
     bool HasMore,
     List<int>? Years
 );
+
+public record MapPointDto(
+    int Id,
+    double Latitude,
+    double Longitude,
+    string? ThumbnailUrl,
+    string? Caption,
+    DateOnly Date
+);
+
+public record MemoryMapDto(
+    List<MapPointDto> Points,
+    int PhotosWithoutLocation
+);

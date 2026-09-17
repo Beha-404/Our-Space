@@ -15,6 +15,7 @@ public class AuthorizationRequiredTests
     [InlineData("/api/notifications/unread-count")]
     [InlineData("/api/capsules")]
     [InlineData("/api/recap")]
+    [InlineData("/api/memories/map")]
     public async Task Endpoint_Rejects_Request_Without_Token(string route)
     {
         using var factory = new OurSpaceFactory();
@@ -36,6 +37,7 @@ public class AuthorizationRequiredTests
     [InlineData("/api/notifications/unread-count")]
     [InlineData("/api/capsules")]
     [InlineData("/api/recap")]
+    [InlineData("/api/memories/map")]
     public async Task Endpoint_Rejects_Forged_Token(string route)
     {
         using var factory = new OurSpaceFactory();
