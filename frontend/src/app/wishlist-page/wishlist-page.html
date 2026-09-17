@@ -56,10 +56,10 @@
 							<div class="wish-info">
 								<h3 class="wish-title">{{ wish.title }}</h3>
 								<span class="wish-meta">
-									{{ 'wishlist.addedOn' | translate }} {{ wish.createdAt | date:'longDate' }}
+									{{ 'wishlist.addedOn' | translate }} {{ wish.createdAt | localDate:'longDate' }}
 									· {{ 'events.addedBy' | translate }} {{ wish.createdByUsername }}
 									@if (wish.isFulfilled && wish.fulfilledAt) {
-										· {{ 'wishlist.fulfilledOn' | translate }} {{ wish.fulfilledAt | date:'longDate' }}
+										· {{ 'wishlist.fulfilledOn' | translate }} {{ wish.fulfilledAt | localDate:'longDate' }}
 									}
 								</span>
 							</div>

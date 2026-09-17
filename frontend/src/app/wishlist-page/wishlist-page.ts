@@ -1,7 +1,7 @@
-﻿import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+﻿import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Wish } from '../interfaces/wish';
 import { UserService } from '../services/user.service';
@@ -11,7 +11,7 @@ import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
-  imports: [DatePipe, TranslatePipe, Skeleton, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink],
   selector: 'app-wishlist-page',
   styleUrl: './wishlist-page.css',
   templateUrl: './wishlist-page.html',

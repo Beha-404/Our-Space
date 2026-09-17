@@ -91,7 +91,7 @@
 							<h3>{{ capsule.title }}</h3>
 							@if (capsule.openAt) {
 								<span class="capsule-meta">
-									{{ 'capsules.opensOn' | translate }} {{ capsule.openAt | date:'longDate' }}
+									{{ 'capsules.opensOn' | translate }} {{ capsule.openAt | localDate:'longDate' }}
 									· {{ 'events.inPrefix' | translate }} {{ daysUntil(capsule.openAt) }} {{ 'events.daysLeft' | translate }}
 								</span>
 							} @else {
@@ -143,7 +143,7 @@
 						<p class="letter-body">{{ capsule.message }}</p>
 						<span class="capsule-meta">
 							{{ 'capsules.sealedBy' | translate }} {{ capsule.createdByUsername }}
-							· {{ 'capsules.sealedOn' | translate }} {{ capsule.createdAt | date:'longDate' }}
+							· {{ 'capsules.sealedOn' | translate }} {{ capsule.createdAt | localDate:'longDate' }}
 						</span>
 					</div>
 				}

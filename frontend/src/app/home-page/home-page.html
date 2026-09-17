@@ -46,7 +46,7 @@
 								}
 								<figcaption>
 									<strong>{{ post.caption || ((post.type === 'photo' ? 'memories.untitledPhoto' : 'memories.untitledAudio') | translate) }}</strong>
-									<span>{{ post.date | date:'dd.MM.yyyy.' }}</span>
+									<span>{{ post.date | localDate:'dd.MM.yyyy.' }}</span>
 								</figcaption>
 							</figure>
 						}
@@ -71,8 +71,8 @@
 									</div>
 								} @else {
 									<div class="event-date-badge">
-										<span class="event-day">{{ event.eventDate | date:'d' }}</span>
-										<span class="event-month">{{ event.eventDate | date:'MMM' }}</span>
+										<span class="event-day">{{ event.eventDate | localDate:'d' }}</span>
+										<span class="event-month">{{ event.eventDate | localDate:'MMM' }}</span>
 									</div>
 								}
 								<div class="event-info">
@@ -174,7 +174,7 @@
 								<p class="polaroid-caption">
 									{{ post.caption || ((post.type === 'photo' ? 'memories.untitledPhoto' : 'memories.untitledAudio') | translate) }}
 								</p>
-								<p class="polaroid-date">{{ post.date | date:'dd.MM.yyyy.' }}</p>
+								<p class="polaroid-date">{{ post.date | localDate:'dd.MM.yyyy.' }}</p>
 							</div>
 						</div>
 					}
@@ -198,7 +198,7 @@
 		<app-lightbox
 			[imageUrl]="post.imageUrl!"
 			[previewUrl]="post.mediumUrl ?? null"
-			[title]="post.caption || (post.date | date:'longDate') || ''"
+			[title]="post.caption || (post.date | localDate:'longDate') || ''"
 			[downloadUrl]="post.downloadUrl"
 			(closed)="closeLightbox()" />
 	}

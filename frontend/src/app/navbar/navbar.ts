@@ -1,7 +1,7 @@
-import { DatePipe } from '@angular/common';
 import { Component, ElementRef, inject, OnDestroy, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LanguageSwitcher } from '../i18n/language-switcher/language-switcher';
+import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { AppNotification } from '../interfaces/notification';
 import { NotificationService } from '../services/notification.service';
@@ -20,7 +20,7 @@ const TYPE_MESSAGE_KEYS: Record<AppNotification['type'], string> = {
 };
 
 @Component({
-  imports: [RouterLink, RouterLinkActive, TranslatePipe, DatePipe, LanguageSwitcher, Avatar],
+  imports: [LocalDatePipe, RouterLink, RouterLinkActive, TranslatePipe, LanguageSwitcher, Avatar],
   selector: 'app-navbar',
   styleUrl: './navbar.css',
   templateUrl: './navbar.html',

@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
 import { EventItem } from '../interfaces/event';
@@ -20,7 +20,7 @@ import { Lightbox } from '../shared/lightbox/lightbox';
 import { Skeleton } from '../shared/skeleton/skeleton';
 
 @Component({
-  imports: [RouterLink, TranslatePipe, DatePipe, Avatar, AudioPlayer, Lightbox, Skeleton],
+  imports: [LocalDatePipe, RouterLink, TranslatePipe, Avatar, AudioPlayer, Lightbox, Skeleton],
   selector: 'app-home-page',
   styleUrl: './home-page.css',
   templateUrl: './home-page.html',

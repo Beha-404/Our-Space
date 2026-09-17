@@ -1,7 +1,7 @@
-import { DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
+import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
 import { MemoryMap } from '../interfaces/memory-map';
@@ -18,7 +18,7 @@ const SINGLE_PLACE_ZOOM = 13;
 const PANEL_OFFSET_PX = 90;
 
 @Component({
-  imports: [DatePipe, TranslatePipe, Skeleton, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink],
   selector: 'app-map-page',
   styleUrl: './map-page.css',
   templateUrl: './map-page.html',

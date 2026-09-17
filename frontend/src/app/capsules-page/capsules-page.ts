@@ -1,7 +1,7 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Capsule } from '../interfaces/capsule';
 import { CapsuleService } from '../services/capsule.service';
@@ -14,7 +14,7 @@ import { ToastService } from '../shared/toast/toast.service';
 type OpenMode = 'date' | 'anytime';
 
 @Component({
-  imports: [DatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink],
   selector: 'app-capsules-page',
   styleUrl: './capsules-page.css',
   templateUrl: './capsules-page.html',

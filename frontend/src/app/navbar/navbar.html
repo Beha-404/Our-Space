@@ -48,7 +48,7 @@
 										{{ messageKeyFor(notification) | translate }}
 										"{{ notification.entityTitle }}"
 									</span>
-									<span class="notification-time">{{ notification.createdAt | date:'short' }}</span>
+									<span class="notification-time">{{ notification.createdAt | localDate:'short' }}</span>
 								</button>
 							}
 						</div>

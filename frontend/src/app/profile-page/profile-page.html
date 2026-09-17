@@ -75,7 +75,7 @@
 
 									@if (!editingRelationshipDate()) {
 										@if (partner.relationshipStartDate) {
-											<p>{{ 'profile.togetherSince' | translate }} {{ partner.relationshipStartDate | date:'longDate' }}
+											<p>{{ 'profile.togetherSince' | translate }} {{ partner.relationshipStartDate | localDate:'longDate' }}
 												<button class="link-btn" (click)="startEditRelationshipDate()">{{ 'profile.editDate' | translate }}</button>
 											</p>
 										} @else {
@@ -111,7 +111,7 @@
 												{{ (codeCopied() ? 'profile.copied' : 'profile.copyButton') | translate }}
 											</button>
 										</div>
-										<p class="code-expiry">{{ 'profile.expiresLabel' | translate }} {{ pc.expiresAt | date:'short' }}</p>
+										<p class="code-expiry">{{ 'profile.expiresLabel' | translate }} {{ pc.expiresAt | localDate:'short' }}</p>
 									} @else {
 										<button class="btn btn-ghost" (click)="generateCode()" [disabled]="pairingLoading()">
 											{{ (pairingLoading() ? 'profile.generating' : 'profile.generateCodeButton') | translate }}

@@ -1,7 +1,7 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Avatar } from '../shared/avatar/avatar';
 import { AvatarCropper } from '../shared/avatar-cropper/avatar-cropper';
@@ -13,7 +13,7 @@ import { ToastService } from '../shared/toast/toast.service';
 import { isValidEmail } from '../shared/validators';
 
 @Component({
-  imports: [DatePipe, TranslatePipe, Avatar, AvatarCropper, DatePicker, OtpInput],
+  imports: [LocalDatePipe, TranslatePipe, Avatar, AvatarCropper, DatePicker, OtpInput],
   selector: 'app-profile-page',
   styleUrl: './profile-page.css',
   templateUrl: './profile-page.html',

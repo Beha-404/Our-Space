@@ -39,7 +39,7 @@
 							<a class="place-photo" routerLink="/memories" [queryParams]="{ highlight: photo.id, type: 'photo' }">
 								<img [src]="thumbnail(photo.thumbnailUrl)" alt="" loading="lazy">
 								<span class="place-caption">{{ photo.caption }}</span>
-								<span class="place-date">{{ photo.date | date: 'dd.MM.yyyy.' }}</span>
+								<span class="place-date">{{ photo.date | localDate: 'dd.MM.yyyy.' }}</span>
 							</a>
 						}
 					</div>
