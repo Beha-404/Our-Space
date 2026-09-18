@@ -14,14 +14,14 @@ import { MemoryItem } from '../services/memory-feed.service';
 import { pluralKey } from '../shared/plural';
 import { Photo } from '../interfaces/photo';
 import { AudioMessage } from '../interfaces/audio';
-import { Avatar } from '../shared/avatar/avatar';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { YearTeaser } from '../shared/year-teaser/year-teaser';
+import { PartnerCard } from './partner-card/partner-card';
 
 @Component({
-  imports: [LocalDatePipe, RouterLink, TranslatePipe, Avatar, AudioPlayer, Lightbox, Skeleton, YearTeaser],
+  imports: [LocalDatePipe, RouterLink, TranslatePipe, PartnerCard, AudioPlayer, Lightbox, Skeleton, YearTeaser],
   selector: 'app-home-page',
   styleUrl: './home-page.css',
   templateUrl: './home-page.html',

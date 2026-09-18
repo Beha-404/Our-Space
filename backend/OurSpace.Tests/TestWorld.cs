@@ -138,6 +138,19 @@ public static class TestWorld
             tokens.GenerateAccessToken(lejla));
     }
 
+    public static async Task<string> UnpairedTokenAsync(OurSpaceFactory factory, string name)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var tokens = scope.ServiceProvider.GetRequiredService<ITokenService>();
+
+        var user = NewUser(name);
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        return tokens.GenerateAccessToken(user);
+    }
+
     public static HttpClient ClientFor(OurSpaceFactory factory, string token)
     {
         var client = factory.CreateClient();

@@ -260,28 +260,8 @@ h1 {
   font-size: 1.15rem;
 }
 
-.couple-names {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .heart-inline {
   font-size: 0.95em;
-}
-
-.couple-label {
-  margin: 0;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-faint);
-}
-
-.days-together {
-  margin: 0;
-  font-size: 0.9rem;
 }
 
 .days-together strong {

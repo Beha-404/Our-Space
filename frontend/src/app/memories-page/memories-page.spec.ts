@@ -146,3 +146,31 @@ describe('MemoriesPage feed toolbar', () => {
     expect(component.totalPages()).toBe(2);
   });
 });
+
+describe('MemoriesPage filter from a link', () => {
+  it('opens with only photos when the link asks for them', async () => {
+    await TestBed.configureTestingModule({
+      imports: [MemoriesPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({ filter: 'photo' }) } },
+        },
+      ],
+    }).compileComponents();
+
+    const component = TestBed.createComponent(MemoriesPage).componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${config.apiUrl}/user/current`).flush({ id: 1, username: 'test1', partner: { id: 2, username: 'test2' } });
+    const req = httpMock.expectOne(r => r.url === `${config.apiUrl}/memories`);
+    expect(req.request.params.get('type')).toBe('photo');
+    req.flush({ items: [], hasMore: false, totalCount: 0, years: [] });
+
+    expect(component.feedTypeFilter()).toBe('photo');
+    httpMock.verify();
+  });
+});

@@ -7,21 +7,7 @@
 			<h1>{{ 'home.greeting' | translate }} <span class="gradient-text">{{ user.username }}</span></h1>
 
 			@if (user.partner; as partner) {
-				<div class="card couple-card">
-					<app-avatar [name]="partner.username" [pictureUrl]="partner.profilePictureUrl" [size]="56"></app-avatar>
-					<div>
-						<h3 class="couple-names">
-							<span class="couple-label">{{ 'profile.partnerTitle' | translate }}:</span>
-							{{ partner.username }}
-						</h3>
-						@if (daysTogether() !== null) {
-							<p class="days-together">{{ 'home.togetherPrefix' | translate }} <strong>{{ daysTogether() }}</strong> {{ 'home.togetherSuffix' | translate }}</p>
-						}
-						@if (totalMemories() !== null) {
-							<p class="days-together">{{ 'home.totalMemoriesPrefix' | translate }} <strong>{{ totalMemories() }}</strong> {{ 'home.totalMemoriesSuffix' | translate }}</p>
-						}
-					</div>
-				</div>
+				<app-partner-card [partner]="partner" [daysTogether]="daysTogether()" [totalMemories]="totalMemories()" />
 
 				@if (yearTeaser(); as teaser) {
 					<app-year-teaser [teaser]="teaser" />

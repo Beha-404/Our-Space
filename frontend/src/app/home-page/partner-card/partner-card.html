@@ -1,0 +1,67 @@
+<div class="card partner-card" [class.expanded]="partnerOpen()">
+	<button type="button" class="couple-head" (click)="togglePartner()"
+		[attr.aria-expanded]="partnerOpen()" aria-controls="partner-activity">
+		<app-avatar [name]="partner().username" [pictureUrl]="partner().profilePictureUrl" [size]="56"></app-avatar>
+		<span class="couple-info">
+			<span class="couple-names">
+				<span class="couple-label">{{ 'profile.partnerTitle' | translate }}:</span>
+				{{ partner().username }}
+			</span>
+			@if (daysTogether() !== null) {
+				<span class="days-together">{{ 'home.togetherPrefix' | translate }} <strong>{{ daysTogether() }}</strong> {{ 'home.togetherSuffix' | translate }}</span>
+			}
+			@if (totalMemories() !== null) {
+				<span class="days-together">{{ 'home.totalMemoriesPrefix' | translate }} <strong>{{ totalMemories() }}</strong> {{ 'home.totalMemoriesSuffix' | translate }}</span>
+			}
+		</span>
+		<span class="couple-toggle">
+			<span class="couple-toggle-label">{{ (partnerOpen() ? 'partner.hide' : 'partner.view') | translate }}</span>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+		</span>
+	</button>
+
+	<div id="partner-activity" class="partner-panel" [class.open]="partnerOpen()" [attr.inert]="partnerOpen() ? null : ''">
+		<div class="partner-panel-inner">
+			<div class="partner-panel-body">
+				@if (partnerActivity(); as activity) {
+					<p class="partner-heading">{{ 'partner.addedTitle' | translate }}</p>
+					<div class="partner-chips">
+						@for (stat of partnerStats(); track stat.labelKey + stat.link) {
+							<a class="partner-chip" [routerLink]="stat.link" [queryParams]="stat.queryParams">
+								<strong>{{ stat.count }}</strong> {{ stat.labelKey | translate }}
+							</a>
+						}
+					</div>
+
+					<p class="partner-heading">{{ 'partner.recentTitle' | translate }}</p>
+					@if (activity.recentPhotos.length > 0) {
+						<div class="partner-photos">
+							@for (photo of activity.recentPhotos; track photo.id) {
+								<a class="partner-photo" routerLink="/memories" [queryParams]="{ highlight: photo.id, type: 'photo' }">
+									<span class="partner-photo-frame">
+										<img [src]="partnerPhotoUrl(photo.thumbnailUrl)" [alt]="photo.caption || ''" loading="lazy">
+									</span>
+									<span class="partner-photo-caption">{{ photo.caption || ('partner.untitled' | translate) }}</span>
+									<span class="partner-photo-date">{{ photo.takenAt | localDate:'dd.MM.yyyy.' }}</span>
+								</a>
+							}
+						</div>
+					} @else {
+						<p class="partner-empty">{{ 'partner.noPhotos' | translate }}</p>
+					}
+				} @else if (partnerActivityFailed()) {
+					<div class="partner-error">
+						<p>{{ 'partner.loadError' | translate }}</p>
+						<button type="button" class="btn btn-ghost btn-sm" (click)="loadPartnerActivity()">{{ 'partner.retry' | translate }}</button>
+					</div>
+				} @else {
+					<div class="partner-chips" aria-hidden="true">
+						@for (n of [1, 2, 3, 4, 5]; track n) {
+							<span class="partner-chip is-loading"></span>
+						}
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>

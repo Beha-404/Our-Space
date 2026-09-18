@@ -75,13 +75,13 @@
   color: var(--color-accent-strong);
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
   .user-name {
     display: none;
   }
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1360px) {
   .nav-label {
     display: none;
   }
@@ -259,10 +259,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 8px 4px 12px;
+  padding: 4px 4px 4px 12px;
   border-radius: 100px;
   border: 1px solid transparent;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: border-color var(--motion-fast) var(--motion-soft), background var(--motion-fast) var(--motion-soft);
+}
+
+.user-link app-avatar {
+  display: block;
+  border-radius: 50%;
+  transition: transform var(--motion-base) var(--motion-spring), box-shadow var(--motion-fast) var(--motion-soft);
 }
 
 .user-link:hover {
@@ -271,8 +277,27 @@
   border-color: var(--color-border);
 }
 
+.user-link:hover app-avatar {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 2px var(--color-accent-soft), 0 0 0 3px var(--color-accent);
+}
+
 .user-link.active {
   border-color: var(--color-accent);
+}
+
+@media (max-width: 1500px) {
+  .user-link,
+  .user-link:hover,
+  .user-link.active {
+    padding: 0;
+    background: none;
+    border-color: transparent;
+  }
+
+  .user-link.active app-avatar {
+    box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3px var(--color-accent);
+  }
 }
 
 .user-name {
@@ -295,10 +320,6 @@
   }
   .user-name {
     display: none;
-  }
-
-  .user-link {
-    padding: 4px;
   }
 
   .bottom-nav {

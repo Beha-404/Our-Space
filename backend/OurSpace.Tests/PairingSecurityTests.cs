@@ -23,7 +23,7 @@ public class PairingSecurityTests
         using var factory = new OurSpaceFactory();
         await TestWorld.SeedAsync(factory);
 
-        var client = TestWorld.ClientFor(factory, await UnpairedTokenAsync(factory, "sanja"));
+        var client = TestWorld.ClientFor(factory, await TestWorld.UnpairedTokenAsync(factory, "sanja"));
         var response = await client.PostAsJsonAsync("/api/user/pair", new { code, relationshipStartDate = (string?)null });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -35,7 +35,7 @@ public class PairingSecurityTests
         using var factory = new OurSpaceFactory();
         await TestWorld.SeedAsync(factory);
 
-        var token = await UnpairedTokenAsync(factory, "sanja");
+        var token = await TestWorld.UnpairedTokenAsync(factory, "sanja");
         var client = TestWorld.ClientFor(factory, token);
 
         var response = await client.PostAsJsonAsync("/api/user/pair", new { code = "", relationshipStartDate = (string?)null });
@@ -50,7 +50,7 @@ public class PairingSecurityTests
         using var factory = new OurSpaceFactory();
         await TestWorld.SeedAsync(factory);
 
-        var client = TestWorld.ClientFor(factory, await UnpairedTokenAsync(factory, "sanja"));
+        var client = TestWorld.ClientFor(factory, await TestWorld.UnpairedTokenAsync(factory, "sanja"));
         var response = await client.PostAsJsonAsync("/api/user/pair", new { code = "000000", relationshipStartDate = (string?)null });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -63,7 +63,7 @@ public class PairingSecurityTests
         using var factory = new OurSpaceFactory();
         await TestWorld.SeedAsync(factory);
 
-        var client = TestWorld.ClientFor(factory, await UnpairedTokenAsync(factory, "sanja"));
+        var client = TestWorld.ClientFor(factory, await TestWorld.UnpairedTokenAsync(factory, "sanja"));
 
         var statuses = new List<HttpStatusCode>();
         for (var attempt = 0; attempt < 8; attempt++)
@@ -82,8 +82,8 @@ public class PairingSecurityTests
         using var factory = new OurSpaceFactory();
         await TestWorld.SeedAsync(factory);
 
-        var inviterToken = await UnpairedTokenAsync(factory, "sanja");
-        var joinerToken = await UnpairedTokenAsync(factory, "tarik");
+        var inviterToken = await TestWorld.UnpairedTokenAsync(factory, "sanja");
+        var joinerToken = await TestWorld.UnpairedTokenAsync(factory, "tarik");
 
         var inviter = TestWorld.ClientFor(factory, inviterToken);
         var codeResponse = await inviter.PostAsync("/api/user/pairing-code", null);
@@ -96,25 +96,6 @@ public class PairingSecurityTests
 
         response.EnsureSuccessStatusCode();
         Assert.Equal(3, await CoupleCountAsync(factory));
-    }
-
-    private static async Task<string> UnpairedTokenAsync(OurSpaceFactory factory, string name)
-    {
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var tokens = scope.ServiceProvider.GetRequiredService<ITokenService>();
-
-        var user = new User
-        {
-            Username = name,
-            Email = $"{name}@test.local",
-            PasswordHash = "not-a-real-hash",
-        };
-
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
-
-        return tokens.GenerateAccessToken(user);
     }
 
     private static async Task<int> CoupleCountAsync(OurSpaceFactory factory)

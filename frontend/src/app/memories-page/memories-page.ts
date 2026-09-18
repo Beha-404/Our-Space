@@ -232,6 +232,7 @@ export class MemoriesPage {
   constructor() {
     this.userService.ensureCurrentUser().subscribe(user => {
       if (user.partner) {
+        this.applyFilterFromQueryParams();
         this.loadPage(1);
         this.highlightFromQueryParams();
       } else {
@@ -242,6 +243,11 @@ export class MemoriesPage {
 
   loadAll(): void {
     this.loadPage(1);
+  }
+
+  private applyFilterFromQueryParams(): void {
+    const filter = this.route.snapshot.queryParamMap.get('filter');
+    if (filter === 'photo' || filter === 'audio') this.feedTypeFilter.set(filter);
   }
 
   private highlightFromQueryParams(): void {

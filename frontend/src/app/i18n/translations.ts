@@ -12,8 +12,9 @@ type Dict = Record<string, unknown>;
 
 export const translations: Record<Lang, Dict> = {
   bs: {
-    nav: { home: 'Početna', memories: 'Uspomene', map: 'Mapa', events: 'Događaji', wishlist: 'Lista želja', capsules: 'Vremenske kapsule', profile: 'Profil', logout: 'Odjava' },
+    nav: { home: 'Početna', memories: 'Uspomene', map: 'Mapa uspomena', events: 'Događaji', wishlist: 'Lista želja', capsules: 'Vremenske kapsule', profile: 'Profil', logout: 'Odjava' },
     boot: { title: 'Server se pokreće', text: 'Ako aplikacija neko vrijeme nije korištena, pokretanje može potrajati do minut. Molimo sačekajte…', slow: 'Ovo traje duže nego obično. Pokušajte osvježiti stranicu.', reload: 'Osvježi stranicu' },
+    partner: { view: 'Pogledaj', untitled: 'Bez naslova', hide: 'Sakrij', addedTitle: 'Partner je dodao', recentTitle: 'Zadnje slike od partnera', noPhotos: 'Partner još nije dodao nijednu sliku.', loadError: 'Ne mogu učitati šta je partner dodao.', retry: 'Pokušaj ponovo', photosOne: 'slika', photosFew: 'slike', photosMany: 'slika', lettersOne: 'glasovno pismo', lettersFew: 'glasovna pisma', lettersMany: 'glasovnih pisama', wishesOne: 'želja', wishesFew: 'želje', wishesMany: 'želja', eventsOne: 'događaj', eventsFew: 'događaja', eventsMany: 'događaja', capsulesOne: 'kapsula', capsulesFew: 'kapsule', capsulesMany: 'kapsula' },
     notifications: {
       title: 'Obavještenja',
       empty: 'Nema novih obavještenja.',
@@ -435,8 +436,9 @@ export const translations: Record<Lang, Dict> = {
     },
   },
   en: {
-    nav: { home: 'Home', memories: 'Memories', map: 'Map', events: 'Events', wishlist: 'Wishlist', capsules: 'Time capsules', profile: 'Profile', logout: 'Log out' },
+    nav: { home: 'Home', memories: 'Memories', map: 'Memory map', events: 'Events', wishlist: 'Wishlist', capsules: 'Time capsules', profile: 'Profile', logout: 'Log out' },
     boot: { title: 'Server is starting', text: 'If the app has not been used for a while, starting up can take up to a minute. Please wait…', slow: 'This is taking longer than usual. Try refreshing the page.', reload: 'Refresh the page' },
+    partner: { view: 'View', untitled: 'Untitled', hide: 'Hide', addedTitle: 'Added by your partner', recentTitle: 'Latest photos from your partner', noPhotos: 'Your partner has not added any photos yet.', loadError: 'Could not load what your partner added.', retry: 'Try again', photosOne: 'photo', photosFew: 'photos', photosMany: 'photos', lettersOne: 'voice letter', lettersFew: 'voice letters', lettersMany: 'voice letters', wishesOne: 'wish', wishesFew: 'wishes', wishesMany: 'wishes', eventsOne: 'event', eventsFew: 'events', eventsMany: 'events', capsulesOne: 'capsule', capsulesFew: 'capsules', capsulesMany: 'capsules' },
     notifications: {
       title: 'Notifications',
       empty: 'No notifications yet.',
@@ -858,8 +860,9 @@ export const translations: Record<Lang, Dict> = {
     },
   },
   es: {
-    nav: { home: 'Inicio', memories: 'Recuerdos', map: 'Mapa', events: 'Eventos', wishlist: 'Lista de deseos', capsules: 'Cápsulas del tiempo', profile: 'Perfil', logout: 'Cerrar sesión' },
+    nav: { home: 'Inicio', memories: 'Recuerdos', map: 'Mapa de recuerdos', events: 'Eventos', wishlist: 'Lista de deseos', capsules: 'Cápsulas del tiempo', profile: 'Perfil', logout: 'Cerrar sesión' },
     boot: { title: 'El servidor se está iniciando', text: 'Si la aplicación no se ha usado en un tiempo, el inicio puede tardar hasta un minuto. Espera, por favor…', slow: 'Esto está tardando más de lo normal. Intenta recargar la página.', reload: 'Recargar la página' },
+    partner: { view: 'Ver', untitled: 'Sin título', hide: 'Ocultar', addedTitle: 'Añadido por tu pareja', recentTitle: 'Últimas fotos de tu pareja', noPhotos: 'Tu pareja aún no ha añadido fotos.', loadError: 'No se pudo cargar lo que añadió tu pareja.', retry: 'Reintentar', photosOne: 'foto', photosFew: 'fotos', photosMany: 'fotos', lettersOne: 'carta de voz', lettersFew: 'cartas de voz', lettersMany: 'cartas de voz', wishesOne: 'deseo', wishesFew: 'deseos', wishesMany: 'deseos', eventsOne: 'evento', eventsFew: 'eventos', eventsMany: 'eventos', capsulesOne: 'cápsula', capsulesFew: 'cápsulas', capsulesMany: 'cápsulas' },
     notifications: {
       title: 'Notificaciones',
       empty: 'No hay notificaciones nuevas.',

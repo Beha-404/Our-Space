@@ -19,7 +19,8 @@ public class HomeController(
     IPhotoService photoService,
     IAudioService audioService,
     IMemoryFeedService memoryFeedService,
-    IRecapService recapService) : ControllerBase
+    IRecapService recapService,
+    IPartnerActivityService partnerActivityService) : ControllerBase
 {
     private const int PreviewSize = 10;
     private const int EventPreviewSize = 3;
@@ -51,5 +52,11 @@ public class HomeController(
             totalMemories,
             onThisDay,
             yearTeaser));
+    }
+
+    [HttpGet("partner")]
+    public async Task<ActionResult<PartnerActivityDto>> GetPartner()
+    {
+        return Ok(await partnerActivityService.GetAsync(this.GetUserId()));
     }
 }

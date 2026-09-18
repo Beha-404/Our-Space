@@ -15,6 +15,22 @@ export interface YearTeaser {
     photoUrls: string[];
 }
 
+export interface PartnerPhoto {
+    id: number;
+    thumbnailUrl: string;
+    caption: string | null;
+    takenAt: string;
+}
+
+export interface PartnerActivity {
+    photos: number;
+    voiceLetters: number;
+    wishes: number;
+    events: number;
+    capsules: number;
+    recentPhotos: PartnerPhoto[];
+}
+
 export interface HomeSummary {
     user: User;
     upcomingEvents: EventItem[];
@@ -32,5 +48,9 @@ export class HomeService {
 
     get() {
         return this.http.get<HomeSummary>(`${config.apiUrl}/home`);
+    }
+
+    getPartnerActivity() {
+        return this.http.get<PartnerActivity>(`${config.apiUrl}/home/partner`);
     }
 }

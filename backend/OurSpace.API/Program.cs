@@ -190,6 +190,7 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITimeCapsuleService, TimeCapsuleService>();
 builder.Services.AddScoped<IRecapService, RecapService>();
+builder.Services.AddScoped<IPartnerActivityService, PartnerActivityService>();
 
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 var emailOptions = builder.Configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>() ?? new EmailOptions();
