@@ -13,6 +13,16 @@ import { ToastService } from '../shared/toast/toast.service';
 import { SKY_CAPACITY } from './wish-sky/wish-sky-layout';
 import { WishSky } from './wish-sky/wish-sky';
 
+function normalize(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/đ/g, 'd')
+    .toLowerCase()
+    .replace(/đ/g, 'd')
+    .trim();
+}
+
 type WishTab = 'waiting' | 'fulfilled';
 
 const LIST_PAGE_SIZE = 10;
@@ -44,6 +54,20 @@ export class WishlistPage {
   newestFirst = computed(() =>
     [...this.wishes()].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id - a.id));
 
+  query = signal('');
+
+  private normalizedQuery = computed(() => normalize(this.query()));
+
+  matchingWishes = computed(() => {
+    const query = this.normalizedQuery();
+    return query ? this.newestFirst().filter(w => normalize(w.title).includes(query)) : this.newestFirst();
+  });
+
+  matchIds = computed(() => this.normalizedQuery() ? new Set(this.matchingWishes().map(w => w.id)) : null);
+
+  tabWaitingCount = computed(() => this.matchingWishes().filter(w => !w.isFulfilled).length);
+  tabFulfilledCount = computed(() => this.matchingWishes().filter(w => w.isFulfilled).length);
+
   skyWishes = computed(() => this.newestFirst().slice(0, SKY_CAPACITY));
 
   fulfilledCount = computed(() => this.wishes().filter(w => w.isFulfilled).length);
@@ -57,9 +81,9 @@ export class WishlistPage {
   });
 
   tabWishes = computed(() => {
-    if (this.tab() === 'waiting') return this.newestFirst().filter(w => !w.isFulfilled);
+    if (this.tab() === 'waiting') return this.matchingWishes().filter(w => !w.isFulfilled);
 
-    return this.wishes()
+    return this.matchingWishes()
       .filter(w => w.isFulfilled)
       .sort((a, b) => Date.parse(b.fulfilledAt ?? b.createdAt) - Date.parse(a.fulfilledAt ?? a.createdAt));
   });
@@ -71,6 +95,16 @@ export class WishlistPage {
     const start = (this.currentListPage() - 1) * LIST_PAGE_SIZE;
     return this.tabWishes().slice(start, start + LIST_PAGE_SIZE);
   });
+
+  setQuery(value: string): void {
+    this.query.set(value);
+    this.listPage.set(1);
+  }
+
+  selectFirstMatch(): void {
+    const first = this.matchingWishes()[0];
+    if (first && this.normalizedQuery()) this.select(first.id);
+  }
 
   setTab(tab: WishTab): void {
     this.tab.set(tab);

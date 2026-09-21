@@ -248,3 +248,99 @@ describe('WishlistPage opened from the recap', () => {
     httpMock.verify();
   });
 });
+
+describe('WishlistPage search', () => {
+  let component: WishlistPage;
+  let httpMock: HttpTestingController;
+
+  const wish = (id: number, title: string, isFulfilled = false) => ({
+    id,
+    title,
+    isFulfilled,
+    fulfilledAt: isFulfilled ? '2026-09-01T10:00:00Z' : null,
+    createdByUsername: 'test1',
+    createdAt: new Date(Date.UTC(2026, 0, 1, 0, id)).toISOString(),
+  });
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [WishlistPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({}) } } },
+      ],
+    }).compileComponents();
+
+    component = TestBed.createComponent(WishlistPage).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+    httpMock.expectOne(`${config.apiUrl}/user/current`).flush({ id: 1, username: 'test1', partner: { id: 2 } });
+    httpMock.expectOne(`${config.apiUrl}/wishlist`).flush([
+      wish(1, 'Putovanje u Rim'),
+      wish(2, 'Kupiti Prag'),
+      wish(3, 'Rimski forum', true),
+      wish(4, 'Večera u Šumi'),
+    ]);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('has no highlighted stars while the search is empty', () => {
+    expect(component.matchIds()).toBeNull();
+    expect(component.matchingWishes()).toHaveLength(4);
+  });
+
+  it('finds wishes regardless of case', () => {
+    component.setQuery('RIM');
+
+    expect([...component.matchIds()!].sort()).toEqual([1, 3]);
+  });
+
+  it('ignores diacritics in both the search and the titles', () => {
+    component.setQuery('vecera u sumi');
+
+    expect([...component.matchIds()!]).toEqual([4]);
+
+    component.setQuery('šum');
+
+    expect([...component.matchIds()!]).toEqual([4]);
+  });
+
+  it('counts the matches separately for each tab', () => {
+    component.setQuery('rim');
+
+    expect(component.tabWaitingCount()).toBe(1);
+    expect(component.tabFulfilledCount()).toBe(1);
+  });
+
+  it('filters the list of the active tab and returns to the first page', () => {
+    component.goToListPage(2);
+    component.setQuery('prag');
+
+    expect(component.tabWishes().map(w => w.id)).toEqual([2]);
+    expect(component.currentListPage()).toBe(1);
+  });
+
+  it('selects the newest match on enter', () => {
+    component.setQuery('rim');
+    component.selectFirstMatch();
+
+    expect(component.selected()?.id).toBe(3);
+  });
+
+  it('does nothing on enter when the search is empty', () => {
+    component.select(2);
+    component.selectFirstMatch();
+
+    expect(component.selected()?.id).toBe(2);
+  });
+
+  it('shows everything again once the search is cleared', () => {
+    component.setQuery('rim');
+    component.setQuery('');
+
+    expect(component.matchIds()).toBeNull();
+    expect(component.tabWishes()).toHaveLength(3);
+  });
+});

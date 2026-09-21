@@ -13,16 +13,27 @@ export class WishSky {
     readonly wishes = input.required<Wish[]>();
     readonly selectedId = input<number | null>(null);
     readonly flashId = input<number | null>(null);
+    readonly matchIds = input<Set<number> | null>(null);
     readonly selectWish = output<number>();
 
     readonly dust = skyDust(70);
 
     readonly stars = computed(() => {
         const points = skyPoints(this.wishes().map(w => w.id));
+        const matches = this.matchIds();
 
         return this.wishes().flatMap(wish => {
             const point = points.get(wish.id);
-            return point ? [{ id: wish.id, title: wish.title, fulfilled: wish.isFulfilled, ...point }] : [];
+            if (!point) return [];
+
+            return [{
+                id: wish.id,
+                title: wish.title,
+                fulfilled: wish.isFulfilled,
+                match: matches?.has(wish.id) ?? false,
+                dim: matches !== null && !matches.has(wish.id),
+                ...point,
+            }];
         });
     });
 }

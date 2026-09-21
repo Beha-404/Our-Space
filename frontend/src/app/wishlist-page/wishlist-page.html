@@ -20,16 +20,24 @@
 				<a routerLink="/profile" class="btn btn-primary btn-sm notice-card-cta">{{ 'home.connectCta' | translate }}</a>
 			</div>
 		} @else {
-			<app-wish-sky [wishes]="skyWishes()" [selectedId]="selected()?.id ?? null" [flashId]="flashId()" (selectWish)="select($event)" />
+			@if (wishes().length > 0) {
+				<div class="wish-search">
+					<input type="search" class="wish-search-input" maxlength="100" [value]="query()"
+						[attr.aria-label]="'wishlist.searchPlaceholder' | translate" [placeholder]="'wishlist.searchPlaceholder' | translate"
+						(input)="setQuery($any($event.target).value)" (keyup.enter)="selectFirstMatch()">
+				</div>
+			}
+
+			@if (skyWishes().length < wishes().length) {
+				<p class="sky-note">{{ 'wishlist.skyLimitBefore' | translate }} {{ skyWishes().length }} {{ 'wishlist.skyLimitAfter' | translate }}</p>
+			}
+
+			<app-wish-sky [wishes]="skyWishes()" [matchIds]="matchIds()" [selectedId]="selected()?.id ?? null" [flashId]="flashId()" (selectWish)="select($event)" />
 
 			<div class="sky-legend">
 				<span><i class="legend-star"></i>{{ 'wishlist.legendWaiting' | translate }}</span>
 				<span><i class="legend-star lit"></i>{{ 'wishlist.legendFulfilled' | translate }}</span>
 			</div>
-
-			@if (skyWishes().length < wishes().length) {
-				<p class="sky-note">{{ 'wishlist.skyLimitBefore' | translate }} {{ skyWishes().length }} {{ 'wishlist.skyLimitAfter' | translate }}</p>
-			}
 
 			@if (selected(); as wish) {
 				<div class="card wish-card" id="wish-card">
@@ -89,16 +97,16 @@
 					<div class="list-tools">
 						<div class="status-filter">
 							<button type="button" class="status-filter-btn" [class.active]="tab() === 'waiting'" (click)="setTab('waiting')">
-								{{ 'wishlist.tabWaiting' | translate }}<em>{{ waitingCount() }}</em>
+								{{ 'wishlist.tabWaiting' | translate }}<em>{{ tabWaitingCount() }}</em>
 							</button>
 							<button type="button" class="status-filter-btn" [class.active]="tab() === 'fulfilled'" (click)="setTab('fulfilled')">
-								{{ 'wishlist.tabFulfilled' | translate }}<em>{{ fulfilledCount() }}</em>
+								{{ 'wishlist.tabFulfilled' | translate }}<em>{{ tabFulfilledCount() }}</em>
 							</button>
 						</div>
 					</div>
 
 					@if (tabWishes().length === 0) {
-						<p class="muted-hint">{{ (tab() === 'waiting' ? 'wishlist.emptyWaiting' : 'wishlist.emptyFulfilled') | translate }}</p>
+						<p class="muted-hint">{{ (query() ? 'wishlist.noResults' : tab() === 'waiting' ? 'wishlist.emptyWaiting' : 'wishlist.emptyFulfilled') | translate }}</p>
 					} @else {
 						<ul class="wish-list">
 							@for (wish of visibleWishes(); track wish.id) {
