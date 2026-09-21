@@ -158,10 +158,10 @@ describe('WishlistPage sky and list', () => {
     expect(component.tabWishes().map(w => w.id)).toEqual([3, 1]);
   });
 
-  it('caps the sky at forty stars', () => {
+  it('caps the sky at thirty stars', () => {
     load(Array.from({ length: 60 }, (_, index) => wish(index + 1, false, (index % 28) + 1)));
 
-    expect(component.skyWishes()).toHaveLength(40);
+    expect(component.skyWishes()).toHaveLength(30);
   });
 
   it('selects the wish it just created after reloading', () => {
@@ -210,18 +210,18 @@ describe('WishlistPage sky', () => {
   const load = (wishes: ReturnType<typeof wish>[]) =>
     httpMock.expectOne(`${config.apiUrl}/wishlist`).flush(wishes);
 
-  it('shows the forty newest wishes whether or not they are fulfilled', () => {
+  it('shows the thirty newest wishes whether or not they are fulfilled', () => {
     const older = Array.from({ length: 30 }, (_, index) => wish(index + 1, false));
     const newest = Array.from({ length: 50 }, (_, index) => wish(100 + index, index % 2 === 0));
     load([...older, ...newest]);
 
     const sky = component.skyWishes();
 
-    expect(sky).toHaveLength(40);
-    expect(sky.every(w => w.id >= 110)).toBe(true);
+    expect(sky).toHaveLength(30);
+    expect(sky.every(w => w.id >= 120)).toBe(true);
   });
 
-  it('shows every wish when there are fewer than forty', () => {
+  it('shows every wish when there are fewer than thirty', () => {
     load([wish(1, false), wish(2, true), wish(3, false)]);
 
     expect(component.skyWishes()).toHaveLength(3);

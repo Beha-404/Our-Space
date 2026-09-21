@@ -8,8 +8,8 @@ describe('skyPoints', () => {
 
     expect(points.size).toBe(SKY_CAPACITY);
     expect(points.has(60)).toBe(true);
-    expect(points.has(20)).toBe(false);
-    expect(points.has(21)).toBe(true);
+    expect(points.has(30)).toBe(false);
+    expect(points.has(31)).toBe(true);
   });
 
   it('places every star inside the sky', () => {

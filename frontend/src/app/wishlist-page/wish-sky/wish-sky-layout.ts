@@ -3,9 +3,9 @@ export interface SkyPoint {
     y: number;
 }
 
-export const SKY_CAPACITY = 40;
+export const SKY_CAPACITY = 30;
 
-const COLUMNS = 8;
+const COLUMNS = 6;
 const ROWS = 5;
 const EDGE = 4;
 
