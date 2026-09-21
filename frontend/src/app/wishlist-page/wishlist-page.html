@@ -95,9 +95,6 @@
 								{{ 'wishlist.tabFulfilled' | translate }}<em>{{ fulfilledCount() }}</em>
 							</button>
 						</div>
-						@if (waitingCount() > 0) {
-							<button type="button" class="btn btn-ghost btn-sm surprise-btn" (click)="surprise()">✦ {{ 'wishlist.surprise' | translate }}</button>
-						}
 					</div>
 
 					@if (tabWishes().length === 0) {
@@ -121,9 +118,7 @@
 							}
 						</ul>
 
-						@if (hasMore()) {
-							<button type="button" class="btn btn-ghost btn-sm show-more" (click)="showMore()">{{ 'wishlist.showMore' | translate }}</button>
-						}
+						<app-pager [page]="currentListPage()" [totalPages]="totalListPages()" (pageChange)="goToListPage($event)" />
 					}
 				</section>
 			}

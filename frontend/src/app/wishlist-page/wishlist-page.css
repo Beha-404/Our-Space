@@ -332,11 +332,6 @@ h1 {
   color: var(--color-text-muted);
 }
 
-.show-more {
-  display: block;
-  margin: 14px auto 0;
-}
-
 @media (max-width: 560px) {
   .add-wish-row {
     flex-direction: column;

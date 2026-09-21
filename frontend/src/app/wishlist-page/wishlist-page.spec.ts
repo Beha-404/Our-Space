@@ -126,17 +126,28 @@ describe('WishlistPage sky and list', () => {
     expect(component.selected()?.id).toBe(5);
   });
 
-  it('shows only ten wishes at a time and reveals ten more on request', () => {
+  it('shows ten wishes per page and moves between pages', () => {
     load(Array.from({ length: 25 }, (_, index) => wish(index + 1)));
 
     expect(component.visibleWishes()).toHaveLength(10);
-    expect(component.hasMore()).toBe(true);
+    expect(component.totalListPages()).toBe(3);
 
-    component.showMore();
-    component.showMore();
+    component.goToListPage(3);
 
-    expect(component.visibleWishes()).toHaveLength(25);
-    expect(component.hasMore()).toBe(false);
+    expect(component.visibleWishes()).toHaveLength(5);
+
+    component.goToListPage(99);
+
+    expect(component.currentListPage()).toBe(3);
+  });
+
+  it('goes back to the first page when the tab changes', () => {
+    load([...Array.from({ length: 25 }, (_, index) => wish(index + 1)), wish(100, true)]);
+    component.goToListPage(3);
+
+    component.setTab('fulfilled');
+
+    expect(component.currentListPage()).toBe(1);
   });
 
   it('lists only fulfilled wishes on the fulfilled tab, most recently fulfilled first', () => {
@@ -153,17 +164,6 @@ describe('WishlistPage sky and list', () => {
     expect(component.skyWishes()).toHaveLength(40);
   });
 
-  it('surprise never picks a fulfilled wish and moves off the current one', () => {
-    load([wish(1, true), wish(2), wish(3)]);
-    component.select(2);
-
-    for (let i = 0; i < 20; i++) {
-      component.surprise();
-      expect(component.selected()?.id).toBe(3);
-      component.select(2);
-    }
-  });
-
   it('selects the wish it just created after reloading', () => {
     load([wish(1)]);
     component.updateNewWish('Nova');
@@ -176,7 +176,7 @@ describe('WishlistPage sky and list', () => {
   });
 });
 
-describe('WishlistPage sky mix', () => {
+describe('WishlistPage sky', () => {
   let component: WishlistPage;
   let httpMock: HttpTestingController;
 
@@ -210,31 +210,41 @@ describe('WishlistPage sky mix', () => {
   const load = (wishes: ReturnType<typeof wish>[]) =>
     httpMock.expectOne(`${config.apiUrl}/wishlist`).flush(wishes);
 
-  it('still shows waiting wishes when the newest forty are all fulfilled', () => {
-    const newestFulfilled = Array.from({ length: 50 }, (_, index) => wish(100 + index, true));
-    const olderWaiting = Array.from({ length: 30 }, (_, index) => wish(index + 1, false));
-    load([...olderWaiting, ...newestFulfilled]);
+  it('shows the forty newest wishes whether or not they are fulfilled', () => {
+    const older = Array.from({ length: 30 }, (_, index) => wish(index + 1, false));
+    const newest = Array.from({ length: 50 }, (_, index) => wish(100 + index, index % 2 === 0));
+    load([...older, ...newest]);
 
     const sky = component.skyWishes();
 
     expect(sky).toHaveLength(40);
-    expect(sky.filter(w => !w.isFulfilled)).toHaveLength(28);
-    expect(sky.filter(w => w.isFulfilled)).toHaveLength(12);
-  });
-
-  it('fills the sky with fulfilled wishes when few are waiting', () => {
-    const fulfilled = Array.from({ length: 50 }, (_, index) => wish(100 + index, true));
-    load([wish(1, false), wish(2, false), ...fulfilled]);
-
-    const sky = component.skyWishes();
-
-    expect(sky).toHaveLength(40);
-    expect(sky.filter(w => !w.isFulfilled)).toHaveLength(2);
+    expect(sky.every(w => w.id >= 110)).toBe(true);
   });
 
   it('shows every wish when there are fewer than forty', () => {
     load([wish(1, false), wish(2, true), wish(3, false)]);
 
     expect(component.skyWishes()).toHaveLength(3);
+  });
+});
+
+describe('WishlistPage opened from the recap', () => {
+  it('starts on the fulfilled tab when the link asks for it', async () => {
+    await TestBed.configureTestingModule({
+      imports: [WishlistPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({ tab: 'fulfilled' }) } } },
+      ],
+    }).compileComponents();
+
+    const component = TestBed.createComponent(WishlistPage).componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+    httpMock.expectOne(`${config.apiUrl}/user/current`).flush({ id: 1, username: 'test1', partner: null });
+
+    expect(component.tab()).toBe('fulfilled');
+    httpMock.verify();
   });
 });

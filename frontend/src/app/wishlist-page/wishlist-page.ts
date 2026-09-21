@@ -6,6 +6,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { Wish } from '../interfaces/wish';
 import { UserService } from '../services/user.service';
 import { WishlistService } from '../services/wishlist.service';
+import { Pager } from '../shared/pager/pager';
 import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
@@ -16,10 +17,9 @@ type WishTab = 'waiting' | 'fulfilled';
 
 const LIST_PAGE_SIZE = 10;
 const FLASH_MS = 900;
-const SKY_FULFILLED_SHARE = 12;
 
 @Component({
-  imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink, WishSky],
+  imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink, WishSky, Pager],
   selector: 'app-wishlist-page',
   styleUrl: './wishlist-page.css',
   templateUrl: './wishlist-page.html',
@@ -39,20 +39,12 @@ export class WishlistPage {
   selectedId = signal<number | null>(null);
   flashId = signal<number | null>(null);
   tab = signal<WishTab>('waiting');
-  visibleCount = signal(LIST_PAGE_SIZE);
+  listPage = signal(1);
 
   newestFirst = computed(() =>
     [...this.wishes()].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id - a.id));
 
-  skyWishes = computed(() => {
-    const waiting = this.newestFirst().filter(w => !w.isFulfilled);
-    const fulfilled = this.newestFirst().filter(w => w.isFulfilled);
-
-    const waitingSlots = Math.min(waiting.length, SKY_CAPACITY - Math.min(fulfilled.length, SKY_FULFILLED_SHARE));
-    const fulfilledSlots = Math.min(fulfilled.length, SKY_CAPACITY - waitingSlots);
-
-    return [...waiting.slice(0, waitingSlots), ...fulfilled.slice(0, fulfilledSlots)];
-  });
+  skyWishes = computed(() => this.newestFirst().slice(0, SKY_CAPACITY));
 
   fulfilledCount = computed(() => this.wishes().filter(w => w.isFulfilled).length);
   waitingCount = computed(() => this.wishes().length - this.fulfilledCount());
@@ -72,16 +64,21 @@ export class WishlistPage {
       .sort((a, b) => Date.parse(b.fulfilledAt ?? b.createdAt) - Date.parse(a.fulfilledAt ?? a.createdAt));
   });
 
-  visibleWishes = computed(() => this.tabWishes().slice(0, this.visibleCount()));
-  hasMore = computed(() => this.tabWishes().length > this.visibleCount());
+  totalListPages = computed(() => Math.max(1, Math.ceil(this.tabWishes().length / LIST_PAGE_SIZE)));
+  currentListPage = computed(() => Math.min(this.listPage(), this.totalListPages()));
+
+  visibleWishes = computed(() => {
+    const start = (this.currentListPage() - 1) * LIST_PAGE_SIZE;
+    return this.tabWishes().slice(start, start + LIST_PAGE_SIZE);
+  });
 
   setTab(tab: WishTab): void {
     this.tab.set(tab);
-    this.visibleCount.set(LIST_PAGE_SIZE);
+    this.listPage.set(1);
   }
 
-  showMore(): void {
-    this.visibleCount.update(count => count + LIST_PAGE_SIZE);
+  goToListPage(page: number): void {
+    this.listPage.set(Math.min(Math.max(page, 1), this.totalListPages()));
   }
 
   select(id: number): void {
@@ -90,16 +87,6 @@ export class WishlistPage {
 
   selectFromList(id: number): void {
     this.select(id);
-    scrollAndHighlight('wish-card');
-  }
-
-  surprise(): void {
-    const waiting = this.wishes().filter(w => !w.isFulfilled);
-    if (waiting.length === 0) return;
-
-    const others = waiting.length > 1 ? waiting.filter(w => w.id !== this.selected()?.id) : waiting;
-    const pick = others[Math.floor(Math.random() * others.length)];
-    this.select(pick.id);
     scrollAndHighlight('wish-card');
   }
 
@@ -121,6 +108,8 @@ export class WishlistPage {
   wishPendingDelete = signal<Wish | null>(null);
 
   constructor() {
+    if (this.route.snapshot.queryParamMap.get('tab') === 'fulfilled') this.tab.set('fulfilled');
+
     this.userService.ensureCurrentUser().subscribe(user => {
       if (user.partner) this.loadAll(() => this.openFromQueryParams());
       else this.loading.set(false);
