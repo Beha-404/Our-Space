@@ -256,25 +256,18 @@ h1 {
   font-size: 1rem;
 }
 
-.wish-label {
+.wish-star {
   flex-shrink: 0;
-  min-width: 84px;
-  padding: 5px 12px;
-  border-radius: 100px;
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-muted);
+  width: 12px;
+  height: 12px;
+  margin: 0 6px;
+  border: 1.5px solid var(--color-text-muted);
+  border-radius: 50%;
 }
 
-.wish-label.fulfilled {
-  background: rgba(138, 155, 99, 0.16);
-  border-color: rgba(138, 155, 99, 0.42);
-  color: var(--color-success);
+.wish-star.lit {
+  border: 0;
+  background: var(--color-star);
+  box-shadow: 0 0 10px 2px rgba(239, 201, 138, 0.5);
 }
 

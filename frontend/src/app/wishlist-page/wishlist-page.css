@@ -2,13 +2,52 @@
   padding: 40px 24px 60px;
 }
 
+.wish-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  margin-bottom: 24px;
+}
+
 h1 {
   font-size: clamp(1.4rem, 4vw, 1.8rem);
   margin-bottom: 6px;
 }
 
 .subtitle {
-  margin-bottom: 28px;
+  margin: 0;
+}
+
+.progress {
+  min-width: 210px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.progress b {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-bar {
+  height: 5px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--color-surface-strong);
+}
+
+.progress-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 9px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-star));
+  transition: width 0.5s var(--motion-soft);
 }
 
 .notice-card {
@@ -23,9 +62,68 @@ h1 {
   display: inline-block;
 }
 
+.sky-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 12px 2px 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.legend-star {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  border: 1.5px solid var(--color-text-muted);
+  border-radius: 50%;
+  vertical-align: -1px;
+}
+
+.legend-star.lit {
+  border: 0;
+  background: var(--color-star);
+  box-shadow: 0 0 8px rgba(239, 201, 138, 0.6);
+}
+
+.wish-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  margin-top: 18px;
+  padding: 18px 20px;
+}
+
+.wish-card-text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.wish-card .wish-title {
+  margin: 0 0 3px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.4rem;
+  word-break: break-word;
+}
+
+.wish-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-faint);
+}
+
+.wish-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .add-wish-card {
-  padding: 22px 24px;
-  margin-bottom: 24px;
+  margin-top: 18px;
+  padding: 18px 20px;
 }
 
 .add-wish-row {
@@ -73,16 +171,33 @@ h1 {
   border-color: var(--color-danger);
 }
 
-.add-wish-card .field-error {
-  margin: 14px 0 0;
-}
-
+.add-wish-card .field-error,
 .add-wish-card .alert {
   margin: 14px 0 0;
 }
 
 .muted-hint {
   font-size: 0.9rem;
+}
+
+.wish-section {
+  margin-top: 36px;
+}
+
+.section-title {
+  margin: 0 0 14px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.list-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .status-filter {
@@ -92,7 +207,6 @@ h1 {
   border-radius: 100px;
   background: var(--color-surface-strong);
   border: 1px solid var(--color-border);
-  margin-bottom: 18px;
 }
 
 .status-filter-btn {
@@ -107,6 +221,13 @@ h1 {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
+.status-filter-btn em {
+  margin-left: 5px;
+  font-style: normal;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
 .status-filter-btn.active {
   background: var(--color-accent);
   color: var(--color-on-accent);
@@ -115,132 +236,125 @@ h1 {
 .wish-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .wish-row {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 18px;
-  transition: opacity 0.2s ease;
+  padding: 12px 4px;
+  border-top: 1px solid var(--color-border);
 }
 
-.wish-done {
-  opacity: 0.6;
+.wish-row:first-child {
+  border-top: 0;
 }
 
-.wish-label {
+.wish-check {
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  min-width: 84px;
-  padding: 5px 12px;
-  border-radius: 100px;
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 50%;
   background: transparent;
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-text-muted);
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  color: var(--color-accent-strong);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.2s ease, transform 0.25s var(--motion-spring);
 }
 
-.wish-label.fulfilled {
-  background: rgba(138, 155, 99, 0.16);
-  border-color: rgba(138, 155, 99, 0.42);
-  color: var(--color-success);
+.wish-check svg {
+  width: 15px;
+  height: 15px;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.wish-row-actions {
+.wish-row:not(.wish-done) .wish-check:hover {
+  border-color: var(--color-accent-strong);
+  transform: scale(1.08);
+}
+
+.wish-row:not(.wish-done) .wish-check:hover svg {
+  opacity: 0.5;
+  transform: none;
+}
+
+.wish-done .wish-check {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #1d2410;
+}
+
+.wish-done .wish-check svg {
+  opacity: 1;
+  transform: none;
+}
+
+.wish-open {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.wish-info {
+  flex-direction: column;
   flex: 1;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.wish-title {
-  margin: 0 0 3px;
+.wish-open .wish-title {
   font-family: var(--font-display);
   font-style: italic;
-  font-weight: 500;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   word-break: break-word;
 }
 
+.wish-open:hover .wish-title,
+.wish-current .wish-title {
+  color: var(--color-accent-strong);
+}
+
 .wish-done .wish-title {
-  text-decoration: line-through;
-}
-
-.wish-meta {
-  font-size: 0.76rem;
-  color: var(--color-text-faint);
-}
-
-.feed-pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 18px;
-}
-
-.feed-pager-num {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 6px;
-  font-size: 0.82rem;
-  font-weight: 600;
   color: var(--color-text-muted);
-  background: transparent;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  text-decoration: line-through;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 1px;
 }
 
-.feed-pager-num:hover {
-  background: var(--color-surface-strong);
-  color: var(--color-text);
-}
-
-.feed-pager-num.active {
-  background: var(--color-accent);
-  border-color: transparent;
-  color: var(--color-on-accent);
-}
-
-.feed-pager-ellipsis {
-  padding: 0 4px;
-  color: var(--color-text-faint);
-  font-size: 0.82rem;
+.show-more {
+  display: block;
+  margin: 14px auto 0;
 }
 
 @media (max-width: 560px) {
   .add-wish-row {
     flex-direction: column;
   }
-  .wish-row {
-    flex-wrap: wrap;
-  }
-  .wish-info {
-    flex-basis: calc(100% - 100px);
-  }
-  .wish-row-actions {
-    flex-basis: 100%;
-    justify-content: flex-end;
+  .progress {
+    min-width: 0;
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
+  .wish-card,
   .add-wish-card {
-    padding: 18px 16px;
+    padding: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar i,
+  .wish-check,
+  .wish-check svg {
+    transition: none;
   }
 }

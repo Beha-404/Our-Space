@@ -1,8 +1,18 @@
 <div class="container fade-in wishlist-content">
-		<h1>{{ 'wishlist.title' | translate }}</h1>
-		<p class="subtitle">{{ 'wishlist.subtitle' | translate }}</p>
+		<header class="wish-head">
+			<div>
+				<h1>{{ 'wishlist.title' | translate }}</h1>
+				<p class="subtitle">{{ 'wishlist.subtitle' | translate }}</p>
+			</div>
+			@if (isPaired() && wishes().length > 0) {
+				<div class="progress">
+					<b>{{ fulfilledCount() }}</b> {{ 'wishlist.progressOf' | translate }} {{ wishes().length }} {{ 'wishlist.progressLabel' | translate }}
+					<div class="progress-bar"><i [style.width.%]="progressPercent()"></i></div>
+				</div>
+			}
+		</header>
 
-		@if (!userLoaded()) {
+		@if (!userLoaded() || (loading() && wishes().length === 0)) {
 			<app-skeleton [count]="3" variant="row" />
 		} @else if (!isPaired()) {
 			<div class="card notice-card">
@@ -10,10 +20,49 @@
 				<a routerLink="/profile" class="btn btn-primary btn-sm notice-card-cta">{{ 'home.connectCta' | translate }}</a>
 			</div>
 		} @else {
+			<app-wish-sky [wishes]="skyWishes()" [selectedId]="selected()?.id ?? null" [flashId]="flashId()" (selectWish)="select($event)" />
+
+			<div class="sky-legend">
+				<span><i class="legend-star"></i>{{ 'wishlist.legendWaiting' | translate }}</span>
+				<span><i class="legend-star lit"></i>{{ 'wishlist.legendFulfilled' | translate }}</span>
+			</div>
+
+			@if (selected(); as wish) {
+				<div class="card wish-card" id="wish-card">
+					<div class="wish-card-text">
+						<h3 class="wish-title">{{ wish.title }}</h3>
+						<span class="wish-meta">
+							{{ wish.createdByUsername }} · {{ wish.createdAt | localDate:'mediumDate' }}
+							@if (wish.isFulfilled && wish.fulfilledAt) {
+								· {{ 'wishlist.fulfilledOn' | translate }} {{ wish.fulfilledAt | localDate:'mediumDate' }}
+							}
+						</span>
+					</div>
+					<div class="wish-card-actions">
+						@if (wish.isFulfilled) {
+							<button type="button" class="btn btn-ghost-info btn-sm" (click)="toggleFulfilled(wish)">{{ 'wishlist.markNotFulfilled' | translate }}</button>
+						} @else {
+							<button type="button" class="btn btn-primary btn-sm" (click)="toggleFulfilled(wish)">{{ 'wishlist.markFulfilled' | translate }} ✦</button>
+						}
+						<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(wish)"
+							[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M3 6h18" />
+								<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+								<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+								<line x1="10" y1="11" x2="10" y2="17" />
+								<line x1="14" y1="11" x2="14" y2="17" />
+							</svg>
+						</button>
+					</div>
+				</div>
+			}
+
 			<div class="card add-wish-card">
 				<div class="add-wish-row">
 					<div class="wish-input-wrap">
-						<input type="text" [placeholder]="'wishlist.addPlaceholder' | translate" [class.invalid]="newWishError()" [class.valid]="newWishValid()"
+						<input type="text" [attr.aria-label]="'wishlist.addButton' | translate" [placeholder]="'wishlist.addPlaceholder' | translate"
+							[class.invalid]="newWishError()" [class.valid]="newWishValid()" maxlength="200"
 							[value]="newWish()" (input)="updateNewWish($any($event.target).value)"
 							(blur)="newWishTouched.set(true)" (keyup.enter)="addWish()">
 						@if (newWishValid()) { <svg class="field-valid-icon field-valid-icon-inset" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg> }
@@ -29,78 +78,50 @@
 				}
 			</div>
 
-			@if (loading()) {
-				<app-skeleton [count]="3" variant="row" />
-			}
+			@if (wishes().length > 0) {
+				<section class="wish-section">
+					<h2 class="section-title">{{ 'wishlist.listTitle' | translate }}</h2>
 
-			@if (!loading() && wishes().length > 0) {
-				<div class="status-filter">
-					<button type="button" class="status-filter-btn" [class.active]="statusFilter() === 'all'" (click)="setStatusFilter('all')">{{ 'wishlist.filterAll' | translate }}</button>
-					<button type="button" class="status-filter-btn" [class.active]="statusFilter() === 'ongoing'" (click)="setStatusFilter('ongoing')">{{ 'wishlist.filterOngoing' | translate }}</button>
-					<button type="button" class="status-filter-btn" [class.active]="statusFilter() === 'fulfilled'" (click)="setStatusFilter('fulfilled')">{{ 'wishlist.filterFulfilled' | translate }}</button>
-				</div>
-			}
-
-			@if (wishes().length === 0 && !loading()) {
-				<p class="muted-hint">{{ 'wishlist.empty' | translate }}</p>
-			} @else if (filteredWishes().length === 0 && !loading()) {
-				<p class="muted-hint">{{ 'wishlist.emptyFiltered' | translate }}</p>
-			} @else {
-				<div class="wish-list">
-					@for (wish of pagedWishes(); track wish.id) {
-						<div class="card wish-row hover-card" [id]="'wish-' + wish.id" [class.wish-done]="wish.isFulfilled">
-							<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
-								{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
-							</span>
-
-							<div class="wish-info">
-								<h3 class="wish-title">{{ wish.title }}</h3>
-								<span class="wish-meta">
-									{{ 'wishlist.addedOn' | translate }} {{ wish.createdAt | localDate:'longDate' }}
-									· {{ 'events.addedBy' | translate }} {{ wish.createdByUsername }}
-									@if (wish.isFulfilled && wish.fulfilledAt) {
-										· {{ 'wishlist.fulfilledOn' | translate }} {{ wish.fulfilledAt | localDate:'longDate' }}
-									}
-								</span>
-							</div>
-
-							<div class="wish-row-actions">
-								<button type="button" class="btn btn-ghost-info btn-xs" (click)="toggleFulfilled(wish)">
-									{{ (wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate }}
-								</button>
-								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(wish)"
-									[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<path d="M3 6h18" />
-										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-										<line x1="10" y1="11" x2="10" y2="17" />
-										<line x1="14" y1="11" x2="14" y2="17" />
-									</svg>
-								</button>
-							</div>
+					<div class="list-tools">
+						<div class="status-filter">
+							<button type="button" class="status-filter-btn" [class.active]="tab() === 'waiting'" (click)="setTab('waiting')">
+								{{ 'wishlist.tabWaiting' | translate }}<em>{{ waitingCount() }}</em>
+							</button>
+							<button type="button" class="status-filter-btn" [class.active]="tab() === 'fulfilled'" (click)="setTab('fulfilled')">
+								{{ 'wishlist.tabFulfilled' | translate }}<em>{{ fulfilledCount() }}</em>
+							</button>
 						</div>
-					}
-				</div>
-
-				@if (totalWishPages() > 1) {
-					<div class="feed-pager">
-						<button type="button" class="btn btn-ghost btn-xs" (click)="goToWishPage(currentWishPage() - 1)"
-							[disabled]="currentWishPage() === 1">‹</button>
-
-						@for (p of wishPageNumbers(); track $index) {
-							@if (p === '…') {
-								<span class="feed-pager-ellipsis">…</span>
-							} @else {
-								<button type="button" class="feed-pager-num" [class.active]="p === currentWishPage()"
-									(click)="goToWishPage(p)">{{ p }}</button>
-							}
+						@if (waitingCount() > 0) {
+							<button type="button" class="btn btn-ghost btn-sm surprise-btn" (click)="surprise()">✦ {{ 'wishlist.surprise' | translate }}</button>
 						}
-
-						<button type="button" class="btn btn-ghost btn-xs" (click)="goToWishPage(currentWishPage() + 1)"
-							[disabled]="currentWishPage() === totalWishPages()">›</button>
 					</div>
-				}
+
+					@if (tabWishes().length === 0) {
+						<p class="muted-hint">{{ (tab() === 'waiting' ? 'wishlist.emptyWaiting' : 'wishlist.emptyFulfilled') | translate }}</p>
+					} @else {
+						<ul class="wish-list">
+							@for (wish of visibleWishes(); track wish.id) {
+								<li class="wish-row" [class.wish-done]="wish.isFulfilled" [class.wish-current]="wish.id === selected()?.id">
+									<button type="button" class="wish-check" (click)="toggleFulfilled(wish)"
+										[attr.aria-label]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate"
+										[title]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<path d="M4 12l5 5L20 6" />
+										</svg>
+									</button>
+									<button type="button" class="wish-open" (click)="selectFromList(wish.id)">
+										<span class="wish-title">{{ wish.title }}</span>
+										<span class="wish-meta">{{ wish.createdByUsername }} · {{ wish.createdAt | localDate:'mediumDate' }}</span>
+									</button>
+								</li>
+							}
+						</ul>
+
+						@if (hasMore()) {
+							<button type="button" class="btn btn-ghost btn-sm show-more" (click)="showMore()">{{ 'wishlist.showMore' | translate }}</button>
+						}
+					}
+				</section>
 			}
 		}
 

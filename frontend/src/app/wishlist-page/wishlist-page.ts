@@ -1,4 +1,4 @@
-﻿import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocalDatePipe } from '../i18n/local-date.pipe';
@@ -6,13 +6,19 @@ import { TranslatePipe } from '../i18n/translate.pipe';
 import { Wish } from '../interfaces/wish';
 import { UserService } from '../services/user.service';
 import { WishlistService } from '../services/wishlist.service';
-import { pageNumbers } from '../shared/page-numbers';
 import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
+import { SKY_CAPACITY } from './wish-sky/wish-sky-layout';
+import { WishSky } from './wish-sky/wish-sky';
+
+type WishTab = 'waiting' | 'fulfilled';
+
+const LIST_PAGE_SIZE = 10;
+const FLASH_MS = 900;
 
 @Component({
-  imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink, WishSky],
   selector: 'app-wishlist-page',
   styleUrl: './wishlist-page.css',
   templateUrl: './wishlist-page.html',
@@ -29,36 +35,64 @@ export class WishlistPage {
   wishes = signal<Wish[]>([]);
   loading = signal(true);
 
-  private static readonly WISH_PER_PAGE = 5;
+  selectedId = signal<number | null>(null);
+  flashId = signal<number | null>(null);
+  tab = signal<WishTab>('waiting');
+  visibleCount = signal(LIST_PAGE_SIZE);
 
-  wishPage = signal(1);
-  statusFilter = signal<'all' | 'fulfilled' | 'ongoing'>('all');
+  newestFirst = computed(() =>
+    [...this.wishes()].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id - a.id));
 
-  filteredWishes = computed(() => {
-    const filter = this.statusFilter();
-    if (filter === 'all') return this.wishes();
-    return this.wishes().filter(w => filter === 'fulfilled' ? w.isFulfilled : !w.isFulfilled);
+  skyWishes = computed(() => this.newestFirst().slice(0, SKY_CAPACITY));
+
+  fulfilledCount = computed(() => this.wishes().filter(w => w.isFulfilled).length);
+  waitingCount = computed(() => this.wishes().length - this.fulfilledCount());
+  progressPercent = computed(() =>
+    this.wishes().length ? Math.round((this.fulfilledCount() / this.wishes().length) * 100) : 0);
+
+  selected = computed(() => {
+    const id = this.selectedId();
+    return this.wishes().find(w => w.id === id) ?? this.newestFirst()[0] ?? null;
   });
 
-  totalWishPages = computed(() => Math.max(1, Math.ceil(this.filteredWishes().length / WishlistPage.WISH_PER_PAGE)));
+  tabWishes = computed(() => {
+    if (this.tab() === 'waiting') return this.newestFirst().filter(w => !w.isFulfilled);
 
-  currentWishPage = computed(() => Math.min(this.wishPage(), this.totalWishPages()));
-
-  pagedWishes = computed(() => {
-    const start = (this.currentWishPage() - 1) * WishlistPage.WISH_PER_PAGE;
-    return this.filteredWishes().slice(start, start + WishlistPage.WISH_PER_PAGE);
+    return this.wishes()
+      .filter(w => w.isFulfilled)
+      .sort((a, b) => Date.parse(b.fulfilledAt ?? b.createdAt) - Date.parse(a.fulfilledAt ?? a.createdAt));
   });
 
-  goToWishPage(page: number): void {
-    this.wishPage.set(Math.min(Math.max(page, 1), this.totalWishPages()));
+  visibleWishes = computed(() => this.tabWishes().slice(0, this.visibleCount()));
+  hasMore = computed(() => this.tabWishes().length > this.visibleCount());
+
+  setTab(tab: WishTab): void {
+    this.tab.set(tab);
+    this.visibleCount.set(LIST_PAGE_SIZE);
   }
 
-  setStatusFilter(filter: 'all' | 'fulfilled' | 'ongoing'): void {
-    this.statusFilter.set(filter);
-    this.wishPage.set(1);
+  showMore(): void {
+    this.visibleCount.update(count => count + LIST_PAGE_SIZE);
   }
 
-  wishPageNumbers = computed(() => pageNumbers(this.totalWishPages(), this.currentWishPage()));
+  select(id: number): void {
+    this.selectedId.set(id);
+  }
+
+  selectFromList(id: number): void {
+    this.select(id);
+    scrollAndHighlight('wish-card');
+  }
+
+  surprise(): void {
+    const waiting = this.wishes().filter(w => !w.isFulfilled);
+    if (waiting.length === 0) return;
+
+    const others = waiting.length > 1 ? waiting.filter(w => w.id !== this.selected()?.id) : waiting;
+    const pick = others[Math.floor(Math.random() * others.length)];
+    this.select(pick.id);
+    scrollAndHighlight('wish-card');
+  }
 
   newWish = signal('');
   newWishTouched = signal(false);
@@ -79,33 +113,32 @@ export class WishlistPage {
 
   constructor() {
     this.userService.ensureCurrentUser().subscribe(user => {
-      if (user.partner) this.loadAll();
+      if (user.partner) this.loadAll(() => this.openFromQueryParams());
       else this.loading.set(false);
     });
   }
 
-  loadAll(): void {
+  loadAll(afterLoad?: () => void): void {
     this.loading.set(true);
     this.wishlistService.getAll().subscribe({
       next: (wishes) => {
         this.wishes.set(wishes);
         this.loading.set(false);
-        this.highlightFromQueryParams();
+        afterLoad?.();
       },
       error: () => this.loading.set(false)
     });
   }
 
-  private highlightFromQueryParams(): void {
+  private openFromQueryParams(): void {
     const idParam = this.route.snapshot.queryParamMap.get('highlight');
     if (!idParam) return;
 
     const id = Number(idParam);
-    const index = this.filteredWishes().findIndex(w => w.id === id);
-    if (index === -1) return;
+    if (!this.wishes().some(w => w.id === id)) return;
 
-    this.goToWishPage(Math.ceil((index + 1) / WishlistPage.WISH_PER_PAGE));
-    scrollAndHighlight(`wish-${id}`);
+    this.select(id);
+    scrollAndHighlight('wish-card');
   }
 
   addWish(): void {
@@ -120,11 +153,11 @@ export class WishlistPage {
     this.addErrorKey.set('');
 
     this.wishlistService.create(title).subscribe({
-      next: () => {
+      next: created => {
         this.adding.set(false);
         this.newWish.set('');
         this.newWishTouched.set(false);
-        this.loadAll();
+        this.loadAll(() => this.select(created.id));
         this.toast.success('toast.wishAdded');
       },
       error: (err: HttpErrorResponse) => {
@@ -141,6 +174,11 @@ export class WishlistPage {
       next: updated => {
         this.wishes.update(list => list.map(w => w.id === updated.id ? updated : w));
         this.toast.success('toast.wishUpdated');
+
+        if (updated.isFulfilled) {
+          this.flashId.set(updated.id);
+          setTimeout(() => this.flashId.set(null), FLASH_MS);
+        }
       },
       error: () => this.toast.error('toast.actionFailed')
     });

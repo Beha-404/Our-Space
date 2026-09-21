@@ -1,0 +1,119 @@
+:host {
+  display: block;
+}
+
+.sky {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: radial-gradient(ellipse at 50% 120%, #3a2a1f 0%, #171210 55%, #0f0c0a 100%);
+}
+
+.dust {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255, 238, 220, 0.4);
+}
+
+.star {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: left 0.6s var(--motion-soft), top 0.6s var(--motion-soft);
+}
+
+.star::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-text-muted);
+  background: #17110d;
+  transition: transform var(--motion-base) var(--motion-spring), background var(--motion-base) ease, box-shadow var(--motion-base) ease;
+}
+
+.star.lit::before {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  background: var(--color-star);
+  box-shadow: 0 0 14px 4px rgba(239, 201, 138, 0.55);
+}
+
+.star:hover::before,
+.star.selected::before {
+  transform: scale(1.6);
+}
+
+.star:not(.lit):hover::before,
+.star:not(.lit).selected::before {
+  border-color: var(--color-accent-strong);
+}
+
+.star:focus-visible {
+  outline: 2px solid var(--color-accent-strong);
+  outline-offset: -4px;
+  border-radius: 50%;
+}
+
+.star.selected::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px dashed var(--color-accent-strong);
+  animation: orbit 8s linear infinite;
+}
+
+.star.flash::before {
+  animation: shine 0.9s var(--motion-spring);
+}
+
+.sky-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 24px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+@keyframes orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shine {
+  0% { transform: scale(0.6); box-shadow: 0 0 0 0 rgba(239, 201, 138, 0.9); }
+  60% { transform: scale(2.6); box-shadow: 0 0 34px 16px rgba(239, 201, 138, 0.6); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 480px) {
+  .sky {
+    height: 260px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star,
+  .star::before,
+  .star.selected::after,
+  .star.flash::before {
+    animation: none;
+    transition: none;
+  }
+}

@@ -83,9 +83,8 @@
 					<div class="wish-preview-list">
 						@for (wish of recentWishes(); track wish.id) {
 							<div class="card wish-preview-row hover-card">
-								<span class="wish-label" [class.fulfilled]="wish.isFulfilled">
-									{{ (wish.isFulfilled ? 'wishlist.fulfilledBadge' : 'wishlist.ongoingBadge') | translate }}
-								</span>
+								<span class="wish-star" [class.lit]="wish.isFulfilled" role="img"
+									[attr.aria-label]="(wish.isFulfilled ? 'wishlist.starFulfilled' : 'wishlist.starWaiting') | translate"></span>
 								<h3 class="wish-preview-title">{{ wish.title }}</h3>
 							</div>
 						}
