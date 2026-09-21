@@ -154,6 +154,10 @@ h1 {
   font-size: 0.85rem;
 }
 
+.event-cancel {
+  flex-shrink: 0;
+}
+
 .event-meta {
   font-size: 0.78rem;
   color: var(--color-text-faint);
@@ -256,18 +260,43 @@ h1 {
   font-size: 1rem;
 }
 
-.wish-star {
+.wish-check {
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  margin: 0 6px;
-  border: 1.5px solid var(--color-text-muted);
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid var(--color-border-strong);
   border-radius: 50%;
+  background: transparent;
+  color: var(--color-accent-strong);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.2s ease;
 }
 
-.wish-star.lit {
-  border: 0;
-  background: var(--color-star);
-  box-shadow: 0 0 10px 2px rgba(239, 201, 138, 0.5);
+.wish-check svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.wish-check:hover {
+  border-color: var(--color-accent-strong);
+}
+
+.wish-check:hover svg {
+  opacity: 0.5;
+}
+
+.wish-check.done {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #1d2410;
+}
+
+.wish-check.done svg {
+  opacity: 1;
 }
 

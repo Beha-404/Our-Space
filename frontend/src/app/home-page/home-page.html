@@ -68,6 +68,7 @@
 										· {{ 'events.addedBy' | translate }} {{ event.createdByUsername }}
 									</span>
 								</div>
+								<button type="button" class="btn btn-ghost-danger btn-sm event-cancel" (click)="cancelEvent(event)">{{ 'events.cancelButton' | translate }}</button>
 							</div>
 						}
 					</div>
@@ -83,8 +84,11 @@
 					<div class="wish-preview-list">
 						@for (wish of recentWishes(); track wish.id) {
 							<div class="card wish-preview-row hover-card">
-								<span class="wish-star" [class.lit]="wish.isFulfilled" role="img"
-									[attr.aria-label]="(wish.isFulfilled ? 'wishlist.starFulfilled' : 'wishlist.starWaiting') | translate"></span>
+								<button type="button" class="wish-check" [class.done]="wish.isFulfilled" (click)="toggleWish(wish)"
+									[attr.aria-label]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate"
+									[title]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg>
+								</button>
 								<h3 class="wish-preview-title">{{ wish.title }}</h3>
 							</div>
 						}

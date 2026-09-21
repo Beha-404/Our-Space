@@ -4,9 +4,11 @@ import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { TranslationService } from '../i18n/translation.service';
 import { EventItem } from '../interfaces/event';
+import { EventService } from '../services/event.service';
 import { HomeService, YearTeaser as YearTeaserData } from '../services/home.service';
 import { PhotoService } from '../services/photo.service';
 import { UserService } from '../services/user.service';
+import { WishlistService } from '../services/wishlist.service';
 import { Wish } from '../interfaces/wish';
 import { toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { MemoryItem } from '../services/memory-feed.service';
@@ -14,6 +16,7 @@ import { pluralKey } from '../shared/plural';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { Skeleton } from '../shared/skeleton/skeleton';
+import { ToastService } from '../shared/toast/toast.service';
 import { YearTeaser } from '../shared/year-teaser/year-teaser';
 import { PartnerCard } from './partner-card/partner-card';
 
@@ -28,6 +31,9 @@ export class HomePage {
   private homeService = inject(HomeService);
   private i18n = inject(TranslationService);
   private photoService = inject(PhotoService);
+  private eventService = inject(EventService);
+  private wishlistService = inject(WishlistService);
+  private toast = inject(ToastService);
 
   upcomingEvents = signal<EventItem[]>([]);
   wishes = signal<Wish[]>([]);
@@ -50,6 +56,26 @@ export class HomePage {
   recentWishes = computed(() =>
     [...this.wishes()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
   );
+
+  cancelEvent(event: EventItem): void {
+    this.eventService.cancel(event.id).subscribe({
+      next: () => {
+        this.upcomingEvents.update(list => list.filter(e => e.id !== event.id));
+        this.toast.success('toast.eventCancelled');
+      },
+      error: () => this.toast.error('toast.actionFailed'),
+    });
+  }
+
+  toggleWish(wish: Wish): void {
+    this.wishlistService.toggleFulfilled(wish.id).subscribe({
+      next: updated => {
+        this.wishes.update(list => list.map(w => w.id === updated.id ? updated : w));
+        this.toast.success('toast.wishUpdated');
+      },
+      error: () => this.toast.error('toast.actionFailed'),
+    });
+  }
 
   lightboxPost = signal<FeedPost | null>(null);
 
