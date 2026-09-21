@@ -1,0 +1,350 @@
+:host {
+  display: block;
+  position: relative;
+  min-width: 0;
+  --wave-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='16' viewBox='0 0 220 16'%3E%3Cpath d='M0 8C27 0 55 0 110 8S193 16 220 8V16H0Z' fill='%23466270' fill-opacity='.6'/%3E%3C/svg%3E");
+  --wave-front: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='14' viewBox='0 0 220 14'%3E%3Cpath d='M0 7C27 0 55 0 110 7S193 14 220 7V14H0Z' fill='%235d7686' fill-opacity='.38'/%3E%3C/svg%3E");
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 330px;
+}
+
+.sky {
+  position: relative;
+  height: 208px;
+  flex-shrink: 0;
+}
+
+:host(.arriving) .sky {
+  animation: dropIn 1000ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.float {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  width: 92px;
+  margin-left: -46px;
+  z-index: 2;
+  animation: bob var(--bob-duration, 6s) ease-in-out var(--bob-delay, 0s) infinite;
+}
+
+.bottle {
+  position: relative;
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: 50% 80%;
+  transition: transform 520ms var(--motion-spring), filter 300ms var(--motion-soft);
+  filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.45));
+}
+
+.bottle svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.glass {
+  fill: rgba(160, 205, 215, 0.14);
+  stroke: rgba(190, 228, 232, 0.6);
+  stroke-width: 2;
+}
+
+:host(:hover) .bottle,
+:host(:focus-within) .bottle {
+  transform: rotate(0deg) translateY(-8px) scale(1.05);
+}
+
+:host(.available) .bottle {
+  animation: glow 3.2s ease-in-out infinite;
+}
+
+:host(.available) .glass {
+  fill: rgba(240, 211, 138, 0.2);
+  stroke: rgba(240, 211, 138, 0.85);
+}
+
+.cork {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.uncorking .cork {
+  animation: corkPop 450ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+.uncorking {
+  animation: bottleShake 450ms ease-out;
+}
+
+.spark {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #f0d38a;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+
+.s1 { left: -14px; top: 30px; }
+.s2 { right: -12px; top: 70px; animation-delay: 0.9s; }
+.s3 { left: 4px; top: 118px; animation-delay: 1.7s; }
+
+.ripple {
+  position: absolute;
+  left: 50%;
+  top: 168px;
+  width: 120px;
+  height: 26px;
+  margin-left: -60px;
+  border: 2px solid rgba(190, 228, 232, 0.6);
+  border-radius: 50%;
+  z-index: 3;
+  animation: ripple 1400ms ease-out 700ms both;
+}
+
+.water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.water::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-repeat: repeat-x;
+}
+
+.water.back {
+  top: 172px;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(70, 98, 112, 0.6), rgba(20, 32, 30, 0.94));
+}
+
+.water.back::before {
+  top: -15px;
+  height: 16px;
+  background-image: var(--wave-back);
+  background-size: 220px 16px;
+  animation: waveShift 9s linear infinite;
+}
+
+.water.front {
+  top: 188px;
+  z-index: 3;
+  background: linear-gradient(180deg, rgba(93, 118, 134, 0.3), rgba(93, 118, 134, 0));
+}
+
+.water.front::before {
+  top: -13px;
+  height: 14px;
+  background-image: var(--wave-front);
+  background-size: 220px 14px;
+  animation: waveShift 6s linear infinite reverse;
+}
+
+.bubble {
+  position: absolute;
+  bottom: 12px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(190, 228, 232, 0.55);
+  border-radius: 50%;
+  opacity: 0;
+  animation: rise 6s ease-in infinite;
+}
+
+.b1 { left: 18%; }
+.b2 { left: 42%; animation-delay: 1.8s; animation-duration: 7s; }
+.b3 { left: 66%; animation-delay: 3.4s; }
+.b4 { left: 84%; animation-delay: 4.6s; animation-duration: 8s; }
+
+.tag {
+  position: relative;
+  z-index: 4;
+  width: calc(100% - 24px);
+  max-width: 300px;
+  box-sizing: border-box;
+  margin: 2px auto 16px;
+  padding: 12px 14px 12px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #4a301a;
+  background: #f6ecd6;
+  border-radius: 4px 10px 10px 4px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  transform-origin: 14px 0;
+}
+
+:host(:hover) .tag,
+:host(:focus-within) .tag {
+  animation: tagSwing 1100ms ease-out;
+}
+
+.tag-hole {
+  position: absolute;
+  left: 8px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(74, 48, 26, 0.55);
+  background: #e8d4aa;
+}
+
+.tag h3 {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.tag-meta,
+.tag-by {
+  font-size: 0.74rem;
+  color: rgba(74, 48, 26, 0.75);
+}
+
+.pill {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #f6ecd6;
+  background: #7a3a1f;
+}
+
+.pill.ready {
+  color: #3a2a0c;
+  background: #f0d38a;
+}
+
+.tag-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tag-delete {
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  color: #7a3a1f;
+  background: transparent;
+  border: 1px solid rgba(74, 48, 26, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity var(--motion-fast) var(--motion-soft), background var(--motion-fast) var(--motion-soft);
+}
+
+.tag-delete svg {
+  width: 17px;
+  height: 17px;
+}
+
+:host(:hover) .tag-delete,
+.tag-delete:focus-visible {
+  opacity: 1;
+}
+
+.tag-delete:hover {
+  background: rgba(122, 58, 31, 0.12);
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+@keyframes waveShift {
+  to { background-position-x: 220px; }
+}
+
+@keyframes rise {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  15% { opacity: 0.8; }
+  100% { transform: translateY(-110px) scale(1); opacity: 0; }
+}
+
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(240, 211, 138, 0.45)); }
+  50% { filter: drop-shadow(0 0 24px rgba(240, 211, 138, 0.9)); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+
+@keyframes corkPop {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(14px, -46px) rotate(50deg); opacity: 0; }
+}
+
+@keyframes bottleShake {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -3px 0; }
+  40% { translate: 3px 0; }
+  60% { translate: -2px 0; }
+}
+
+@keyframes dropIn {
+  0% { transform: translateY(-280px) rotate(-24deg); opacity: 0; }
+  55% { opacity: 1; }
+  100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+@keyframes tagSwing {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(2.4deg); }
+  55% { transform: rotate(-1.6deg); }
+  80% { transform: rotate(0.7deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (hover: none) {
+  .tag-delete {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float,
+  .bottle,
+  .water::before,
+  .bubble,
+  .spark,
+  :host(.arriving) .sky,
+  :host(:hover) .tag,
+  :host(:focus-within) .tag,
+  .uncorking,
+  .uncorking .cork {
+    animation: none;
+  }
+
+  .spark {
+    opacity: 0.8;
+  }
+}

@@ -7,14 +7,20 @@ import { Capsule } from '../interfaces/capsule';
 import { CapsuleService } from '../services/capsule.service';
 import { UserService } from '../services/user.service';
 import { DatePicker } from '../shared/date-picker/date-picker';
+import { Parchment } from '../shared/parchment/parchment';
 import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
+import { CapsuleBottle } from './capsule-bottle/capsule-bottle';
+import { OpenPreset, daysUntil, presetDate } from './capsule-dates';
+import { CapsuleScroll } from './capsule-scroll/capsule-scroll';
 
 type OpenMode = 'date' | 'anytime';
 
+const DEFAULT_PRESET: OpenPreset = 'year';
+
 @Component({
-  imports: [LocalDatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink],
+  imports: [LocalDatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink, Parchment, CapsuleBottle, CapsuleScroll],
   selector: 'app-capsules-page',
   styleUrl: './capsules-page.css',
   templateUrl: './capsules-page.html',
@@ -25,16 +31,29 @@ export class CapsulesPage {
   private toast = inject(ToastService);
   private route = inject(ActivatedRoute);
 
+  readonly daysUntil = daysUntil;
+
+  readonly presets: { key: OpenPreset; labelKey: string }[] = [
+    { key: 'month', labelKey: 'capsules.presetMonth' },
+    { key: 'sixMonths', labelKey: 'capsules.presetSixMonths' },
+    { key: 'year', labelKey: 'capsules.presetYear' },
+    { key: 'fiveYears', labelKey: 'capsules.presetFiveYears' },
+    { key: 'custom', labelKey: 'capsules.presetCustom' },
+    { key: 'anytime', labelKey: 'capsules.modeAnytime' },
+  ];
+
   userLoaded = computed(() => !!this.userService.currentUser());
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
 
   capsules = signal<Capsule[]>([]);
   loading = signal(true);
+  arrivedId = signal<number | null>(null);
 
   sealed = computed(() => this.capsules().filter(c => !c.isUnlocked));
   opened = computed(() => this.capsules().filter(c => c.isUnlocked));
 
   showForm = signal(false);
+  preset = signal<OpenPreset>(DEFAULT_PRESET);
   openMode = signal<OpenMode>('date');
   formData = signal({ title: '', message: '', openAt: '' });
   saving = signal(false);
@@ -61,13 +80,14 @@ export class CapsulesPage {
     });
   }
 
-  load(): void {
+  load(onLoaded?: () => void): void {
     this.loading.set(true);
     this.capsuleService.getAll().subscribe({
       next: capsules => {
         this.capsules.set(capsules);
         this.loading.set(false);
         this.highlightFromQueryParams();
+        onLoaded?.();
       },
       error: () => this.loading.set(false)
     });
@@ -81,12 +101,14 @@ export class CapsulesPage {
   }
 
   openForm(): void {
+    this.setPreset(DEFAULT_PRESET);
     this.showForm.set(true);
   }
 
   closeForm(): void {
     this.showForm.set(false);
     this.formData.set({ title: '', message: '', openAt: '' });
+    this.preset.set(DEFAULT_PRESET);
     this.openMode.set('date');
     this.titleTouched.set(false);
     this.messageTouched.set(false);
@@ -99,14 +121,18 @@ export class CapsulesPage {
     this.errorKey.set('');
   }
 
-  setOpenMode(mode: OpenMode): void {
-    this.openMode.set(mode);
-    if (mode === 'anytime') this.updateField('openAt', '');
-  }
+  setPreset(preset: OpenPreset): void {
+    this.preset.set(preset);
 
-  daysUntil(date: string): number {
-    const diffMs = new Date(date).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0);
-    return Math.round(diffMs / (1000 * 60 * 60 * 24));
+    if (preset === 'anytime') {
+      this.openMode.set('anytime');
+      this.updateField('openAt', '');
+      return;
+    }
+
+    this.openMode.set('date');
+    const date = presetDate(preset);
+    if (date) this.updateField('openAt', date);
   }
 
   seal(): void {
@@ -125,10 +151,11 @@ export class CapsulesPage {
       message: data.message.trim(),
       openAt: this.openMode() === 'date' ? data.openAt : null,
     }).subscribe({
-      next: () => {
+      next: created => {
         this.saving.set(false);
         this.closeForm();
-        this.load();
+        this.arrivedId.set(created.id);
+        this.load(() => document.getElementById('capsule-sea')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
         this.toast.success('toast.capsuleSealed');
       },
       error: (err: HttpErrorResponse) => {

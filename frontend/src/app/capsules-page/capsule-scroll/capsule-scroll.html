@@ -1,0 +1,41 @@
+<app-parchment>
+	<button type="button" class="head" (click)="toggle()"
+		[attr.aria-expanded]="pinned()" [attr.aria-controls]="'letter-' + capsule().id">
+		<span class="head-text">
+			<span class="eyebrow">{{ 'capsules.openedLabel' | translate }} {{ openedOn() | localDate:'longDate' }}</span>
+			<span class="title">{{ capsule().title }}</span>
+		</span>
+		<span class="cue">
+			<span class="cue-open">{{ 'capsules.unroll' | translate }}</span>
+			<span class="cue-close">{{ 'capsules.roll' | translate }}</span>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<path d="m6 9 6 6 6-6" />
+			</svg>
+		</span>
+	</button>
+
+	<div class="collapse" [id]="'letter-' + capsule().id">
+		<div class="collapse-inner">
+			<div class="letter-wrap">
+				<p class="letter">{{ capsule().message }}</p>
+				<div class="foot">
+					<span class="by">
+						{{ 'capsules.sealedBy' | translate }} {{ capsule().createdByUsername }}
+						· {{ 'capsules.sealedOn' | translate }} {{ capsule().createdAt | localDate:'longDate' }}
+					</span>
+					<span class="signature">{{ capsule().createdByUsername }}</span>
+					@if (canDelete()) {
+						<button type="button" class="delete" (click)="deleteRequested.emit()"
+							[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M3 6h18" />
+								<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+								<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+							</svg>
+						</button>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</app-parchment>

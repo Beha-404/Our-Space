@@ -3,7 +3,7 @@
 	<p class="subtitle">{{ 'capsules.subtitle' | translate }}</p>
 
 	@if (!userLoaded()) {
-		<app-skeleton [count]="3" variant="row" />
+		<app-skeleton [count]="2" variant="row" />
 	} @else if (!isPaired()) {
 		<div class="card notice-card">
 			<p>{{ 'capsules.needPartner' | translate }}</p>
@@ -15,64 +15,76 @@
 				+ {{ 'capsules.sealButton' | translate }}
 			</button>
 		} @else {
-			<div class="card seal-card">
-				<div class="seal-card-head">
-					<h4>{{ 'capsules.newTitle' | translate }}</h4>
-					<button type="button" class="link-btn" (click)="closeForm()">{{ 'profile.cancelButton' | translate }}</button>
-				</div>
-
-				<div class="field">
-					<label for="capsuleTitle">{{ 'capsules.titleLabel' | translate }}</label>
-					<input id="capsuleTitle" type="text" [placeholder]="'capsules.titlePlaceholder' | translate"
-						[class.invalid]="titleError()" [value]="formData().title"
-						(input)="updateField('title', $any($event.target).value)" (blur)="titleTouched.set(true)">
-					@if (titleError()) {
-						<span class="field-error">{{ titleError() | translate }}</span>
-					}
-				</div>
-
-				<div class="field">
-					<label for="capsuleMessage">{{ 'capsules.messageLabel' | translate }}</label>
-					<textarea id="capsuleMessage" rows="5" [placeholder]="'capsules.messagePlaceholder' | translate"
-						[class.invalid]="messageError()" [value]="formData().message"
-						(input)="updateField('message', $any($event.target).value)" (blur)="messageTouched.set(true)"></textarea>
-					@if (messageError()) {
-						<span class="field-error">{{ messageError() | translate }}</span>
-					}
-				</div>
-
-				<div class="field">
-					<label>{{ 'capsules.opensLabel' | translate }}</label>
-					<div class="mode-toggle">
-						<button type="button" class="mode-btn" [class.active]="openMode() === 'date'" (click)="setOpenMode('date')">
-							{{ 'capsules.modeDate' | translate }}
-						</button>
-						<button type="button" class="mode-btn" [class.active]="openMode() === 'anytime'" (click)="setOpenMode('anytime')">
-							{{ 'capsules.modeAnytime' | translate }}
-						</button>
+			<app-parchment class="form-scroll">
+				<div class="form-body">
+					<div class="form-head">
+						<h4>{{ 'capsules.newTitle' | translate }}</h4>
+						<button type="button" class="link-btn" (click)="closeForm()">{{ 'profile.cancelButton' | translate }}</button>
 					</div>
 
-					@if (openMode() === 'date') {
-						<app-date-picker fieldId="capsuleDate" [value]="formData().openAt"
-							(valueChange)="updateField('openAt', $event)" />
-					} @else {
-						<p class="hint mode-hint">{{ 'capsules.modeAnytimeHint' | translate }}</p>
+					<div class="field parch-field">
+						<label for="capsuleTitle">{{ 'capsules.titleLabel' | translate }}</label>
+						<input id="capsuleTitle" class="hand-title" type="text" [placeholder]="'capsules.titlePlaceholder' | translate"
+							[class.invalid]="titleError()" [value]="formData().title"
+							(input)="updateField('title', $any($event.target).value)" (blur)="titleTouched.set(true)">
+						@if (titleError()) {
+							<span class="field-error">{{ titleError() | translate }}</span>
+						}
+					</div>
+
+					<div class="field parch-field">
+						<label for="capsuleMessage">{{ 'capsules.messageLabel' | translate }}</label>
+						<textarea id="capsuleMessage" class="hand-message" rows="5" [placeholder]="'capsules.messagePlaceholder' | translate"
+							[class.invalid]="messageError()" [value]="formData().message"
+							(input)="updateField('message', $any($event.target).value)" (blur)="messageTouched.set(true)"></textarea>
+						@if (messageError()) {
+							<span class="field-error">{{ messageError() | translate }}</span>
+						}
+					</div>
+
+					<div class="field parch-field">
+						<label id="capsuleOpensLabel">{{ 'capsules.opensLabel' | translate }}</label>
+						<div class="presets" role="group" aria-labelledby="capsuleOpensLabel">
+							@for (option of presets; track option.key) {
+								<button type="button" class="preset" [class.active]="preset() === option.key"
+									[attr.aria-pressed]="preset() === option.key" (click)="setPreset(option.key)">
+									{{ option.labelKey | translate }}
+								</button>
+							}
+						</div>
+
+						@if (preset() === 'custom') {
+							<div class="custom-date">
+								<app-date-picker fieldId="capsuleDate" [value]="formData().openAt"
+									(valueChange)="updateField('openAt', $event)" />
+							</div>
+						}
+
+						@if (openMode() === 'date' && formData().openAt) {
+							<span class="date-note">
+								<span class="date-tag">{{ formData().openAt | localDate:'longDate' }}</span>
+								{{ 'events.inPrefix' | translate }} {{ daysUntil(formData().openAt) }} {{ 'events.daysLeft' | translate }}
+							</span>
+						} @else if (openMode() === 'anytime') {
+							<span class="date-note">{{ 'capsules.modeAnytimeHint' | translate }}</span>
+						}
+					</div>
+
+					@if (showFillAllError()) {
+						<div class="alert alert-error">{{ 'auth.errFillAll' | translate }}</div>
+					} @else if (errorKey()) {
+						<div class="alert alert-error">{{ errorKey() | translate }}</div>
 					}
-				</div>
 
-				@if (showFillAllError()) {
-					<div class="alert alert-error">{{ 'auth.errFillAll' | translate }}</div>
-				} @else if (errorKey()) {
-					<div class="alert alert-error">{{ errorKey() | translate }}</div>
-				}
-
-				<div class="seal-card-footer">
-					<span class="hint">{{ 'capsules.sealHint' | translate }}</span>
-					<button class="btn btn-primary" (click)="seal()" [disabled]="saving()">
-						{{ (saving() ? 'capsules.sealing' : 'capsules.sealButton') | translate }}
-					</button>
+					<div class="form-footer">
+						<span class="seal-note">{{ 'capsules.sealHint' | translate }}</span>
+						<button type="button" class="cork-btn" (click)="seal()" [disabled]="saving()">
+							<span class="cork" aria-hidden="true"></span>
+							{{ (saving() ? 'capsules.sealing' : 'capsules.sealButton') | translate }}
+						</button>
+					</div>
 				</div>
-			</div>
+			</app-parchment>
 		}
 
 		@if (loading()) {
@@ -83,69 +95,22 @@
 
 		@if (sealed().length > 0) {
 			<h2 class="section-title">{{ 'capsules.sealedTitle' | translate }}</h2>
-			<div class="capsule-list">
+			<div id="capsule-sea" class="sea">
 				@for (capsule of sealed(); track capsule.id) {
-					<div class="card capsule-card hover-card" [id]="'capsule-' + capsule.id">
-						<span class="wax" aria-hidden="true">✦</span>
-						<div class="capsule-info">
-							<h3>{{ capsule.title }}</h3>
-							@if (capsule.openAt) {
-								<span class="capsule-meta">
-									{{ 'capsules.opensOn' | translate }} {{ capsule.openAt | localDate:'longDate' }}
-									· {{ 'events.inPrefix' | translate }} {{ daysUntil(capsule.openAt) }} {{ 'events.daysLeft' | translate }}
-								</span>
-							} @else {
-								<span class="capsule-meta">{{ 'capsules.opensAnytime' | translate }}</span>
-							}
-							<span class="capsule-meta">{{ 'capsules.sealedBy' | translate }} {{ capsule.createdByUsername }}</span>
-						</div>
-						<div class="capsule-actions">
-							@if (capsule.canOpenNow) {
-								<button type="button" class="btn btn-primary btn-sm" [disabled]="openingId() === capsule.id"
-									(click)="openCapsule(capsule)">
-									{{ (openingId() === capsule.id ? 'capsules.opening' : 'capsules.openNow') | translate }}
-								</button>
-							}
-							@if (canDelete(capsule)) {
-								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(capsule)"
-									[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<path d="M3 6h18" />
-										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-									</svg>
-								</button>
-							}
-						</div>
-					</div>
+					<app-capsule-bottle [id]="'capsule-' + capsule.id" [capsule]="capsule"
+						[canDelete]="canDelete(capsule)" [opening]="openingId() === capsule.id"
+						[arriving]="arrivedId() === capsule.id"
+						(openRequested)="openCapsule(capsule)" (deleteRequested)="confirmDelete(capsule)" />
 				}
 			</div>
 		}
 
 		@if (opened().length > 0) {
 			<h2 class="section-title">{{ 'capsules.openedTitle' | translate }}</h2>
-			<div class="capsule-list">
+			<div class="letters">
 				@for (capsule of opened(); track capsule.id) {
-					<div class="card capsule-letter hover-card" [id]="'capsule-' + capsule.id">
-						<div class="letter-head">
-							<h3>{{ capsule.title }}</h3>
-							@if (canDelete(capsule)) {
-								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(capsule)"
-									[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<path d="M3 6h18" />
-										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-									</svg>
-								</button>
-							}
-						</div>
-						<p class="letter-body">{{ capsule.message }}</p>
-						<span class="capsule-meta">
-							{{ 'capsules.sealedBy' | translate }} {{ capsule.createdByUsername }}
-							· {{ 'capsules.sealedOn' | translate }} {{ capsule.createdAt | localDate:'longDate' }}
-						</span>
-					</div>
+					<app-capsule-scroll [id]="'capsule-' + capsule.id" [capsule]="capsule"
+						[canDelete]="canDelete(capsule)" (deleteRequested)="confirmDelete(capsule)" />
 				}
 			</div>
 		}

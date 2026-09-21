@@ -1,0 +1,70 @@
+<div class="cell">
+	<div class="sky">
+		<div class="float">
+			<div class="bottle" [class.uncorking]="uncorking()">
+				<svg viewBox="0 0 80 190" aria-hidden="true">
+					<g class="cork">
+						<rect x="30" y="0" width="20" height="18" rx="3" fill="#b9885a" />
+						<rect x="30" y="0" width="20" height="5" rx="2" fill="#d1a577" />
+					</g>
+					<path class="glass" d="M31 18h18v24c0 8 22 14 22 40v78a14 14 0 0 1-14 14H23a14 14 0 0 1-14-14V82c0-26 22-32 22-40z" />
+					<rect x="27" y="78" width="26" height="76" rx="13" fill="#f4e9d8" transform="rotate(-8 40 116)" />
+					<path d="M18 92c0-10 4-16 10-20" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="3" stroke-linecap="round" />
+				</svg>
+				@if (available()) {
+					<span class="spark s1"></span>
+					<span class="spark s2"></span>
+					<span class="spark s3"></span>
+				}
+			</div>
+		</div>
+		@if (arriving()) {
+			<span class="ripple"></span>
+		}
+	</div>
+
+	<div class="water back" aria-hidden="true"></div>
+	<div class="water front" aria-hidden="true">
+		<span class="bubble b1"></span>
+		<span class="bubble b2"></span>
+		<span class="bubble b3"></span>
+		<span class="bubble b4"></span>
+	</div>
+
+	<div class="tag">
+		<span class="tag-hole" aria-hidden="true"></span>
+		<h3>{{ capsule().title }}</h3>
+		<span class="tag-meta">
+			@if (capsule().openAt) {
+				{{ 'capsules.opensOn' | translate }} {{ capsule().openAt | localDate:'longDate' }}
+			} @else {
+				{{ 'capsules.opensAnytime' | translate }}
+			}
+		</span>
+		@if (capsule().openAt) {
+			<span class="pill">{{ 'events.inPrefix' | translate }} {{ daysLeft() }} {{ 'events.daysLeft' | translate }}</span>
+		} @else if (available()) {
+			<span class="pill ready">{{ 'capsules.washedAshore' | translate }}</span>
+		}
+		<span class="tag-by">{{ 'capsules.sealedBy' | translate }} {{ capsule().createdByUsername }}</span>
+		@if (available() || canDelete()) {
+			<div class="tag-actions">
+				@if (available()) {
+					<button type="button" class="btn btn-primary btn-sm" [disabled]="opening() || uncorking()" (click)="uncork()">
+						{{ (opening() ? 'capsules.opening' : 'capsules.openNow') | translate }}
+					</button>
+				}
+				@if (canDelete()) {
+					<button type="button" class="tag-delete" (click)="deleteRequested.emit()"
+						[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M3 6h18" />
+							<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+							<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+						</svg>
+					</button>
+				}
+			</div>
+		}
+	</div>
+</div>
