@@ -324,9 +324,6 @@ h1 {
 
 .wish-done .wish-title {
   color: var(--color-text-muted);
-  text-decoration: line-through;
-  text-decoration-color: var(--color-accent);
-  text-decoration-thickness: 1px;
 }
 
 .show-more {
