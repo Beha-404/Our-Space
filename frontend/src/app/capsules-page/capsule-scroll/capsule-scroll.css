@@ -161,29 +161,6 @@
   height: 17px;
 }
 
-@media (hover: hover) {
-  :host(:hover) .collapse {
-    grid-template-rows: 1fr;
-  }
-
-  :host(:hover) .collapse-inner {
-    visibility: visible;
-    transition-delay: 0s;
-  }
-
-  :host(:hover) .cue svg {
-    transform: rotate(180deg);
-  }
-
-  :host(:hover) .cue-open {
-    display: none;
-  }
-
-  :host(:hover) .cue-close {
-    display: inline;
-  }
-}
-
 @media (max-width: 640px) {
   .head,
   .letter-wrap {
