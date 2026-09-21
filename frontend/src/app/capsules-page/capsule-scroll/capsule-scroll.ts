@@ -3,6 +3,7 @@ import { LocalDatePipe } from '../../i18n/local-date.pipe';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { Capsule } from '../../interfaces/capsule';
 import { Parchment } from '../../shared/parchment/parchment';
+import { capsuleOpenedOn } from '../capsule-dates';
 
 @Component({
   selector: 'app-capsule-scroll',
@@ -21,7 +22,7 @@ export class CapsuleScroll {
 
   pinned = signal(false);
 
-  openedOn = computed(() => this.capsule().openedAt ?? this.capsule().openAt ?? this.capsule().createdAt);
+  openedOn = computed(() => capsuleOpenedOn(this.capsule()));
 
   toggle(): void {
     this.pinned.update(open => !open);

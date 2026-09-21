@@ -1,5 +1,5 @@
 :host {
-  display: block;
+  display: flex;
   position: relative;
   min-width: 0;
   --wave-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='16' viewBox='0 0 220 16'%3E%3Cpath d='M0 8C27 0 55 0 110 8S193 16 220 8V16H0Z' fill='%23466270' fill-opacity='.6'/%3E%3C/svg%3E");
@@ -9,7 +9,9 @@
 .cell {
   position: relative;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-width: 0;
   min-height: 330px;
 }
 
@@ -322,6 +324,21 @@
   55% { transform: rotate(-1.6deg); }
   80% { transform: rotate(0.7deg); }
   100% { transform: rotate(0deg); }
+}
+
+:host(.paused) *,
+:host(.paused) *::before,
+:host(.paused) *::after {
+  animation: none !important;
+}
+
+:host(.paused) .bubble,
+:host(.paused) .spark {
+  display: none;
+}
+
+:host(.paused) .bottle {
+  filter: none;
 }
 
 @media (hover: none) {

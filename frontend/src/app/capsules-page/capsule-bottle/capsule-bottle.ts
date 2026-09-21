@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal } from '@angular/core';
 import { LocalDatePipe } from '../../i18n/local-date.pipe';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { Capsule } from '../../interfaces/capsule';
@@ -20,6 +20,7 @@ function prefersReducedMotion(): boolean {
   host: {
     '[class.available]': 'available()',
     '[class.arriving]': 'arriving()',
+    '[class.paused]': '!visible()',
     '[style.--tilt]': "tilt() + 'deg'",
     '[style.--bob-duration]': "bobDuration() + 's'",
     '[style.--bob-delay]': "bobDelay() + 's'",
@@ -35,6 +36,7 @@ export class CapsuleBottle {
   deleteRequested = output<void>();
 
   uncorking = signal(false);
+  visible = signal(true);
 
   available = computed(() => this.capsule().canOpenNow);
   daysLeft = computed(() => {
@@ -48,8 +50,22 @@ export class CapsuleBottle {
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => {
+    const destroyRef = inject(DestroyRef);
+    const host: HTMLElement = inject(ElementRef).nativeElement;
+
+    destroyRef.onDestroy(() => {
       if (this.timer) clearTimeout(this.timer);
+    });
+
+    afterNextRender(() => {
+      if (typeof IntersectionObserver !== 'function') return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => this.visible.set(entry.isIntersecting),
+        { rootMargin: '160px' },
+      );
+      observer.observe(host);
+      destroyRef.onDestroy(() => observer.disconnect());
     });
   }
 

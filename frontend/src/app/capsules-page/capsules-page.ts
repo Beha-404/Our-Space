@@ -12,12 +12,14 @@ import { scrollAndHighlight } from '../shared/scroll-and-highlight';
 import { Skeleton } from '../shared/skeleton/skeleton';
 import { ToastService } from '../shared/toast/toast.service';
 import { CapsuleBottle } from './capsule-bottle/capsule-bottle';
-import { OpenPreset, daysUntil, presetDate } from './capsule-dates';
+import { OpenPreset, capsuleOpenedOn, daysUntil, presetDate } from './capsule-dates';
 import { CapsuleScroll } from './capsule-scroll/capsule-scroll';
 
 type OpenMode = 'date' | 'anytime';
 
 const DEFAULT_PRESET: OpenPreset = 'year';
+const SEALED_PAGE_SIZE = 8;
+const OPENED_PAGE_SIZE = 6;
 
 @Component({
   imports: [LocalDatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink, Parchment, CapsuleBottle, CapsuleScroll],
@@ -49,8 +51,18 @@ export class CapsulesPage {
   loading = signal(true);
   arrivedId = signal<number | null>(null);
 
-  sealed = computed(() => this.capsules().filter(c => !c.isUnlocked));
-  opened = computed(() => this.capsules().filter(c => c.isUnlocked));
+  sealed = computed(() =>
+    this.capsules().filter(c => !c.isUnlocked).sort((a, b) => Number(b.canOpenNow) - Number(a.canOpenNow)));
+  opened = computed(() =>
+    this.capsules().filter(c => c.isUnlocked).sort((a, b) => capsuleOpenedOn(b).localeCompare(capsuleOpenedOn(a))));
+
+  sealedLimit = signal(SEALED_PAGE_SIZE);
+  openedLimit = signal(OPENED_PAGE_SIZE);
+
+  visibleSealed = computed(() => this.sealed().slice(0, this.sealedLimit()));
+  visibleOpened = computed(() => this.opened().slice(0, this.openedLimit()));
+  hiddenSealed = computed(() => Math.max(this.sealed().length - this.sealedLimit(), 0));
+  hiddenOpened = computed(() => Math.max(this.opened().length - this.openedLimit(), 0));
 
   showForm = signal(false);
   preset = signal<OpenPreset>(DEFAULT_PRESET);
@@ -86,6 +98,8 @@ export class CapsulesPage {
       next: capsules => {
         this.capsules.set(capsules);
         this.loading.set(false);
+        const arrived = this.arrivedId();
+        if (arrived !== null) this.reveal(arrived);
         this.highlightFromQueryParams();
         onLoaded?.();
       },
@@ -97,7 +111,28 @@ export class CapsulesPage {
     const idParam = this.route.snapshot.queryParamMap.get('highlight');
     if (!idParam) return;
 
+    this.reveal(Number(idParam));
     scrollAndHighlight(`capsule-${Number(idParam)}`);
+  }
+
+  showMoreSealed(): void {
+    this.sealedLimit.update(limit => limit + SEALED_PAGE_SIZE);
+  }
+
+  showMoreOpened(): void {
+    this.openedLimit.update(limit => limit + OPENED_PAGE_SIZE);
+  }
+
+  private reveal(id: number): void {
+    const sealedIndex = this.sealed().findIndex(c => c.id === id);
+    if (sealedIndex >= this.sealedLimit()) {
+      this.sealedLimit.set(Math.ceil((sealedIndex + 1) / SEALED_PAGE_SIZE) * SEALED_PAGE_SIZE);
+    }
+
+    const openedIndex = this.opened().findIndex(c => c.id === id);
+    if (openedIndex >= this.openedLimit()) {
+      this.openedLimit.set(Math.ceil((openedIndex + 1) / OPENED_PAGE_SIZE) * OPENED_PAGE_SIZE);
+    }
   }
 
   openForm(): void {

@@ -132,6 +132,30 @@ describe('CapsuleBottle', () => {
     expect(second).not.toEqual(first);
   });
 
+  it('pauses its animations while it is scrolled out of view', () => {
+    let notify: (entries: { isIntersecting: boolean }[]) => void = () => undefined;
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(callback: typeof notify) {
+        notify = callback;
+      }
+      observe() {}
+      disconnect() {}
+    });
+
+    render(capsule());
+    expect(el().classList.contains('paused')).toBe(false);
+
+    notify([{ isIntersecting: false }]);
+    fixture.detectChanges();
+    expect(el().classList.contains('paused')).toBe(true);
+
+    notify([{ isIntersecting: true }]);
+    fixture.detectChanges();
+    expect(el().classList.contains('paused')).toBe(false);
+
+    vi.unstubAllGlobals();
+  });
+
   it('marks a freshly created bottle so it can splash in', () => {
     render(capsule(), { arriving: true });
 

@@ -30,3 +30,7 @@ export function daysUntil(date: string, from: Date = new Date()): number {
   const diffMs = new Date(date).setHours(0, 0, 0, 0) - new Date(from).setHours(0, 0, 0, 0);
   return Math.round(diffMs / (1000 * 60 * 60 * 24));
 }
+
+export function capsuleOpenedOn(capsule: { openedAt: string | null; openAt: string | null; createdAt: string }): string {
+  return capsule.openedAt ?? capsule.openAt ?? capsule.createdAt;
+}

@@ -96,23 +96,33 @@
 		@if (sealed().length > 0) {
 			<h2 class="section-title">{{ 'capsules.sealedTitle' | translate }}</h2>
 			<div id="capsule-sea" class="sea">
-				@for (capsule of sealed(); track capsule.id) {
+				@for (capsule of visibleSealed(); track capsule.id) {
 					<app-capsule-bottle [id]="'capsule-' + capsule.id" [capsule]="capsule"
 						[canDelete]="canDelete(capsule)" [opening]="openingId() === capsule.id"
 						[arriving]="arrivedId() === capsule.id"
 						(openRequested)="openCapsule(capsule)" (deleteRequested)="confirmDelete(capsule)" />
 				}
 			</div>
+			@if (hiddenSealed() > 0) {
+				<div class="more-row">
+					<button type="button" class="btn btn-ghost" (click)="showMoreSealed()">{{ 'capsules.showMore' | translate }} ({{ hiddenSealed() }})</button>
+				</div>
+			}
 		}
 
 		@if (opened().length > 0) {
 			<h2 class="section-title">{{ 'capsules.openedTitle' | translate }}</h2>
 			<div class="letters">
-				@for (capsule of opened(); track capsule.id) {
+				@for (capsule of visibleOpened(); track capsule.id) {
 					<app-capsule-scroll [id]="'capsule-' + capsule.id" [capsule]="capsule"
 						[canDelete]="canDelete(capsule)" (deleteRequested)="confirmDelete(capsule)" />
 				}
 			</div>
+			@if (hiddenOpened() > 0) {
+				<div class="more-row">
+					<button type="button" class="btn btn-ghost" (click)="showMoreOpened()">{{ 'capsules.showMore' | translate }} ({{ hiddenOpened() }})</button>
+				</div>
+			}
 		}
 	}
 

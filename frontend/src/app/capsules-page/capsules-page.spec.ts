@@ -148,6 +148,63 @@ describe('CapsulesPage', () => {
     expect(component.openingId()).toBeNull();
   });
 
+  function sealedList(count: number): Capsule[] {
+    return Array.from({ length: count }, (_, i) => capsule({ id: i + 1, title: `Kapsula ${i + 1}`, openAt: `2099-01-${String((i % 27) + 1).padStart(2, '0')}` }));
+  }
+
+  it('shows only the first bottles and keeps the rest behind a show more button', () => {
+    component.capsules.set(sealedList(30));
+
+    expect(component.visibleSealed().length).toBe(8);
+    expect(component.hiddenSealed()).toBe(22);
+
+    component.showMoreSealed();
+
+    expect(component.visibleSealed().length).toBe(16);
+    expect(component.hiddenSealed()).toBe(14);
+  });
+
+  it('never reports a negative number of hidden capsules', () => {
+    component.capsules.set(sealedList(3));
+    component.showMoreSealed();
+
+    expect(component.hiddenSealed()).toBe(0);
+    expect(component.visibleSealed().length).toBe(3);
+  });
+
+  it('puts capsules that can be opened now before the ones still waiting', () => {
+    const waiting = sealedList(10);
+    const ready = capsule({ id: 99, openAt: null, canOpenNow: true });
+    component.capsules.set([...waiting, ready]);
+
+    expect(component.visibleSealed()[0].id).toBe(99);
+  });
+
+  it('lists the most recently opened letters first and pages them by six', () => {
+    const letters = Array.from({ length: 10 }, (_, i) =>
+      capsule({ id: i + 1, isUnlocked: true, openAt: `2026-0${(i % 9) + 1}-10`, message: `Pismo ${i}` }));
+    component.capsules.set(letters);
+
+    const openedDates = component.opened().map(c => c.openAt!);
+    expect([...openedDates].sort().reverse()).toEqual(openedDates);
+    expect(component.visibleOpened().length).toBe(6);
+    expect(component.hiddenOpened()).toBe(4);
+
+    component.showMoreOpened();
+    expect(component.hiddenOpened()).toBe(0);
+  });
+
+  it('reveals a freshly created capsule even when it would sort past the first page', () => {
+    const list = sealedList(30);
+    component.arrivedId.set(27);
+
+    component.load();
+    flushLoad(list);
+
+    expect(component.visibleSealed().some(c => c.id === 27)).toBe(true);
+    expect(component.sealedLimit()).toBe(32);
+  });
+
   it('lets the author delete a sealed capsule but not the partner', () => {
     expect(component.canDelete(capsule({ createdByUsername: 'test1' }))).toBe(true);
     expect(component.canDelete(capsule({ createdByUsername: 'test2' }))).toBe(false);
