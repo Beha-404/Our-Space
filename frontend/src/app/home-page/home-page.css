@@ -158,13 +158,6 @@ h1 {
   opacity: 0.6;
 }
 
-.event-cancelled .event-info h3,
-.event-cancelled .event-info p {
-  text-decoration-line: line-through;
-  text-decoration-color: #e08a7c;
-  text-decoration-thickness: 2px;
-}
-
 .event-cancelled-label {
   color: var(--color-danger);
   font-weight: 700;
