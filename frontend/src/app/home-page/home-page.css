@@ -109,39 +109,6 @@ h1 {
   padding: 16px 20px;
 }
 
-.event-ring {
-  position: relative;
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-}
-
-.event-ring svg {
-  transform: rotate(-90deg);
-  display: block;
-}
-
-.event-ring .arc {
-  stroke-dasharray: 163.36;
-  stroke-dashoffset: 163.36;
-  animation: ringSweep 900ms var(--motion-soft) 120ms both;
-}
-
-@keyframes ringSweep {
-  to { stroke-dashoffset: var(--ring-offset); }
-}
-
-.event-ring-num {
-  position: absolute;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.15rem;
-  color: var(--color-text);
-  font-variant-numeric: tabular-nums;
-}
-
 .event-date-badge {
   display: flex;
   flex-direction: column;

@@ -44,22 +44,12 @@
 				</div>
 				@if (upcomingEvents().length > 0) {
 					<div class="events-preview">
-						@for (event of upcomingEvents(); track event.id; let first = $first) {
+						@for (event of upcomingEvents(); track event.id) {
 							<div class="card event-card hover-card">
-								@if (first && daysUntil(event.eventDate) >= 0) {
-									<div class="event-ring" [style.--ring-offset]="ringOffset(event.eventDate)">
-										<svg viewBox="0 0 62 62" width="56" height="56" aria-hidden="true">
-											<circle cx="31" cy="31" r="26" fill="none" stroke="var(--color-border-strong)" stroke-width="4"></circle>
-											<circle class="arc" cx="31" cy="31" r="26" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round"></circle>
-										</svg>
-										<span class="event-ring-num">{{ daysUntil(event.eventDate) }}</span>
-									</div>
-								} @else {
-									<div class="event-date-badge">
-										<span class="event-day">{{ event.eventDate | localDate:'d' }}</span>
-										<span class="event-month">{{ event.eventDate | localDate:'MMM' }}</span>
-									</div>
-								}
+								<div class="event-date-badge">
+									<span class="event-day">{{ event.eventDate | localDate:'d' }}</span>
+									<span class="event-month">{{ event.eventDate | localDate:'MMM' }}</span>
+								</div>
 								<div class="event-info">
 									<h3>{{ event.title }}</h3>
 									@if (event.description) {

@@ -118,15 +118,6 @@ export class HomePage {
     return Math.round(diffMs / (1000 * 60 * 60 * 24));
   }
 
-  private static readonly RING_CIRCUMFERENCE = 163.36;
-  private static readonly RING_HORIZON_DAYS = 30;
-
-  ringOffset(eventDate: string): number {
-    const days = Math.max(0, this.daysUntil(eventDate));
-    const filled = Math.max(0, 1 - days / HomePage.RING_HORIZON_DAYS);
-    return HomePage.RING_CIRCUMFERENCE * (1 - filled);
-  }
-
   daysTogether = computed(() => {
     const partner = this.userService.currentUser()?.partner;
     if (!partner?.relationshipStartDate) return null;
