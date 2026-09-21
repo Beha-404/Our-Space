@@ -152,16 +152,16 @@ describe('CapsulesPage', () => {
     return Array.from({ length: count }, (_, i) => capsule({ id: i + 1, title: `Kapsula ${i + 1}`, openAt: `2099-01-${String((i % 27) + 1).padStart(2, '0')}` }));
   }
 
-  it('shows eight bottles per page and only that page', () => {
+  it('shows four bottles per page and only that page', () => {
     component.capsules.set(sealedList(30));
 
-    expect(component.sealedPages()).toBe(4);
-    expect(component.visibleSealed().map(c => c.id).length).toBe(8);
+    expect(component.sealedPages()).toBe(8);
+    expect(component.visibleSealed().map(c => c.id).length).toBe(4);
 
-    component.goToSealedPage(4);
+    component.goToSealedPage(8);
 
-    expect(component.sealedPage()).toBe(4);
-    expect(component.visibleSealed().length).toBe(6);
+    expect(component.sealedPage()).toBe(8);
+    expect(component.visibleSealed().length).toBe(2);
   });
 
   it('keeps a single page when there are few capsules', () => {
@@ -172,14 +172,14 @@ describe('CapsulesPage', () => {
   });
 
   it('falls back to the last page when deleting empties the current one', () => {
-    component.capsules.set(sealedList(9));
+    component.capsules.set(sealedList(5));
     component.goToSealedPage(2);
     expect(component.visibleSealed().length).toBe(1);
 
-    component.capsules.set(sealedList(8));
+    component.capsules.set(sealedList(4));
 
     expect(component.sealedPage()).toBe(1);
-    expect(component.visibleSealed().length).toBe(8);
+    expect(component.visibleSealed().length).toBe(4);
   });
 
   it('puts capsules that can be opened now before the ones still waiting', () => {
@@ -213,7 +213,7 @@ describe('CapsulesPage', () => {
     component['reveal'](27);
 
     const position = component.sealed().findIndex(c => c.id === 27);
-    expect(component.sealedPage()).toBe(Math.floor(position / 8) + 1);
+    expect(component.sealedPage()).toBe(Math.floor(position / 4) + 1);
     expect(component.visibleSealed().some(c => c.id === 27)).toBe(true);
   });
 

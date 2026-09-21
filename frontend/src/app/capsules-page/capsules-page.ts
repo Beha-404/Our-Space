@@ -19,7 +19,7 @@ import { Pager } from '../shared/pager/pager';
 type OpenMode = 'date' | 'anytime';
 
 const DEFAULT_PRESET: OpenPreset = 'year';
-const SEALED_PAGE_SIZE = 8;
+const SEALED_PAGE_SIZE = 4;
 const OPENED_PAGE_SIZE = 5;
 
 @Component({
