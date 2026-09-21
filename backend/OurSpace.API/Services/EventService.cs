@@ -48,7 +48,7 @@ public class EventService(
         var query = db.Events.Where(e => e.CoupleId == coupleId);
 
         if (!includePast)
-            query = query.Where(e => e.EventDate >= today && e.CancelledAt == null);
+            query = query.Where(e => e.EventDate >= today);
 
         return await query
             .OrderBy(e => e.EventDate < today)

@@ -27,7 +27,7 @@ public class EventCancellationTests
     }
 
     [Fact]
-    public async Task A_Cancelled_Event_Leaves_The_Upcoming_List()
+    public async Task A_Cancelled_Upcoming_Event_Stays_In_The_Upcoming_List_Marked_As_Cancelled()
     {
         using var factory = new OurSpaceFactory();
         var world = await TestWorld.SeedAsync(factory);
@@ -36,7 +36,8 @@ public class EventCancellationTests
         await client.PostAsync($"/api/events/{world.EventId}/cancel", null);
 
         var upcoming = await client.GetFromJsonAsync<List<EventDto>>("/api/events");
-        Assert.DoesNotContain(upcoming!, e => e.Id == world.EventId);
+        var stored = Assert.Single(upcoming!, e => e.Id == world.EventId);
+        Assert.True(stored.IsCancelled);
     }
 
     [Fact]

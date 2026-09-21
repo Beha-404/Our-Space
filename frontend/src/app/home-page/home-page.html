@@ -45,7 +45,7 @@
 				@if (upcomingEvents().length > 0) {
 					<div class="events-preview">
 						@for (event of upcomingEvents(); track event.id) {
-							<div class="card event-card hover-card">
+							<div class="card event-card hover-card" [class.event-cancelled]="event.isCancelled">
 								<div class="event-date-badge">
 									<span class="event-day">{{ event.eventDate | localDate:'d' }}</span>
 									<span class="event-month">{{ event.eventDate | localDate:'MMM' }}</span>
@@ -56,7 +56,9 @@
 										<p>{{ event.description }}</p>
 									}
 									<span class="event-meta">
-										@if (daysUntil(event.eventDate) < 0) {
+										@if (event.isCancelled) {
+											<strong class="event-cancelled-label">{{ 'events.cancelledLabel' | translate }}</strong>
+										} @else if (daysUntil(event.eventDate) < 0) {
 											{{ 'events.expired' | translate }}
 										} @else if (daysUntil(event.eventDate) === 0) {
 											{{ 'events.today' | translate }}
@@ -68,7 +70,11 @@
 										· {{ 'events.addedBy' | translate }} {{ event.createdByUsername }}
 									</span>
 								</div>
-								<button type="button" class="btn btn-ghost-danger btn-sm event-cancel" (click)="cancelEvent(event)">{{ 'events.cancelButton' | translate }}</button>
+								@if (event.isCancelled) {
+									<button type="button" class="btn btn-ghost-info btn-sm event-cancel" (click)="restoreEvent(event)">{{ 'events.restoreButton' | translate }}</button>
+								} @else {
+									<button type="button" class="btn btn-ghost-danger btn-sm event-cancel" (click)="cancelEvent(event)">{{ 'events.cancelButton' | translate }}</button>
+								}
 							</div>
 						}
 					</div>

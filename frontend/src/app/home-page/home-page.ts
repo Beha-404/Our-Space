@@ -59,9 +59,19 @@ export class HomePage {
 
   cancelEvent(event: EventItem): void {
     this.eventService.cancel(event.id).subscribe({
-      next: () => {
-        this.upcomingEvents.update(list => list.filter(e => e.id !== event.id));
+      next: updated => {
+        this.upcomingEvents.update(list => list.map(e => e.id === updated.id ? updated : e));
         this.toast.success('toast.eventCancelled');
+      },
+      error: () => this.toast.error('toast.actionFailed'),
+    });
+  }
+
+  restoreEvent(event: EventItem): void {
+    this.eventService.restore(event.id).subscribe({
+      next: updated => {
+        this.upcomingEvents.update(list => list.map(e => e.id === updated.id ? updated : e));
+        this.toast.success('toast.eventRestored');
       },
       error: () => this.toast.error('toast.actionFailed'),
     });
