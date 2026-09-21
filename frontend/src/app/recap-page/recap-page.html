@@ -23,40 +23,42 @@
 			<a routerLink="/memories" class="btn btn-primary btn-sm">{{ 'home.addFirstMemory' | translate }}</a>
 		</div>
 	} @else if (recap(); as data) {
-		<div class="card hero-stat">
+		<a class="card hero-stat hover-card is-clickable" routerLink="/memories">
 			<span class="hero-number">{{ totalMemories() }}</span>
 			<span class="hero-label">{{ memoriesLabelKey() | translate }}</span>
-		</div>
+		</a>
 
 		@if (highlightUrls().length > 0) {
 			<div class="highlight-strip">
 				@for (url of highlightUrls(); track url) {
-					<img [src]="url" alt="" loading="lazy">
+					<a class="strip-link" routerLink="/memories" [queryParams]="{ filter: 'photo' }">
+						<img [src]="url" alt="" loading="lazy">
+					</a>
 				}
 			</div>
 		}
 
 		<div class="stat-grid">
-			<div class="card mini-stat">
+			<a class="card mini-stat hover-card is-clickable" routerLink="/memories" [queryParams]="{ filter: 'photo' }">
 				<b>{{ data.photos }}</b>
 				<span>{{ 'recap.photos' | translate }}</span>
-			</div>
-			<div class="card mini-stat">
+			</a>
+			<a class="card mini-stat hover-card is-clickable" routerLink="/memories" [queryParams]="{ filter: 'audio' }">
 				<b>{{ data.audioMessages }}</b>
 				<span>{{ 'recap.audio' | translate }}</span>
-			</div>
-			<div class="card mini-stat">
+			</a>
+			<a class="card mini-stat hover-card is-clickable" routerLink="/events">
 				<b>{{ data.events }}</b>
 				<span>{{ 'recap.events' | translate }}</span>
-			</div>
-			<div class="card mini-stat">
+			</a>
+			<a class="card mini-stat hover-card is-clickable" routerLink="/wishlist" [queryParams]="{ tab: 'fulfilled' }">
 				<b>{{ data.wishesFulfilled }}</b>
 				<span>{{ 'recap.wishesFulfilled' | translate }}</span>
-			</div>
-			<div class="card mini-stat">
+			</a>
+			<a class="card mini-stat hover-card is-clickable" routerLink="/capsules">
 				<b>{{ data.capsulesSealed }}</b>
 				<span>{{ 'recap.capsules' | translate }}</span>
-			</div>
+			</a>
 		</div>
 
 		@if (months().length > 0) {
