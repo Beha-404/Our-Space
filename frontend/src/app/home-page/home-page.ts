@@ -6,14 +6,11 @@ import { TranslationService } from '../i18n/translation.service';
 import { EventItem } from '../interfaces/event';
 import { HomeService, YearTeaser as YearTeaserData } from '../services/home.service';
 import { PhotoService } from '../services/photo.service';
-import { AudioService } from '../services/audio.service';
 import { UserService } from '../services/user.service';
 import { Wish } from '../interfaces/wish';
-import { buildFeedPosts, toFeedPost, FeedPost } from '../shared/build-feed-posts';
+import { toFeedPost, FeedPost } from '../shared/build-feed-posts';
 import { MemoryItem } from '../services/memory-feed.service';
 import { pluralKey } from '../shared/plural';
-import { Photo } from '../interfaces/photo';
-import { AudioMessage } from '../interfaces/audio';
 import { AudioPlayer } from '../shared/audio-player/audio-player';
 import { Lightbox } from '../shared/lightbox/lightbox';
 import { Skeleton } from '../shared/skeleton/skeleton';
@@ -31,11 +28,8 @@ export class HomePage {
   private homeService = inject(HomeService);
   private i18n = inject(TranslationService);
   private photoService = inject(PhotoService);
-  private audioService = inject(AudioService);
 
   upcomingEvents = signal<EventItem[]>([]);
-  photos = signal<Photo[]>([]);
-  audioItems = signal<AudioMessage[]>([]);
   wishes = signal<Wish[]>([]);
   totalMemories = signal<number | null>(null);
   onThisDay = signal<MemoryItem[]>([]);
@@ -57,31 +51,6 @@ export class HomePage {
     [...this.wishes()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 3)
   );
 
-  private static readonly FEED_PREVIEW_SIZE = 6;
-
-  feedTypeFilter = signal<'all' | 'photo' | 'audio'>('all');
-
-  allFeedPosts = computed<FeedPost[]>(() =>
-    buildFeedPosts(
-      this.photos(),
-      this.audioItems(),
-      path => this.photoService.fullUrl(path),
-      path => this.audioService.fullUrl(path),
-    )
-  );
-
-  feed = computed<FeedPost[]>(() => {
-    const typeFilter = this.feedTypeFilter();
-
-    return this.allFeedPosts()
-      .filter(p => typeFilter === 'all' || p.type === typeFilter)
-      .slice(0, HomePage.FEED_PREVIEW_SIZE);
-  });
-
-  setFeedTypeFilter(type: 'all' | 'photo' | 'audio'): void {
-    this.feedTypeFilter.set(type);
-  }
-
   lightboxPost = signal<FeedPost | null>(null);
 
   openLightbox(post: FeedPost): void {
@@ -90,27 +59,6 @@ export class HomePage {
 
   closeLightbox(): void {
     this.lightboxPost.set(null);
-  }
-
-  postPendingDelete = signal<FeedPost | null>(null);
-
-  confirmDeletePost(post: FeedPost): void {
-    this.postPendingDelete.set(post);
-  }
-
-  cancelDeletePost(): void {
-    this.postPendingDelete.set(null);
-  }
-
-  deletePost(): void {
-    const post = this.postPendingDelete();
-    if (!post) return;
-
-    const request$ = post.type === 'photo' ? this.photoService.delete(post.id) : this.audioService.delete(post.id);
-    request$.subscribe(() => {
-      this.postPendingDelete.set(null);
-      this.load();
-    });
   }
 
   daysUntil(eventDate: string): number {
@@ -136,8 +84,6 @@ export class HomePage {
       this.userService.currentUser.set(summary.user);
       this.upcomingEvents.set(summary.upcomingEvents);
       this.wishes.set(summary.recentWishes);
-      this.photos.set(summary.photos);
-      this.audioItems.set(summary.audio);
       this.totalMemories.set(summary.user.partner ? summary.totalMemories : null);
       this.onThisDay.set(summary.onThisDay ?? []);
       this.yearTeaser.set(summary.yearTeaser ?? null);

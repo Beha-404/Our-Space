@@ -152,24 +152,34 @@ describe('CapsulesPage', () => {
     return Array.from({ length: count }, (_, i) => capsule({ id: i + 1, title: `Kapsula ${i + 1}`, openAt: `2099-01-${String((i % 27) + 1).padStart(2, '0')}` }));
   }
 
-  it('shows only the first bottles and keeps the rest behind a show more button', () => {
+  it('shows eight bottles per page and only that page', () => {
     component.capsules.set(sealedList(30));
 
-    expect(component.visibleSealed().length).toBe(8);
-    expect(component.hiddenSealed()).toBe(22);
+    expect(component.sealedPages()).toBe(4);
+    expect(component.visibleSealed().map(c => c.id).length).toBe(8);
 
-    component.showMoreSealed();
+    component.goToSealedPage(4);
 
-    expect(component.visibleSealed().length).toBe(16);
-    expect(component.hiddenSealed()).toBe(14);
+    expect(component.sealedPage()).toBe(4);
+    expect(component.visibleSealed().length).toBe(6);
   });
 
-  it('never reports a negative number of hidden capsules', () => {
+  it('keeps a single page when there are few capsules', () => {
     component.capsules.set(sealedList(3));
-    component.showMoreSealed();
 
-    expect(component.hiddenSealed()).toBe(0);
+    expect(component.sealedPages()).toBe(1);
     expect(component.visibleSealed().length).toBe(3);
+  });
+
+  it('falls back to the last page when deleting empties the current one', () => {
+    component.capsules.set(sealedList(9));
+    component.goToSealedPage(2);
+    expect(component.visibleSealed().length).toBe(1);
+
+    component.capsules.set(sealedList(8));
+
+    expect(component.sealedPage()).toBe(1);
+    expect(component.visibleSealed().length).toBe(8);
   });
 
   it('puts capsules that can be opened now before the ones still waiting', () => {
@@ -180,29 +190,31 @@ describe('CapsulesPage', () => {
     expect(component.visibleSealed()[0].id).toBe(99);
   });
 
-  it('lists the most recently opened letters first and pages them by six', () => {
-    const letters = Array.from({ length: 10 }, (_, i) =>
+  it('lists the most recently opened letters first, five to a page', () => {
+    const letters = Array.from({ length: 12 }, (_, i) =>
       capsule({ id: i + 1, isUnlocked: true, openAt: `2026-0${(i % 9) + 1}-10`, message: `Pismo ${i}` }));
     component.capsules.set(letters);
 
-    const openedDates = component.opened().map(c => c.openAt!);
-    expect([...openedDates].sort().reverse()).toEqual(openedDates);
-    expect(component.visibleOpened().length).toBe(6);
-    expect(component.hiddenOpened()).toBe(4);
+    const firstPage = component.visibleOpened().map(c => c.openAt!);
+    expect([...firstPage].sort().reverse()).toEqual(firstPage);
+    expect(firstPage.length).toBe(5);
+    expect(component.openedPages()).toBe(3);
 
-    component.showMoreOpened();
-    expect(component.hiddenOpened()).toBe(0);
+    component.goToOpenedPage(3);
+    expect(component.visibleOpened().length).toBe(2);
   });
 
-  it('reveals a freshly created capsule even when it would sort past the first page', () => {
+  it('jumps to the page of a freshly created capsule even when it is far down the list', () => {
     const list = sealedList(30);
     component.arrivedId.set(27);
 
-    component.load();
+    component.load(() => undefined);
     flushLoad(list);
+    component['reveal'](27);
 
+    const position = component.sealed().findIndex(c => c.id === 27);
+    expect(component.sealedPage()).toBe(Math.floor(position / 8) + 1);
     expect(component.visibleSealed().some(c => c.id === 27)).toBe(true);
-    expect(component.sealedLimit()).toBe(32);
   });
 
   it('lets the author delete a sealed capsule but not the partner', () => {

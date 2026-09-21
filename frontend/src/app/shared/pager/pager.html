@@ -1,0 +1,16 @@
+<nav class="pager">
+	<button type="button" class="btn btn-ghost btn-xs" (click)="go(page() - 1)"
+		[disabled]="page() === 1" [attr.aria-label]="'memories.previousPage' | translate">‹</button>
+
+	@for (slot of slots(); track $index) {
+		@if (slot === '…') {
+			<span class="ellipsis">…</span>
+		} @else {
+			<button type="button" class="num" [class.active]="slot === page()"
+				[attr.aria-current]="slot === page() ? 'page' : null" (click)="go(slot)">{{ slot }}</button>
+		}
+	}
+
+	<button type="button" class="btn btn-ghost btn-xs" (click)="go(page() + 1)"
+		[disabled]="page() === totalPages()" [attr.aria-label]="'memories.nextPage' | translate">›</button>
+</nav>

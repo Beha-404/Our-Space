@@ -14,15 +14,16 @@ import { ToastService } from '../shared/toast/toast.service';
 import { CapsuleBottle } from './capsule-bottle/capsule-bottle';
 import { OpenPreset, capsuleOpenedOn, daysUntil, presetDate } from './capsule-dates';
 import { CapsuleScroll } from './capsule-scroll/capsule-scroll';
+import { Pager } from '../shared/pager/pager';
 
 type OpenMode = 'date' | 'anytime';
 
 const DEFAULT_PRESET: OpenPreset = 'year';
 const SEALED_PAGE_SIZE = 8;
-const OPENED_PAGE_SIZE = 6;
+const OPENED_PAGE_SIZE = 5;
 
 @Component({
-  imports: [LocalDatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink, Parchment, CapsuleBottle, CapsuleScroll],
+  imports: [LocalDatePipe, TranslatePipe, Skeleton, DatePicker, RouterLink, Parchment, CapsuleBottle, CapsuleScroll, Pager],
   selector: 'app-capsules-page',
   styleUrl: './capsules-page.css',
   templateUrl: './capsules-page.html',
@@ -56,13 +57,16 @@ export class CapsulesPage {
   opened = computed(() =>
     this.capsules().filter(c => c.isUnlocked).sort((a, b) => capsuleOpenedOn(b).localeCompare(capsuleOpenedOn(a))));
 
-  sealedLimit = signal(SEALED_PAGE_SIZE);
-  openedLimit = signal(OPENED_PAGE_SIZE);
+  private sealedPageRequested = signal(1);
+  private openedPageRequested = signal(1);
 
-  visibleSealed = computed(() => this.sealed().slice(0, this.sealedLimit()));
-  visibleOpened = computed(() => this.opened().slice(0, this.openedLimit()));
-  hiddenSealed = computed(() => Math.max(this.sealed().length - this.sealedLimit(), 0));
-  hiddenOpened = computed(() => Math.max(this.opened().length - this.openedLimit(), 0));
+  sealedPages = computed(() => Math.max(1, Math.ceil(this.sealed().length / SEALED_PAGE_SIZE)));
+  openedPages = computed(() => Math.max(1, Math.ceil(this.opened().length / OPENED_PAGE_SIZE)));
+  sealedPage = computed(() => Math.min(this.sealedPageRequested(), this.sealedPages()));
+  openedPage = computed(() => Math.min(this.openedPageRequested(), this.openedPages()));
+
+  visibleSealed = computed(() => this.sealed().slice((this.sealedPage() - 1) * SEALED_PAGE_SIZE, this.sealedPage() * SEALED_PAGE_SIZE));
+  visibleOpened = computed(() => this.opened().slice((this.openedPage() - 1) * OPENED_PAGE_SIZE, this.openedPage() * OPENED_PAGE_SIZE));
 
   showForm = signal(false);
   preset = signal<OpenPreset>(DEFAULT_PRESET);
@@ -98,8 +102,6 @@ export class CapsulesPage {
       next: capsules => {
         this.capsules.set(capsules);
         this.loading.set(false);
-        const arrived = this.arrivedId();
-        if (arrived !== null) this.reveal(arrived);
         this.highlightFromQueryParams();
         onLoaded?.();
       },
@@ -107,32 +109,37 @@ export class CapsulesPage {
     });
   }
 
+  private highlightHandled = false;
+
   private highlightFromQueryParams(): void {
     const idParam = this.route.snapshot.queryParamMap.get('highlight');
-    if (!idParam) return;
+    if (!idParam || this.highlightHandled) return;
 
+    this.highlightHandled = true;
     this.reveal(Number(idParam));
     scrollAndHighlight(`capsule-${Number(idParam)}`);
   }
 
-  showMoreSealed(): void {
-    this.sealedLimit.update(limit => limit + SEALED_PAGE_SIZE);
+  goToSealedPage(page: number): void {
+    this.sealedPageRequested.set(page);
+    this.scrollToSection('capsule-sea');
   }
 
-  showMoreOpened(): void {
-    this.openedLimit.update(limit => limit + OPENED_PAGE_SIZE);
+  goToOpenedPage(page: number): void {
+    this.openedPageRequested.set(page);
+    this.scrollToSection('capsule-letters');
+  }
+
+  private scrollToSection(id: string): void {
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
   }
 
   private reveal(id: number): void {
     const sealedIndex = this.sealed().findIndex(c => c.id === id);
-    if (sealedIndex >= this.sealedLimit()) {
-      this.sealedLimit.set(Math.ceil((sealedIndex + 1) / SEALED_PAGE_SIZE) * SEALED_PAGE_SIZE);
-    }
+    if (sealedIndex >= 0) this.sealedPageRequested.set(Math.floor(sealedIndex / SEALED_PAGE_SIZE) + 1);
 
     const openedIndex = this.opened().findIndex(c => c.id === id);
-    if (openedIndex >= this.openedLimit()) {
-      this.openedLimit.set(Math.ceil((openedIndex + 1) / OPENED_PAGE_SIZE) * OPENED_PAGE_SIZE);
-    }
+    if (openedIndex >= 0) this.openedPageRequested.set(Math.floor(openedIndex / OPENED_PAGE_SIZE) + 1);
   }
 
   openForm(): void {
@@ -190,7 +197,10 @@ export class CapsulesPage {
         this.saving.set(false);
         this.closeForm();
         this.arrivedId.set(created.id);
-        this.load(() => document.getElementById('capsule-sea')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        this.load(() => {
+          this.reveal(created.id);
+          setTimeout(() => document.getElementById('capsule-sea')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0);
+        });
         this.toast.success('toast.capsuleSealed');
       },
       error: (err: HttpErrorResponse) => {

@@ -1,0 +1,39 @@
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.num {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.num:hover {
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+}
+
+.num.active {
+  background: var(--color-accent);
+  border-color: transparent;
+  color: var(--color-on-accent);
+}
+
+.ellipsis {
+  padding: 0 4px;
+  color: var(--color-text-faint);
+  font-size: 0.82rem;
+}

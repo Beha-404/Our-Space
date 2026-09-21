@@ -12,9 +12,9 @@ namespace OurSpace.API.Controllers;
 public class NotificationsController(INotificationService notifications) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<List<NotificationDto>>> GetRecent()
+    public async Task<ActionResult<List<NotificationDto>>> GetRecent([FromQuery] int skip = 0, [FromQuery] int take = 20)
     {
-        var list = await notifications.GetRecentAsync(this.GetUserId());
+        var list = await notifications.GetRecentAsync(this.GetUserId(), skip, take);
         return Ok(list);
     }
 

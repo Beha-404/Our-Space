@@ -7,7 +7,8 @@ namespace OurSpace.API.Services;
 
 public class NotificationService(AppDbContext db) : INotificationService
 {
-    private const int MaxRecent = 30;
+    private const int DefaultPageSize = 20;
+    private const int MaxPageSize = 50;
     private static readonly TimeSpan ReadNotificationRetention = TimeSpan.FromDays(30);
 
     public async Task NotifyAsync(int recipientUserId, int actorUserId, NotificationType type, string entityType, int entityId, string entityTitle)
@@ -35,11 +36,13 @@ public class NotificationService(AppDbContext db) : INotificationService
             .ExecuteDeleteAsync();
     }
 
-    public async Task<List<NotificationDto>> GetRecentAsync(int userId) =>
+    public async Task<List<NotificationDto>> GetRecentAsync(int userId, int skip = 0, int take = DefaultPageSize) =>
         await db.Notifications
             .Where(n => n.RecipientUserId == userId)
             .OrderByDescending(n => n.CreatedAt)
-            .Take(MaxRecent)
+            .ThenByDescending(n => n.Id)
+            .Skip(Math.Max(skip, 0))
+            .Take(Math.Clamp(take, 1, MaxPageSize))
             .Select(n => new NotificationDto(
                 n.Id, n.Type.ToString(), n.EntityType, n.EntityId, n.EntityTitle,
                 n.ActorUser.Username, n.CreatedAt, n.ReadAt != null))

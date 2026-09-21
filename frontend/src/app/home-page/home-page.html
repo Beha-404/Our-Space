@@ -103,58 +103,7 @@
 				</div>
 			}
 
-			@if (allFeedPosts().length > 0) {
-				<div class="feed-header">
-					<h2 class="section-title no-margin">{{ 'memories.feedTitle' | translate }}</h2>
-					<a routerLink="/memories" class="link-btn">{{ 'home.viewAllMemories' | translate }}</a>
-				</div>
-
-				<div class="feed-type-toggle">
-					<button type="button" class="type-filter-btn" [class.active]="feedTypeFilter() === 'all'" (click)="setFeedTypeFilter('all')">{{ 'home.feedFilterAll' | translate }}</button>
-					<button type="button" class="type-filter-btn" [class.active]="feedTypeFilter() === 'photo'" (click)="setFeedTypeFilter('photo')">{{ 'home.feedFilterPhotos' | translate }}</button>
-					<button type="button" class="type-filter-btn" [class.active]="feedTypeFilter() === 'audio'" (click)="setFeedTypeFilter('audio')">{{ 'home.feedFilterAudio' | translate }}</button>
-				</div>
-
-				@if (feed().length === 0) {
-					<p class="muted-hint">{{ 'home.feedFilterEmpty' | translate }}</p>
-				}
-
-				<div class="feed-grid">
-					@for (post of feed(); track post.id + post.type) {
-						<div class="post-tile-wrap">
-							<div class="polaroid">
-								<div class="polaroid-media" [class.polaroid-media-audio]="post.type === 'audio'">
-									@if (post.type === 'photo') {
-										<img [src]="post.thumbnailUrl || post.imageUrl" [alt]="post.caption || ''" class="post-tile-image" loading="lazy"
-											(click)="openLightbox(post)"
-											[title]="'memories.openFullscreen' | translate">
-									} @else {
-										<app-audio-player [src]="post.audioUrl!" />
-									}
-
-									<div class="post-tile-actions">
-										<a class="tile-download-btn" [href]="post.downloadUrl" (click)="$event.stopPropagation()">{{ 'memories.downloadButton' | translate }}</a>
-										<button type="button" class="tile-action-btn tile-action-danger" [title]="'events.deleteButton' | translate" (click)="confirmDeletePost(post); $event.stopPropagation()">
-											<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-												<path d="M3 6h18" />
-												<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-												<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-												<line x1="10" y1="11" x2="10" y2="17" />
-												<line x1="14" y1="11" x2="14" y2="17" />
-											</svg>
-										</button>
-									</div>
-								</div>
-
-								<p class="polaroid-caption">
-									{{ post.caption || ((post.type === 'photo' ? 'memories.untitledPhoto' : 'memories.untitledAudio') | translate) }}
-								</p>
-								<p class="polaroid-date">{{ post.date | localDate:'dd.MM.yyyy.' }}</p>
-							</div>
-						</div>
-					}
-				</div>
-			} @else {
+			@if (totalMemories() === 0) {
 				<h2 class="section-title">{{ 'home.emptyTitle' | translate }}</h2>
 				<div class="card empty-state">
 					<p>{{ 'home.emptyDesc' | translate }}</p>
@@ -176,17 +125,4 @@
 			[title]="post.caption || (post.date | localDate:'longDate') || ''"
 			[downloadUrl]="post.downloadUrl"
 			(closed)="closeLightbox()" />
-	}
-
-	@if (postPendingDelete(); as post) {
-		<div class="modal-backdrop" (click)="cancelDeletePost()">
-			<div class="modal-card card" (click)="$event.stopPropagation()">
-				<h3>{{ 'profile.confirmDeleteTitle' | translate }}</h3>
-				<p>{{ 'profile.confirmDeleteDesc' | translate }}</p>
-				<div class="modal-actions">
-					<button class="btn btn-ghost btn-sm" (click)="cancelDeletePost()">{{ 'profile.cancelButton' | translate }}</button>
-					<button class="btn btn-danger btn-sm" (click)="deletePost()">{{ 'profile.confirmDeleteButton' | translate }}</button>
-				</div>
-			</div>
-		</div>
 	}

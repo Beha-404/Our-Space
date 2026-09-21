@@ -103,25 +103,21 @@
 						(openRequested)="openCapsule(capsule)" (deleteRequested)="confirmDelete(capsule)" />
 				}
 			</div>
-			@if (hiddenSealed() > 0) {
-				<div class="more-row">
-					<button type="button" class="btn btn-ghost" (click)="showMoreSealed()">{{ 'capsules.showMore' | translate }} ({{ hiddenSealed() }})</button>
-				</div>
+			@if (sealedPages() > 1) {
+				<app-pager [page]="sealedPage()" [totalPages]="sealedPages()" (pageChange)="goToSealedPage($event)" />
 			}
 		}
 
 		@if (opened().length > 0) {
 			<h2 class="section-title">{{ 'capsules.openedTitle' | translate }}</h2>
-			<div class="letters">
+			<div id="capsule-letters" class="letters">
 				@for (capsule of visibleOpened(); track capsule.id) {
 					<app-capsule-scroll [id]="'capsule-' + capsule.id" [capsule]="capsule"
 						[canDelete]="canDelete(capsule)" (deleteRequested)="confirmDelete(capsule)" />
 				}
 			</div>
-			@if (hiddenOpened() > 0) {
-				<div class="more-row">
-					<button type="button" class="btn btn-ghost" (click)="showMoreOpened()">{{ 'capsules.showMore' | translate }} ({{ hiddenOpened() }})</button>
-				</div>
+			@if (openedPages() > 1) {
+				<app-pager [page]="openedPage()" [totalPages]="openedPages()" (pageChange)="goToOpenedPage($event)" />
 			}
 		}
 	}

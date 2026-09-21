@@ -52,6 +52,12 @@
 									<span class="notification-time">{{ notification.createdAt | localDate:'short' }}</span>
 								</button>
 							}
+							@if (notificationService.hasMore()) {
+								<button type="button" class="notification-more" [disabled]="notificationService.loadingMore()"
+									(click)="notificationService.loadMore()">
+									{{ (notificationService.loadingMore() ? 'notifications.loadingMore' : 'notifications.loadMore') | translate }}
+								</button>
+							}
 						</div>
 					}
 				</div>

@@ -260,12 +260,6 @@ h1 {
   background: linear-gradient(180deg, rgba(255, 238, 220, 0.05), rgba(255, 238, 220, 0.01));
 }
 
-.more-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 18px;
-}
-
 .letters {
   display: flex;
   flex-direction: column;
