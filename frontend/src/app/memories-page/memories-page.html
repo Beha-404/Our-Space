@@ -112,6 +112,18 @@
 				</div>
 			}
 
+			<div class="feed-search">
+				<svg class="feed-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+				</svg>
+				<input type="text" class="feed-search-input" maxlength="100" [value]="searchDraft()"
+					[placeholder]="'memories.searchPlaceholder' | translate" [attr.aria-label]="'memories.searchPlaceholder' | translate"
+					(input)="onSearchInput($any($event.target).value)" (keyup.enter)="applySearch(searchDraft())">
+				@if (searchDraft()) {
+					<button type="button" class="feed-search-clear" (click)="clearSearch()" [attr.aria-label]="'memories.searchClear' | translate">×</button>
+				}
+			</div>
+
 			<div class="feed-toolbar" id="memories-feed">
 				<div class="toolbar-filters">
 					<div class="type-toggle compact" role="group" [attr.aria-label]="'memories.typeFilterLabel' | translate">

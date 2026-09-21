@@ -66,6 +66,7 @@ export class MemoriesPage {
   isPaired = computed(() => !!this.userService.currentUser()?.partner);
 
   private static readonly PAGE_SIZE = 24;
+  private static readonly SEARCH_DEBOUNCE_MS = 350;
 
   feedItems = signal<MemoryItem[]>([]);
   availableYears = signal<number[]>([]);
@@ -125,6 +126,9 @@ export class MemoriesPage {
   feedMonthFilter = signal<number | 'all'>('all');
   feedTypeFilter = signal<FeedType>('all');
   feedPage = signal(1);
+  searchDraft = signal('');
+  feedSearch = signal('');
+  private searchTimer: ReturnType<typeof setTimeout> | undefined;
 
   readonly typeOptions: { value: FeedType; labelKey: string }[] = [
     { value: 'all', labelKey: 'home.feedFilterAll' },
@@ -133,9 +137,11 @@ export class MemoriesPage {
   ];
 
   isFiltered = computed(() =>
-    this.feedYearFilter() !== 'all' || this.feedMonthFilter() !== 'all' || this.feedTypeFilter() !== 'all');
+    this.feedYearFilter() !== 'all' || this.feedMonthFilter() !== 'all' || this.feedTypeFilter() !== 'all'
+    || this.feedSearch() !== '');
 
   emptyFeedKey = computed(() => {
+    if (this.feedSearch()) return 'memories.noMemoriesSearch';
     const periodFiltered = this.feedYearFilter() !== 'all' || this.feedMonthFilter() !== 'all';
     if (periodFiltered) return 'memories.noMemoriesFiltered';
     if (this.feedTypeFilter() !== 'all') return 'home.feedFilterEmpty';
@@ -177,6 +183,26 @@ export class MemoriesPage {
     { value: 'all', label: this.i18n.t('memories.allMonths') },
     ...MemoriesPage.MONTH_KEYS.map((key, i) => ({ value: i + 1, label: this.i18n.t(key) })),
   ]);
+
+  onSearchInput(value: string): void {
+    this.searchDraft.set(value);
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.applySearch(value), MemoriesPage.SEARCH_DEBOUNCE_MS);
+  }
+
+  applySearch(value: string): void {
+    clearTimeout(this.searchTimer);
+    const search = value.trim();
+    if (search === this.feedSearch()) return;
+
+    this.feedSearch.set(search);
+    this.loadPage(1);
+  }
+
+  clearSearch(): void {
+    this.searchDraft.set('');
+    this.applySearch('');
+  }
 
   setFeedYearFilter(year: number | 'all'): void {
     this.feedYearFilter.set(year);
@@ -275,6 +301,8 @@ export class MemoriesPage {
           this.feedYearFilter.set('all');
           this.feedMonthFilter.set('all');
           this.feedTypeFilter.set('all');
+          this.searchDraft.set('');
+          this.feedSearch.set('');
           this.loadPage(page);
           scrollAndHighlight(`post-${type}-${id}`);
         } else if (feed.hasMore) {
@@ -295,6 +323,7 @@ export class MemoriesPage {
       year: this.feedYearFilter(),
       month: this.feedMonthFilter(),
       type: this.feedTypeFilter(),
+      search: this.feedSearch(),
     }).subscribe({
       next: feed => {
         this.feedItems.set(feed.items);

@@ -112,6 +112,64 @@ h1 {
   color: var(--color-danger) !important;
 }
 
+.feed-search {
+  position: relative;
+  margin-top: 8px;
+}
+
+.feed-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  color: var(--color-text-faint);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.feed-search-input {
+  width: 100%;
+  padding: 11px 40px 11px 40px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background: rgba(255, 238, 220, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 100px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feed-search-input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.feed-search-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.feed-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.feed-search-clear:hover {
+  color: var(--color-text);
+  background: var(--color-surface-strong);
+}
+
 .feed-toolbar {
   display: flex;
   align-items: center;

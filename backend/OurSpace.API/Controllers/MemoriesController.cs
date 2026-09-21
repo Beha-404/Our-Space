@@ -18,11 +18,12 @@ public class MemoriesController(IMemoryFeedService feedService) : ControllerBase
         [FromQuery] string sort = "newest",
         [FromQuery] int? year = null,
         [FromQuery] int? month = null,
-        [FromQuery] string? type = null)
+        [FromQuery] string? type = null,
+        [FromQuery] string? search = null)
     {
         var feed = await feedService.GetPageAsync(
             this.GetUserId(),
-            new MemoryFeedQuery(page, pageSize, sort, year, month, type));
+            new MemoryFeedQuery(page, pageSize, sort, year, month, type, search));
 
         return Ok(feed);
     }

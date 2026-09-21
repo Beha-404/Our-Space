@@ -174,3 +174,89 @@ describe('MemoriesPage filter from a link', () => {
     httpMock.verify();
   });
 });
+
+describe('MemoriesPage title search', () => {
+  let component: MemoriesPage;
+  let httpMock: HttpTestingController;
+
+  const emptyFeed = { items: [], hasMore: false, totalCount: 0, years: null };
+  const feedRequest = () => httpMock.expectOne(r => r.url === `${config.apiUrl}/memories`);
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MemoriesPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({}) } } },
+      ],
+    }).compileComponents();
+
+    component = TestBed.createComponent(MemoriesPage).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+    httpMock.expectOne(`${config.apiUrl}/user/current`).flush({ id: 1, username: 'test1', partner: null });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    httpMock.verify();
+  });
+
+  it('sends the trimmed search from the first page and counts as a filter', () => {
+    component.applySearch('  Piknik ');
+
+    const request = feedRequest();
+    expect(request.request.params.get('search')).toBe('Piknik');
+    expect(request.request.params.get('page')).toBe('1');
+    request.flush(emptyFeed);
+
+    expect(component.isFiltered()).toBe(true);
+    expect(component.emptyFeedKey()).toBe('memories.noMemoriesSearch');
+  });
+
+  it('does not ask the server again when the search did not change', () => {
+    component.applySearch('piknik');
+    feedRequest().flush(emptyFeed);
+
+    component.applySearch(' piknik ');
+
+    httpMock.expectNone(`${config.apiUrl}/memories`);
+  });
+
+  it('waits until typing pauses before searching', () => {
+    vi.useFakeTimers();
+
+    component.onSearchInput('p');
+    component.onSearchInput('pi');
+    component.onSearchInput('pik');
+    vi.advanceTimersByTime(200);
+    httpMock.expectNone(r => r.url === `${config.apiUrl}/memories`);
+
+    vi.advanceTimersByTime(300);
+
+    const request = feedRequest();
+    expect(request.request.params.get('search')).toBe('pik');
+    request.flush(emptyFeed);
+  });
+
+  it('clearing the search reloads the feed without a search term', () => {
+    component.applySearch('piknik');
+    feedRequest().flush(emptyFeed);
+
+    component.clearSearch();
+
+    const request = feedRequest();
+    expect(request.request.params.has('search')).toBe(false);
+    request.flush(emptyFeed);
+    expect(component.searchDraft()).toBe('');
+    expect(component.isFiltered()).toBe(false);
+  });
+
+  it('a blank search is not sent', () => {
+    component.applySearch('   ');
+
+    httpMock.expectNone(`${config.apiUrl}/memories`);
+    expect(component.isFiltered()).toBe(false);
+  });
+});

@@ -29,6 +29,7 @@ export interface MemoryFeedQuery {
     year: number | 'all';
     month: number | 'all';
     type: 'all' | 'photo' | 'audio';
+    search?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,6 +45,9 @@ export class MemoryFeedService {
         if (query.year !== 'all') params = params.set('year', query.year);
         if (query.month !== 'all') params = params.set('month', query.month);
         if (query.type !== 'all') params = params.set('type', query.type);
+
+        const search = query.search?.trim();
+        if (search) params = params.set('search', search);
 
         return this.http.get<MemoryFeed>(`${config.apiUrl}/memories`, { params });
     }

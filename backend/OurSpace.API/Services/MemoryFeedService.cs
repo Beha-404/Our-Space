@@ -18,7 +18,8 @@ public record MemoryFeedQuery(
     string Sort = "newest",
     int? Year = null,
     int? Month = null,
-    string? Type = null);
+    string? Type = null,
+    string? Search = null);
 
 public class MemoryFeedService(
     AppDbContext db,
@@ -28,6 +29,8 @@ public class MemoryFeedService(
     private const int MaxPageSize = 60;
     private const int OnThisDayLimit = 12;
     private const int MaxMapPoints = 500;
+    private const int MaxSearchLength = 100;
+    private const string LikeEscape = "\\";
 
     public async Task<MemoryFeedDto> GetPageAsync(int userId, MemoryFeedQuery query)
     {
@@ -166,8 +169,22 @@ public class MemoryFeedService(
         if (query.Month is int month)
             feed = feed.Where(m => m.Date.Month == month);
 
+        var search = query.Search?.Trim();
+        if (!string.IsNullOrEmpty(search))
+        {
+            if (search.Length > MaxSearchLength) search = search[..MaxSearchLength];
+            var pattern = $"%{EscapeLike(search)}%";
+            feed = feed.Where(m => m.Caption != null && EF.Functions.Like(m.Caption, pattern, LikeEscape));
+        }
+
         return feed;
     }
+
+    private static string EscapeLike(string text) => text
+        .Replace(LikeEscape, LikeEscape + LikeEscape)
+        .Replace("%", LikeEscape + "%")
+        .Replace("_", LikeEscape + "_")
+        .Replace("[", LikeEscape + "[");
 
     private async Task<List<int>> GetYearsAsync(int coupleId)
     {
