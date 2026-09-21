@@ -113,7 +113,7 @@
 			<div id="capsule-letters" class="letters">
 				@for (capsule of visibleOpened(); track capsule.id) {
 					<app-capsule-scroll [id]="'capsule-' + capsule.id" [capsule]="capsule"
-						[canDelete]="canDelete(capsule)" (deleteRequested)="confirmDelete(capsule)" />
+						[canDelete]="canDelete(capsule)" [startOpen]="justOpenedId() === capsule.id" (deleteRequested)="confirmDelete(capsule)" />
 				}
 			</div>
 			@if (openedPages() > 1) {

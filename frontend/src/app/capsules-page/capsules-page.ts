@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, inject, Injector, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocalDatePipe } from '../i18n/local-date.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
@@ -19,6 +19,7 @@ import { Pager } from '../shared/pager/pager';
 type OpenMode = 'date' | 'anytime';
 
 const DEFAULT_PRESET: OpenPreset = 'year';
+const UNROLL_SETTLE_MS = 600;
 const SEALED_PAGE_SIZE = 4;
 const OPENED_PAGE_SIZE = 5;
 
@@ -212,7 +213,10 @@ export class CapsulesPage {
     });
   }
 
+  private injector = inject(Injector);
+
   openingId = signal<number | null>(null);
+  justOpenedId = signal<number | null>(null);
 
   openCapsule(capsule: Capsule): void {
     this.openingId.set(capsule.id);
@@ -221,6 +225,12 @@ export class CapsulesPage {
       next: opened => {
         this.openingId.set(null);
         this.capsules.update(list => list.map(c => c.id === opened.id ? opened : c));
+        this.justOpenedId.set(opened.id);
+        this.reveal(opened.id);
+        afterNextRender(
+          () => setTimeout(() => scrollAndHighlight(`capsule-${opened.id}`), UNROLL_SETTLE_MS),
+          { injector: this.injector },
+        );
         this.toast.success('toast.capsuleOpened');
       },
       error: (err: HttpErrorResponse) => {

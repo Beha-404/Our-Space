@@ -44,6 +44,14 @@ describe('CapsuleScroll', () => {
     expect(el().classList.contains('open')).toBe(false);
   });
 
+  it('unrolls by itself when asked to start open', () => {
+    fixture.componentRef.setInput('startOpen', true);
+    fixture.detectChanges();
+
+    expect(head().getAttribute('aria-expanded')).toBe('true');
+    expect(el().classList.contains('open')).toBe(true);
+  });
+
   it('unrolls and rolls up again when the header is clicked', () => {
     head().click();
     fixture.detectChanges();

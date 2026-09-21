@@ -148,6 +148,19 @@ describe('CapsulesPage', () => {
     expect(component.openingId()).toBeNull();
   });
 
+  it('marks the capsule it just opened so its letter unrolls at once, on the page where it landed', () => {
+    const older = Array.from({ length: 6 }, (_, i) =>
+      capsule({ id: 100 + i, isUnlocked: true, openAt: `2020-01-0${i + 1}`, message: `Pismo ${i}` }));
+    const anytime = capsule({ id: 5, openAt: null, canOpenNow: true });
+    component.capsules.set([anytime, ...older]);
+
+    component.openCapsule(anytime);
+    httpMock.expectOne(`${capsulesUrl}/5/open`).flush({ ...anytime, isUnlocked: true, canOpenNow: false, message: 'Pismo', openedAt: '2026-09-21T10:00:00Z' });
+
+    expect(component.justOpenedId()).toBe(5);
+    expect(component.visibleOpened().some(c => c.id === 5)).toBe(true);
+  });
+
   function sealedList(count: number): Capsule[] {
     return Array.from({ length: count }, (_, i) => capsule({ id: i + 1, title: `Kapsula ${i + 1}`, openAt: `2099-01-${String((i % 27) + 1).padStart(2, '0')}` }));
   }
