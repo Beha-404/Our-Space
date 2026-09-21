@@ -81,6 +81,63 @@
   animation: shine 0.9s var(--motion-spring);
 }
 
+.tip {
+  position: absolute;
+  bottom: calc(100% - 2px);
+  left: 50%;
+  z-index: 3;
+  max-width: 220px;
+  padding: 6px 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-2);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translate(-50%, 4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+
+.star:hover .tip,
+.star:focus-visible .tip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.star.tip-start .tip {
+  left: 0;
+  transform: translate(-6px, 4px);
+}
+
+.star.tip-end .tip {
+  right: 0;
+  left: auto;
+  transform: translate(6px, 4px);
+}
+
+.star.tip-start:hover .tip,
+.star.tip-start:focus-visible .tip {
+  transform: translate(-6px, 0);
+}
+
+.star.tip-end:hover .tip,
+.star.tip-end:focus-visible .tip {
+  transform: translate(6px, 0);
+}
+
+.star.tip-below .tip {
+  top: calc(100% - 2px);
+  bottom: auto;
+}
+
 .sky-empty {
   position: absolute;
   inset: 0;
@@ -112,7 +169,8 @@
   .star,
   .star::before,
   .star.selected::after,
-  .star.flash::before {
+  .star.flash::before,
+  .tip {
     animation: none;
     transition: none;
   }

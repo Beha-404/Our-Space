@@ -6,8 +6,11 @@
 	@for (star of stars(); track star.id) {
 		<button type="button" class="star" [class.lit]="star.fulfilled" [class.selected]="star.id === selectedId()"
 			[class.flash]="star.id === flashId()" [style.left.%]="star.x" [style.top.%]="star.y"
-			[attr.aria-label]="star.title" [attr.aria-pressed]="star.id === selectedId()" [title]="star.title"
-			(click)="selectWish.emit(star.id)"></button>
+			[class.tip-start]="star.x < 25" [class.tip-end]="star.x > 75" [class.tip-below]="star.y < 22"
+			[attr.aria-label]="star.title" [attr.aria-pressed]="star.id === selectedId()"
+			(click)="selectWish.emit(star.id)">
+			<span class="tip" aria-hidden="true">{{ star.title }}</span>
+		</button>
 	}
 
 	@if (stars().length === 0) {

@@ -71,6 +71,12 @@ h1 {
   color: var(--color-text-muted);
 }
 
+.sky-note {
+  margin: 8px 2px 0;
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+}
+
 .legend-star {
   display: inline-block;
   width: 9px;

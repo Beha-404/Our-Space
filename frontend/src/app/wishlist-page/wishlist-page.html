@@ -27,6 +27,10 @@
 				<span><i class="legend-star lit"></i>{{ 'wishlist.legendFulfilled' | translate }}</span>
 			</div>
 
+			@if (skyWishes().length < wishes().length) {
+				<p class="sky-note">{{ 'wishlist.skyLimitBefore' | translate }} {{ skyWishes().length }} {{ 'wishlist.skyLimitAfter' | translate }}</p>
+			}
+
 			@if (selected(); as wish) {
 				<div class="card wish-card" id="wish-card">
 					<div class="wish-card-text">

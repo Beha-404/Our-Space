@@ -175,3 +175,66 @@ describe('WishlistPage sky and list', () => {
     expect(component.selected()?.id).toBe(9);
   });
 });
+
+describe('WishlistPage sky mix', () => {
+  let component: WishlistPage;
+  let httpMock: HttpTestingController;
+
+  const wish = (id: number, isFulfilled: boolean) => ({
+    id,
+    title: `Wish ${id}`,
+    isFulfilled,
+    fulfilledAt: isFulfilled ? '2026-09-01T10:00:00Z' : null,
+    createdByUsername: 'test1',
+    createdAt: new Date(Date.UTC(2026, 0, 1, 0, id)).toISOString(),
+  });
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [WishlistPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap({}) } } },
+      ],
+    }).compileComponents();
+
+    component = TestBed.createComponent(WishlistPage).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+    httpMock.expectOne(`${config.apiUrl}/user/current`).flush({ id: 1, username: 'test1', partner: { id: 2 } });
+  });
+
+  afterEach(() => httpMock.verify());
+
+  const load = (wishes: ReturnType<typeof wish>[]) =>
+    httpMock.expectOne(`${config.apiUrl}/wishlist`).flush(wishes);
+
+  it('still shows waiting wishes when the newest forty are all fulfilled', () => {
+    const newestFulfilled = Array.from({ length: 50 }, (_, index) => wish(100 + index, true));
+    const olderWaiting = Array.from({ length: 30 }, (_, index) => wish(index + 1, false));
+    load([...olderWaiting, ...newestFulfilled]);
+
+    const sky = component.skyWishes();
+
+    expect(sky).toHaveLength(40);
+    expect(sky.filter(w => !w.isFulfilled)).toHaveLength(28);
+    expect(sky.filter(w => w.isFulfilled)).toHaveLength(12);
+  });
+
+  it('fills the sky with fulfilled wishes when few are waiting', () => {
+    const fulfilled = Array.from({ length: 50 }, (_, index) => wish(100 + index, true));
+    load([wish(1, false), wish(2, false), ...fulfilled]);
+
+    const sky = component.skyWishes();
+
+    expect(sky).toHaveLength(40);
+    expect(sky.filter(w => !w.isFulfilled)).toHaveLength(2);
+  });
+
+  it('shows every wish when there are fewer than forty', () => {
+    load([wish(1, false), wish(2, true), wish(3, false)]);
+
+    expect(component.skyWishes()).toHaveLength(3);
+  });
+});

@@ -16,6 +16,7 @@ type WishTab = 'waiting' | 'fulfilled';
 
 const LIST_PAGE_SIZE = 10;
 const FLASH_MS = 900;
+const SKY_FULFILLED_SHARE = 12;
 
 @Component({
   imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink, WishSky],
@@ -43,7 +44,15 @@ export class WishlistPage {
   newestFirst = computed(() =>
     [...this.wishes()].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id - a.id));
 
-  skyWishes = computed(() => this.newestFirst().slice(0, SKY_CAPACITY));
+  skyWishes = computed(() => {
+    const waiting = this.newestFirst().filter(w => !w.isFulfilled);
+    const fulfilled = this.newestFirst().filter(w => w.isFulfilled);
+
+    const waitingSlots = Math.min(waiting.length, SKY_CAPACITY - Math.min(fulfilled.length, SKY_FULFILLED_SHARE));
+    const fulfilledSlots = Math.min(fulfilled.length, SKY_CAPACITY - waitingSlots);
+
+    return [...waiting.slice(0, waitingSlots), ...fulfilled.slice(0, fulfilledSlots)];
+  });
 
   fulfilledCount = computed(() => this.wishes().filter(w => w.isFulfilled).length);
   waitingCount = computed(() => this.wishes().length - this.fulfilledCount());
