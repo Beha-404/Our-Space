@@ -214,28 +214,28 @@ export class EventsPage {
     });
   }
 
-  eventPendingDelete = signal<EventItem | null>(null);
-
-  confirmDelete(event: EventItem): void {
-    this.eventPendingDelete.set(event);
-  }
-
-  cancelDelete(): void {
-    this.eventPendingDelete.set(null);
-  }
-
-  deleteEvent(): void {
-    const event = this.eventPendingDelete();
-    if (!event) return;
-
-    this.eventService.delete(event.id).subscribe({
-      next: () => {
-        this.eventPendingDelete.set(null);
-        this.loadEvents();
-        this.toast.success('toast.eventDeleted');
+  cancelEvent(event: EventItem): void {
+    this.eventService.cancel(event.id).subscribe({
+      next: updated => {
+        this.replaceEvent(updated);
+        this.toast.success('toast.eventCancelled');
       },
       error: () => this.toast.error('toast.actionFailed')
     });
+  }
+
+  restoreEvent(event: EventItem): void {
+    this.eventService.restore(event.id).subscribe({
+      next: updated => {
+        this.replaceEvent(updated);
+        this.toast.success('toast.eventRestored');
+      },
+      error: () => this.toast.error('toast.actionFailed')
+    });
+  }
+
+  private replaceEvent(updated: EventItem): void {
+    this.events.update(list => list.map(e => e.id === updated.id ? updated : e));
   }
 
   startEdit(event: EventItem): void {

@@ -82,3 +82,68 @@ describe('EventsPage add/edit forms', () => {
     expect(component.editErrorKey()).toBe('');
   });
 });
+
+describe('EventsPage cancelling', () => {
+  let component: EventsPage;
+  let httpMock: HttpTestingController;
+
+  const event = (id: number, isCancelled = false) => ({
+    id,
+    title: `Event ${id}`,
+    description: null,
+    eventDate: '2027-01-10T00:00:00Z',
+    createdByUsername: 'test1',
+    createdAt: '2026-09-01T00:00:00Z',
+    isCancelled,
+  });
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [EventsPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+      ],
+    }).compileComponents();
+
+    component = TestBed.createComponent(EventsPage).componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${config.apiUrl}/user/current`).flush({ id: 1, username: 'test1', partner: { id: 2 } });
+    httpMock.expectOne(r => r.url.startsWith(`${config.apiUrl}/events?`)).flush([event(1), event(2)]);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('marks the event as cancelled in place without reloading the list', () => {
+    component.cancelEvent(component.events()[0]);
+
+    httpMock.expectOne(`${config.apiUrl}/events/1/cancel`).flush(event(1, true));
+
+    expect(component.events().find(e => e.id === 1)?.isCancelled).toBe(true);
+    expect(component.events().find(e => e.id === 2)?.isCancelled).toBe(false);
+  });
+
+  it('brings a cancelled event back', () => {
+    component.events.set([event(1, true)]);
+
+    component.restoreEvent(component.events()[0]);
+
+    httpMock.expectOne(`${config.apiUrl}/events/1/restore`).flush(event(1, false));
+
+    expect(component.events()[0].isCancelled).toBe(false);
+  });
+
+  it('leaves the event untouched when cancelling fails', () => {
+    component.cancelEvent(component.events()[0]);
+
+    httpMock.expectOne(`${config.apiUrl}/events/1/cancel`).flush('no', { status: 500, statusText: 'Server Error' });
+
+    expect(component.events()[0].isCancelled).toBe(false);
+  });
+});

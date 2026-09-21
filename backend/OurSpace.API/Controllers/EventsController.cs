@@ -32,10 +32,11 @@ public class EventsController(IEventService eventService) : ControllerBase
         return Ok(dto);
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        await eventService.DeleteAsync(this.GetUserId(), id);
-        return NoContent();
-    }
+    [HttpPost("{id:int}/cancel")]
+    public async Task<ActionResult<EventDto>> Cancel(int id) =>
+        Ok(await eventService.CancelAsync(this.GetUserId(), id));
+
+    [HttpPost("{id:int}/restore")]
+    public async Task<ActionResult<EventDto>> Restore(int id) =>
+        Ok(await eventService.RestoreAsync(this.GetUserId(), id));
 }

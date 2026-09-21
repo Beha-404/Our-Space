@@ -8,5 +8,6 @@ public record EventDto(
     string? Description,
     DateTime EventDate,
     string CreatedByUsername,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    bool IsCancelled
 );

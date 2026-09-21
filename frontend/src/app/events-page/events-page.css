@@ -343,6 +343,29 @@ h1 {
   color: var(--color-text-faint);
 }
 
+.event-cancelled {
+  opacity: 0.6;
+}
+
+.event-cancelled .event-info h3,
+.event-cancelled .event-info p {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-danger);
+  text-decoration-thickness: 1px;
+}
+
+.event-cancelled .event-day,
+.event-cancelled .event-month {
+  color: var(--color-text-faint);
+}
+
+.event-cancelled-label {
+  color: var(--color-danger);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .event-card-editing {
   display: block;
   padding: 20px 22px;

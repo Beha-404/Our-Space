@@ -158,8 +158,9 @@
 							</div>
 						</div>
 					} @else {
-						<div class="card event-card hover-card is-clickable" [id]="'event-' + event.id" [class.event-expired]="daysUntil(event.eventDate) < 0"
-							(click)="startEdit(event)">
+						<div class="card event-card hover-card" [id]="'event-' + event.id" [class.event-expired]="daysUntil(event.eventDate) < 0 && !event.isCancelled"
+							[class.event-cancelled]="event.isCancelled" [class.is-clickable]="!event.isCancelled"
+							(click)="!event.isCancelled && startEdit(event)">
 							<div class="event-date-badge">
 								<span class="event-day">{{ event.eventDate | localDate:'d' }}</span>
 								<span class="event-month">{{ event.eventDate | localDate:'MMM' }}</span>
@@ -170,7 +171,9 @@
 									<p>{{ event.description }}</p>
 								}
 								<span class="event-meta">
-									@if (daysUntil(event.eventDate) < 0) {
+									@if (event.isCancelled) {
+										<strong class="event-cancelled-label">{{ 'events.cancelledLabel' | translate }}</strong>
+									} @else if (daysUntil(event.eventDate) < 0) {
 										{{ 'events.expired' | translate }}
 									} @else if (daysUntil(event.eventDate) === 0) {
 										{{ 'events.today' | translate }}
@@ -183,17 +186,12 @@
 								</span>
 							</div>
 							<div class="event-actions">
-								<button class="btn btn-ghost-info btn-sm" (click)="startEdit(event); $event.stopPropagation()">{{ 'profile.editDate' | translate }}</button>
-								<button type="button" class="btn btn-icon-danger" (click)="confirmDelete(event); $event.stopPropagation()"
-									[attr.aria-label]="'events.deleteButton' | translate" [title]="'events.deleteButton' | translate">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<path d="M3 6h18" />
-										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-										<line x1="10" y1="11" x2="10" y2="17" />
-										<line x1="14" y1="11" x2="14" y2="17" />
-									</svg>
-								</button>
+								@if (event.isCancelled) {
+									<button type="button" class="btn btn-ghost-info btn-sm" (click)="restoreEvent(event); $event.stopPropagation()">{{ 'events.restoreButton' | translate }}</button>
+								} @else {
+									<button class="btn btn-ghost-info btn-sm" (click)="startEdit(event); $event.stopPropagation()">{{ 'profile.editDate' | translate }}</button>
+									<button type="button" class="btn btn-ghost-danger btn-sm" (click)="cancelEvent(event); $event.stopPropagation()">{{ 'events.cancelButton' | translate }}</button>
+								}
 							</div>
 						</div>
 					}
@@ -219,17 +217,5 @@
 				</div>
 			}
 
-			@if (eventPendingDelete()) {
-				<div class="modal-backdrop" (click)="cancelDelete()">
-					<div class="modal-card card" (click)="$event.stopPropagation()">
-						<h3>{{ 'profile.confirmDeleteTitle' | translate }}</h3>
-						<p>{{ 'profile.confirmDeleteDesc' | translate }}</p>
-						<div class="modal-actions">
-							<button class="btn btn-ghost btn-sm" (click)="cancelDelete()">{{ 'profile.cancelButton' | translate }}</button>
-							<button class="btn btn-danger btn-sm" (click)="deleteEvent()">{{ 'profile.confirmDeleteButton' | translate }}</button>
-						</div>
-					</div>
-				</div>
-			}
 		}
 	</div>

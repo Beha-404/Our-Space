@@ -126,6 +126,10 @@ public static class Messages
             "Događaj nije pronađen.",
             "Event not found.",
             "Evento no encontrado."),
+        ["Event.CancelledNoEdit"] = Lang(
+            "Otkazan događaj se ne može mijenjati. Prvo ga vrati.",
+            "A cancelled event can't be edited. Restore it first.",
+            "Un evento cancelado no se puede editar. Primero restáuralo."),
         ["Event.NeedPartner"] = Lang(
             "Moraš biti uparen/a sa partnerom da bi dodao/la događaj.",
             "You need to be paired with a partner to add an event.",
@@ -333,11 +337,16 @@ public static class Messages
             "{0} je izmijenio/la ovaj događaj. Novi datum: {1}",
             "{0} updated this event. New date: {1}",
             "{0} actualizó este evento. Nueva fecha: {1}"),
-        ["Email.EventDeleted.Subject"] = Lang("Događaj obrisan: {0}", "Event deleted: {0}", "Evento eliminado: {0}"),
-        ["Email.EventDeleted.Body"] = Lang(
-            "{0} je obrisao/la ovaj događaj, koji je bio zakazan za {1}",
-            "{0} deleted this event, which was scheduled for {1}",
-            "{0} eliminó este evento, que estaba programado para {1}"),
+        ["Email.EventCancelled.Subject"] = Lang("Događaj otkazan: {0}", "Event cancelled: {0}", "Evento cancelado: {0}"),
+        ["Email.EventCancelled.Body"] = Lang(
+            "{0} je otkazao/la ovaj događaj, koji je bio zakazan za {1}",
+            "{0} cancelled this event, which was scheduled for {1}",
+            "{0} canceló este evento, que estaba programado para {1}"),
+        ["Email.EventRestored.Subject"] = Lang("Događaj je ponovo aktivan: {0}", "Event is back on: {0}", "El evento sigue en pie: {0}"),
+        ["Email.EventRestored.Body"] = Lang(
+            "{0} je vratio/la ovaj događaj, zakazan za {1}",
+            "{0} restored this event, scheduled for {1}",
+            "{0} restauró este evento, programado para {1}"),
         ["Email.Reminder.Subject"] = Lang("Podsjetnik: {0}", "Reminder: {0}", "Recordatorio: {0}"),
         ["Email.Reminder.Body"] = Lang(
             "Ovo je podsjetnik da je događaj zakazan za {0}",

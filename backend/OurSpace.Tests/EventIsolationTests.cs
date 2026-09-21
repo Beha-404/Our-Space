@@ -52,16 +52,16 @@ public class EventIsolationTests
     }
 
     [Fact]
-    public async Task Other_Couple_Cannot_Delete_Event()
+    public async Task Other_Couple_Cannot_Cancel_Event()
     {
         using var factory = new OurSpaceFactory();
         var world = await TestWorld.SeedAsync(factory);
 
         var client = TestWorld.ClientFor(factory, world.LejlaToken);
-        var response = await client.DeleteAsync($"/api/events/{world.EventId}");
+        var response = await client.PostAsync($"/api/events/{world.EventId}/cancel", null);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.NotNull(await TestWorld.FindEventAsync(factory, world.EventId));
+        Assert.Null((await TestWorld.FindEventAsync(factory, world.EventId))!.CancelledAt);
     }
 
     [Fact]
@@ -72,8 +72,8 @@ public class EventIsolationTests
 
         var client = TestWorld.ClientFor(factory, world.LejlaToken);
 
-        var foreign = await client.DeleteAsync($"/api/events/{world.EventId}");
-        var missing = await client.DeleteAsync("/api/events/999999");
+        var foreign = await client.PostAsync($"/api/events/{world.EventId}/cancel", null);
+        var missing = await client.PostAsync("/api/events/999999/cancel", null);
 
         Assert.Equal(missing.StatusCode, foreign.StatusCode);
         Assert.Equal(

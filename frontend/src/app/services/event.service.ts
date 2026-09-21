@@ -20,7 +20,11 @@ export class EventService {
         return this.http.put<EventItem>(`${this.apiUrl}/events/${id}`, request);
     }
 
-    delete(id: number) {
-        return this.http.delete(`${this.apiUrl}/events/${id}`);
+    cancel(id: number) {
+        return this.http.post<EventItem>(`${this.apiUrl}/events/${id}/cancel`, {});
+    }
+
+    restore(id: number) {
+        return this.http.post<EventItem>(`${this.apiUrl}/events/${id}/restore`, {});
     }
 }

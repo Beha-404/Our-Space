@@ -29,7 +29,7 @@ public class RecapService(
         var perMonth = CountPerMonth(photoDates.Concat(audioDates));
 
         var events = await db.Events
-            .CountAsync(e => e.CoupleId == coupleId && e.EventDate.Year == targetYear);
+            .CountAsync(e => e.CoupleId == coupleId && e.CancelledAt == null && e.EventDate.Year == targetYear);
 
         var wishesFulfilled = await db.WishlistItems
             .CountAsync(w => w.CoupleId == coupleId && w.FulfilledAt != null && w.FulfilledAt!.Value.Year == targetYear);

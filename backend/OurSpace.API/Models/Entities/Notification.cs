@@ -10,6 +10,8 @@ public enum NotificationType
     WishAdded,
     CapsuleSealed,
     CapsuleUnlocked,
+    EventCancelled,
+    EventRestored,
 }
 
 public class Notification

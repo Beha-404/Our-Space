@@ -48,13 +48,13 @@ public class EventService(
         var query = db.Events.Where(e => e.CoupleId == coupleId);
 
         if (!includePast)
-            query = query.Where(e => e.EventDate >= today);
+            query = query.Where(e => e.EventDate >= today && e.CancelledAt == null);
 
         return await query
             .OrderBy(e => e.EventDate < today)
             .ThenBy(e => e.EventDate >= today ? e.EventDate : DateTime.MaxValue)
             .ThenByDescending(e => e.EventDate)
-            .Select(e => new EventDto(e.Id, e.Title, e.Description, e.EventDate, e.CreatedByUser.Username, e.CreatedAt))
+            .Select(e => new EventDto(e.Id, e.Title, e.Description, e.EventDate, e.CreatedByUser.Username, e.CreatedAt, e.CancelledAt != null))
             .ToListAsync();
     }
 
@@ -70,6 +70,9 @@ public class EventService(
         if (ev.CoupleId != couple.Id)
             throw new NotFoundException(localizer.T("Event.NotFound"));
 
+        if (ev.CancelledAt is not null)
+            throw new BadRequestException(localizer.T("Event.CancelledNoEdit"));
+
         ev.Title = request.Title.Trim();
         ev.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
         ev.EventDate = request.EventDate;
@@ -82,20 +85,32 @@ public class EventService(
         return ToDto(ev, ev.CreatedByUser.Username);
     }
 
-    public async Task DeleteAsync(int userId, int eventId)
+    public Task<EventDto> CancelAsync(int userId, int eventId) =>
+        ChangeCancellationAsync(userId, eventId, cancel: true);
+
+    public Task<EventDto> RestoreAsync(int userId, int eventId) =>
+        ChangeCancellationAsync(userId, eventId, cancel: false);
+
+    private async Task<EventDto> ChangeCancellationAsync(int userId, int eventId, bool cancel)
     {
         var couple = await GetCoupleWithUsersOrThrow(userId);
 
-        var ev = await db.Events.SingleOrDefaultAsync(e => e.Id == eventId)
+        var ev = await db.Events.Include(e => e.CreatedByUser).SingleOrDefaultAsync(e => e.Id == eventId)
             ?? throw new NotFoundException(localizer.T("Event.NotFound"));
 
         if (ev.CoupleId != couple.Id)
             throw new NotFoundException(localizer.T("Event.NotFound"));
 
-        db.Events.Remove(ev);
+        if ((ev.CancelledAt is not null) == cancel)
+            return ToDto(ev, ev.CreatedByUser.Username);
+
+        ev.CancelledAt = cancel ? DateTime.UtcNow : null;
         await db.SaveChangesAsync();
 
-        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, ev, EventChangeType.Deleted);
+        var change = cancel ? EventChangeType.Cancelled : EventChangeType.Restored;
+        await NotifyPartnerAsync(couple, userId, ActingUser(couple, userId).Username, ev, change);
+
+        return ToDto(ev, ev.CreatedByUser.Username);
     }
 
     private void ValidateTitleAndDescription(CreateEventRequest request)
@@ -124,7 +139,8 @@ public class EventService(
         {
             EventChangeType.Created => ("Email.EventCreated.Subject", "Email.EventCreated.Body", NotificationType.EventCreated),
             EventChangeType.Updated => ("Email.EventUpdated.Subject", "Email.EventUpdated.Body", NotificationType.EventUpdated),
-            EventChangeType.Deleted => ("Email.EventDeleted.Subject", "Email.EventDeleted.Body", NotificationType.EventDeleted),
+            EventChangeType.Cancelled => ("Email.EventCancelled.Subject", "Email.EventCancelled.Body", NotificationType.EventCancelled),
+            EventChangeType.Restored => ("Email.EventRestored.Subject", "Email.EventRestored.Body", NotificationType.EventRestored),
             _ => throw new ArgumentOutOfRangeException(nameof(change)),
         };
 
@@ -142,8 +158,8 @@ public class EventService(
         }
     }
 
-    private enum EventChangeType { Created, Updated, Deleted }
+    private enum EventChangeType { Created, Updated, Cancelled, Restored }
 
     private static EventDto ToDto(Event ev, string createdByUsername) =>
-        new(ev.Id, ev.Title, ev.Description, ev.EventDate, createdByUsername, ev.CreatedAt);
+        new(ev.Id, ev.Title, ev.Description, ev.EventDate, createdByUsername, ev.CreatedAt, ev.CancelledAt != null);
 }

@@ -13,6 +13,8 @@ const TYPE_MESSAGE_KEYS: Record<AppNotification['type'], string> = {
   EventCreated: 'notifications.msgEventCreated',
   EventUpdated: 'notifications.msgEventUpdated',
   EventDeleted: 'notifications.msgEventDeleted',
+  EventCancelled: 'notifications.msgEventCancelled',
+  EventRestored: 'notifications.msgEventRestored',
   PhotoAdded: 'notifications.msgPhotoAdded',
   AudioAdded: 'notifications.msgAudioAdded',
   WishAdded: 'notifications.msgWishAdded',

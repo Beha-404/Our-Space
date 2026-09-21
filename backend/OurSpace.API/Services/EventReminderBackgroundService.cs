@@ -47,7 +47,7 @@ public class EventReminderBackgroundService(
         var reminderCutoff = now.AddDays(ReminderWindowDays);
 
         var dueEvents = await db.Events
-            .Where(e => e.ReminderSentAt == null && e.EventDate >= now && e.EventDate <= reminderCutoff)
+            .Where(e => e.ReminderSentAt == null && e.CancelledAt == null && e.EventDate >= now && e.EventDate <= reminderCutoff)
             .Select(e => new
             {
                 e.Id,

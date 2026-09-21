@@ -16,4 +16,5 @@ public class Event
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ReminderSentAt { get; set; }
+    public DateTime? CancelledAt { get; set; }
 }

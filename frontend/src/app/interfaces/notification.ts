@@ -2,6 +2,8 @@ export type NotificationType =
     | 'EventCreated'
     | 'EventUpdated'
     | 'EventDeleted'
+    | 'EventCancelled'
+    | 'EventRestored'
     | 'PhotoAdded'
     | 'AudioAdded'
     | 'WishAdded'

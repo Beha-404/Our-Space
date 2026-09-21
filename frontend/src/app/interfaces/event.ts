@@ -5,6 +5,7 @@ export interface EventItem {
     eventDate: string;
     createdByUsername: string;
     createdAt: string;
+    isCancelled: boolean;
 }
 
 export interface CreateEventRequest {
