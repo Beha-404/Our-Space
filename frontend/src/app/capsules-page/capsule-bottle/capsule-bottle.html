@@ -43,8 +43,6 @@
 		</span>
 		@if (capsule().openAt) {
 			<span class="pill">{{ 'events.inPrefix' | translate }} {{ daysLeft() }} {{ 'events.daysLeft' | translate }}</span>
-		} @else if (available()) {
-			<span class="pill ready">{{ 'capsules.washedAshore' | translate }}</span>
 		}
 		<span class="tag-by">{{ 'capsules.sealedBy' | translate }} {{ capsule().createdByUsername }}</span>
 		@if (available() || canDelete()) {

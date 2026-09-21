@@ -19,10 +19,6 @@
 			<div class="letter-wrap">
 				<p class="letter">{{ capsule().message }}</p>
 				<div class="foot">
-					<span class="by">
-						{{ 'capsules.sealedBy' | translate }} {{ capsule().createdByUsername }}
-						· {{ 'capsules.sealedOn' | translate }} {{ capsule().createdAt | localDate:'longDate' }}
-					</span>
 					<span class="signature">{{ capsule().createdByUsername }}</span>
 					@if (canDelete()) {
 						<button type="button" class="delete" (click)="deleteRequested.emit()"

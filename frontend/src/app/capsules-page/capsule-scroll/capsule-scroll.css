@@ -126,11 +126,6 @@
   padding-top: 6px;
 }
 
-.by {
-  font-size: 0.76rem;
-  color: var(--ink-soft);
-}
-
 .signature {
   margin-left: auto;
   font-family: var(--font-hand);

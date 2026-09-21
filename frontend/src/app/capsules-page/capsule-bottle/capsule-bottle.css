@@ -229,11 +229,6 @@
   background: #7a3a1f;
 }
 
-.pill.ready {
-  color: #3a2a0c;
-  background: #f0d38a;
-}
-
 .tag-actions {
   display: flex;
   align-items: center;

@@ -61,7 +61,7 @@ describe('CapsuleBottle', () => {
     render(capsule({ openAt: null, canOpenNow: true }));
 
     expect(el().classList.contains('available')).toBe(true);
-    expect(el().querySelector('.pill.ready')).not.toBeNull();
+    expect(el().querySelector('.pill')).toBeNull();
     expect(el().querySelector('.btn-primary')).not.toBeNull();
     expect(el().querySelectorAll('.spark').length).toBe(3);
   });
