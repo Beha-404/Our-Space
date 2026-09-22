@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { config } from '../config';
 import { ProfilePage } from './profile-page';
 
@@ -11,7 +12,7 @@ describe('ProfilePage forms', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProfilePage],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
 
     component = TestBed.createComponent(ProfilePage).componentInstance;
