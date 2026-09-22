@@ -281,10 +281,10 @@ public static class Messages
             "Kapsula je još zapečaćena.",
             "This capsule is still sealed.",
             "Esta cápsula todavía está sellada."),
-        ["Capsule.CannotDeleteSealed"] = Lang(
-            "Ne možeš obrisati zapečaćenu kapsulu koju nisi ti napisao/la.",
-            "You can't delete a sealed capsule you didn't write.",
-            "No puedes eliminar una cápsula sellada que no escribiste."),
+        ["Capsule.CannotDelete"] = Lang(
+            "Ne možeš obrisati kapsulu koju nisi ti napisao/la.",
+            "You can't delete a capsule you didn't write.",
+            "No puedes eliminar una cápsula que no escribiste."),
 
         ["Wish.NeedPartner"] = Lang(
             "Moraš biti uparen/a sa partnerom da bi dodao/la želju.",

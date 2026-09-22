@@ -1,37 +1,20 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { LocalDatePipe } from '../../i18n/local-date.pipe';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { Capsule } from '../../interfaces/capsule';
-import { Parchment } from '../../shared/parchment/parchment';
 import { capsuleOpenedOn } from '../capsule-dates';
 
 @Component({
   selector: 'app-capsule-scroll',
-  imports: [LocalDatePipe, TranslatePipe, Parchment],
+  imports: [LocalDatePipe, TranslatePipe],
   templateUrl: './capsule-scroll.html',
   styleUrl: './capsule-scroll.css',
-  host: {
-    '[class.open]': 'pinned()',
-  },
 })
 export class CapsuleScroll {
   capsule = input.required<Capsule>();
   canDelete = input(false);
-  startOpen = input(false);
 
   deleteRequested = output<void>();
 
-  pinned = signal(false);
-
   openedOn = computed(() => capsuleOpenedOn(this.capsule()));
-
-  constructor() {
-    effect(() => {
-      if (this.startOpen()) this.pinned.set(true);
-    });
-  }
-
-  toggle(): void {
-    this.pinned.update(open => !open);
-  }
 }

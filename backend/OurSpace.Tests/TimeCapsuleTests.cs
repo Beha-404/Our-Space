@@ -113,6 +113,34 @@ public class TimeCapsuleTests
     }
 
     [Fact]
+    public async Task A_Partner_Cannot_Delete_An_Opened_Capsule_They_Did_Not_Write()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var partner = TestWorld.ClientFor(factory, world.MarkoToken);
+        var response = await partner.DeleteAsync($"/api/capsules/{world.OpenCapsuleId}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var stillThere = await partner.GetFromJsonAsync<List<CapsuleDto>>("/api/capsules");
+        Assert.NotNull(stillThere);
+        Assert.Contains(stillThere, c => c.Id == world.OpenCapsuleId);
+    }
+
+    [Fact]
+    public async Task The_Author_Can_Delete_Their_Own_Opened_Capsule()
+    {
+        using var factory = new OurSpaceFactory();
+        var world = await TestWorld.SeedAsync(factory);
+
+        var author = TestWorld.ClientFor(factory, world.AnaToken);
+        var response = await author.DeleteAsync($"/api/capsules/{world.OpenCapsuleId}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Sealing_A_Capsule_Notifies_The_Partner_Without_Leaking_The_Message()
     {
         using var factory = new OurSpaceFactory();

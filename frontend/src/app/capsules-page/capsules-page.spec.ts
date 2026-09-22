@@ -148,7 +148,7 @@ describe('CapsulesPage', () => {
     expect(component.openingId()).toBeNull();
   });
 
-  it('marks the capsule it just opened so its letter unrolls at once, on the page where it landed', () => {
+  it('reveals the page a freshly opened capsule landed on', () => {
     const older = Array.from({ length: 6 }, (_, i) =>
       capsule({ id: 100 + i, isUnlocked: true, openAt: `2020-01-0${i + 1}`, message: `Pismo ${i}` }));
     const anytime = capsule({ id: 5, openAt: null, canOpenNow: true });
@@ -157,7 +157,6 @@ describe('CapsulesPage', () => {
     component.openCapsule(anytime);
     httpMock.expectOne(`${capsulesUrl}/5/open`).flush({ ...anytime, isUnlocked: true, canOpenNow: false, message: 'Pismo', openedAt: '2026-09-21T10:00:00Z' });
 
-    expect(component.justOpenedId()).toBe(5);
     expect(component.visibleOpened().some(c => c.id === 5)).toBe(true);
   });
 
@@ -230,9 +229,10 @@ describe('CapsulesPage', () => {
     expect(component.visibleSealed().some(c => c.id === 27)).toBe(true);
   });
 
-  it('lets the author delete a sealed capsule but not the partner', () => {
+  it('lets only the author delete their capsule, opened or not', () => {
     expect(component.canDelete(capsule({ createdByUsername: 'test1' }))).toBe(true);
     expect(component.canDelete(capsule({ createdByUsername: 'test2' }))).toBe(false);
-    expect(component.canDelete(capsule({ createdByUsername: 'test2', isUnlocked: true }))).toBe(true);
+    expect(component.canDelete(capsule({ createdByUsername: 'test2', isUnlocked: true }))).toBe(false);
+    expect(component.canDelete(capsule({ createdByUsername: 'test1', isUnlocked: true }))).toBe(true);
   });
 });

@@ -109,8 +109,8 @@ public class TimeCapsuleService(
     {
         var capsule = await GetCapsuleOrThrow(userId, capsuleId);
 
-        if (capsule.CreatedByUserId != userId && !capsule.IsUnlocked)
-            throw new BadRequestException(localizer.T("Capsule.CannotDeleteSealed"));
+        if (capsule.CreatedByUserId != userId)
+            throw new BadRequestException(localizer.T("Capsule.CannotDelete"));
 
         db.TimeCapsules.Remove(capsule);
         await db.SaveChangesAsync();

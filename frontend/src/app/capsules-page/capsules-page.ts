@@ -19,7 +19,6 @@ import { Pager } from '../shared/pager/pager';
 type OpenMode = 'date' | 'anytime';
 
 const DEFAULT_PRESET: OpenPreset = 'year';
-const UNROLL_SETTLE_MS = 600;
 const SEALED_PAGE_SIZE = 4;
 const OPENED_PAGE_SIZE = 5;
 
@@ -220,7 +219,6 @@ export class CapsulesPage {
   private injector = inject(Injector);
 
   openingId = signal<number | null>(null);
-  justOpenedId = signal<number | null>(null);
 
   openCapsule(capsule: Capsule): void {
     this.openingId.set(capsule.id);
@@ -229,10 +227,9 @@ export class CapsulesPage {
       next: opened => {
         this.openingId.set(null);
         this.capsules.update(list => list.map(c => c.id === opened.id ? opened : c));
-        this.justOpenedId.set(opened.id);
         this.reveal(opened.id);
         afterNextRender(
-          () => setTimeout(() => this.scrollToCapsule(opened.id), UNROLL_SETTLE_MS),
+          () => this.scrollToCapsule(opened.id),
           { injector: this.injector },
         );
         this.toast.success('toast.capsuleOpened');
@@ -245,7 +242,7 @@ export class CapsulesPage {
   }
 
   canDelete(capsule: Capsule): boolean {
-    return capsule.isUnlocked || capsule.createdByUsername === this.userService.currentUser()?.username;
+    return capsule.createdByUsername === this.userService.currentUser()?.username;
   }
 
   capsulePendingDelete = signal<Capsule | null>(null);

@@ -16,70 +16,31 @@ const opened: Capsule = {
 
 describe('CapsuleScroll', () => {
   let fixture: ComponentFixture<CapsuleScroll>;
-  let component: CapsuleScroll;
 
   const el = () => fixture.nativeElement as HTMLElement;
-  const head = () => el().querySelector('.head') as HTMLButtonElement;
 
   beforeEach(async () => {
     localStorage.setItem('lang', 'bs');
     await TestBed.configureTestingModule({ imports: [CapsuleScroll] }).compileComponents();
 
     fixture = TestBed.createComponent(CapsuleScroll);
-    component = fixture.componentInstance;
     fixture.componentRef.setInput('capsule', opened);
     fixture.detectChanges();
   });
 
   afterEach(() => localStorage.removeItem('lang'));
 
-  it('offers both the unroll and the roll-up wording', () => {
-    expect(el().querySelector('.cue-open')?.textContent).toContain('Razmotaj');
-    expect(el().querySelector('.cue-close')?.textContent).toContain('Smotaj');
-  });
-
-  it('starts rolled up but keeps the title visible', () => {
-    expect(head().getAttribute('aria-expanded')).toBe('false');
+  it('always shows the letter unrolled, title and message both visible', () => {
     expect(el().querySelector('.title')?.textContent).toContain('Pismo za 5 godina');
-    expect(el().classList.contains('open')).toBe(false);
+    expect(el().querySelector('.letter')?.textContent).toContain('Test123');
   });
 
-  it('unrolls by itself when asked to start open', () => {
-    fixture.componentRef.setInput('startOpen', true);
-    fixture.detectChanges();
+  it('puts the opened date at the bottom of the card, not the top', () => {
+    const title = el().querySelector('.title') as HTMLElement;
+    const meta = el().querySelector('.meta') as HTMLElement;
 
-    expect(head().getAttribute('aria-expanded')).toBe('true');
-    expect(el().classList.contains('open')).toBe(true);
-  });
-
-  it('unrolls and rolls up again when the header is clicked', () => {
-    head().click();
-    fixture.detectChanges();
-
-    expect(head().getAttribute('aria-expanded')).toBe('true');
-    expect(el().classList.contains('open')).toBe(true);
-    head().click();
-    fixture.detectChanges();
-
-    expect(head().getAttribute('aria-expanded')).toBe('false');
-    expect(el().classList.contains('open')).toBe(false);
-  });
-
-  it('points the header at the letter it controls', () => {
-    const controlled = head().getAttribute('aria-controls');
-
-    expect(controlled).toBe('letter-4');
-    expect(el().querySelector(`#${controlled}`)?.textContent).toContain('Test123');
-  });
-
-  it('uses the date it opened, then the planned date, then when it was made', () => {
-    expect(component.openedOn()).toBe('2026-09-19');
-
-    fixture.componentRef.setInput('capsule', { ...opened, openedAt: '2026-09-20T08:00:00Z' });
-    expect(component.openedOn()).toBe('2026-09-20T08:00:00Z');
-
-    fixture.componentRef.setInput('capsule', { ...opened, openAt: null });
-    expect(component.openedOn()).toBe('2026-09-17T10:00:00Z');
+    expect(meta.textContent).toContain('Otvorena');
+    expect(title.compareDocumentPosition(meta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('asks to delete only when allowed', () => {
@@ -88,7 +49,7 @@ describe('CapsuleScroll', () => {
     fixture.componentRef.setInput('canDelete', true);
     fixture.detectChanges();
     const deleted = vi.fn();
-    component.deleteRequested.subscribe(deleted);
+    fixture.componentInstance.deleteRequested.subscribe(deleted);
 
     (el().querySelector('.delete') as HTMLButtonElement).click();
 
