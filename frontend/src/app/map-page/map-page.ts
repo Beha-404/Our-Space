@@ -114,12 +114,14 @@ export class MapPage {
     this.layer = L.layerGroup().addTo(map);
     map.on('moveend', () => this.renderMarkers());
 
+    this.constrainMinZoom(map);
     this.fitToPlaces(places);
     this.renderMarkers();
 
     let fitted = false;
     this.resizeObserver = new ResizeObserver(() => {
       map.invalidateSize();
+      this.constrainMinZoom(map);
       if (!fitted && element.clientWidth > 0) {
         fitted = true;
         this.fitToPlaces(places);
@@ -127,6 +129,12 @@ export class MapPage {
       }
     });
     this.resizeObserver.observe(element);
+  }
+
+  private constrainMinZoom(map: L.Map): void {
+    const minZoom = map.getBoundsZoom(WORLD_BOUNDS, true);
+    map.setMinZoom(minZoom);
+    if (map.getZoom() < minZoom) map.setZoom(minZoom);
   }
 
   private renderMarkers(): void {

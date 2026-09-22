@@ -114,6 +114,7 @@ export class LocationPicker {
     map.attributionControl.setPrefix(false);
     L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19, noWrap: true }).addTo(map);
 
+    this.constrainMinZoom(map);
     if (current) {
       map.setView([current.latitude, current.longitude], PICKED_ZOOM);
       this.placeMarker(current.latitude, current.longitude);
@@ -123,8 +124,17 @@ export class LocationPicker {
 
     map.on('click', event => this.pickOnMap(event.latlng.lat, event.latlng.lng));
 
-    this.resizeObserver = new ResizeObserver(() => map.invalidateSize());
+    this.resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+      this.constrainMinZoom(map);
+    });
     this.resizeObserver.observe(element);
+  }
+
+  private constrainMinZoom(map: L.Map): void {
+    const minZoom = map.getBoundsZoom(WORLD_BOUNDS, true);
+    map.setMinZoom(minZoom);
+    if (map.getZoom() < minZoom) map.setZoom(minZoom);
   }
 
   private destroyMap(): void {

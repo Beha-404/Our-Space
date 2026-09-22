@@ -253,7 +253,8 @@ h1 {
 
 .sea {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 220px));
+  justify-content: center;
   padding-top: 28px;
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -287,7 +288,7 @@ h1 {
   }
 
   .sea {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 180px));
   }
 }
 
