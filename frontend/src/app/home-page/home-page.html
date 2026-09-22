@@ -89,13 +89,16 @@
 				@if (recentWishes().length > 0) {
 					<div class="wish-preview-list">
 						@for (wish of recentWishes(); track wish.id) {
-							<div class="card wish-preview-row hover-card">
+							<div class="card wish-preview-row hover-card" [class.wish-fulfilled]="wish.isFulfilled">
 								<button type="button" class="wish-check" [class.done]="wish.isFulfilled" (click)="toggleWish(wish)"
 									[attr.aria-label]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate"
 									[title]="(wish.isFulfilled ? 'wishlist.markNotFulfilled' : 'wishlist.markFulfilled') | translate">
 									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6" /></svg>
 								</button>
 								<h3 class="wish-preview-title">{{ wish.title }}</h3>
+								@if (wish.isFulfilled) {
+									<span class="wish-fulfilled-badge">{{ 'wishlist.fulfilledOn' | translate }}</span>
+								}
 							</div>
 						}
 					</div>

@@ -261,14 +261,33 @@ h1 {
   align-items: center;
   gap: 14px;
   padding: 12px 16px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.wish-preview-row.wish-fulfilled {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
 }
 
 .wish-preview-title {
   margin: 0;
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 500;
   font-size: 1rem;
+}
+
+.wish-fulfilled-badge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #1d2410;
+  background: var(--color-success);
+  border-radius: 999px;
 }
 
 .wish-check {
