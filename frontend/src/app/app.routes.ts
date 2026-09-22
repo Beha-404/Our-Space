@@ -25,6 +25,16 @@ export const routes: Routes = [
         loadComponent: () => import('./forgot-password-page/forgot-password-page').then(m => m.ForgotPasswordPage)
     },
     {
+        path: 'terms',
+        data: { topic: 'terms' },
+        loadComponent: () => import('./legal-page/legal-page').then(m => m.LegalPage)
+    },
+    {
+        path: 'privacy',
+        data: { topic: 'privacy' },
+        loadComponent: () => import('./legal-page/legal-page').then(m => m.LegalPage)
+    },
+    {
         path: '',
         canActivate: [authGuard],
         loadComponent: () => import('./shell/shell').then(m => m.Shell),

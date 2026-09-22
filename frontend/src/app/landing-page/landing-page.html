@@ -138,6 +138,10 @@
 
 	<footer class="landing-footer">
 		<p>{{ 'landing.footer' | translate }}</p>
+		<nav class="footer-links">
+			<a routerLink="/terms">{{ 'landing.footerTerms' | translate }}</a>
+			<a routerLink="/privacy">{{ 'landing.footerPrivacy' | translate }}</a>
+		</nav>
 	</footer>
 
 	@if (previewOpen()) {

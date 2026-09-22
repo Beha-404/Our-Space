@@ -3,6 +3,22 @@
   max-width: 780px;
 }
 
+.legal-footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.legal-footer-links a {
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+}
+
+.legal-footer-links a:hover {
+  color: var(--color-text-muted);
+}
+
 h1 {
   font-size: 1.8rem;
   margin-bottom: 28px;

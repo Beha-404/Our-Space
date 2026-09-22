@@ -1,0 +1,27 @@
+<div class="legal">
+	<header class="legal-nav">
+		<div class="brand">
+			<span class="brand-mark">✦</span>
+			<span class="brand-name gradient-text">OurSpace</span>
+		</div>
+		<a routerLink="/" class="btn btn-ghost btn-sm">{{ 'legal.backHome' | translate }}</a>
+	</header>
+
+	<article class="legal-content fade-in">
+		<h1>{{ titleKey | translate }}</h1>
+		<p class="legal-updated">{{ 'legal.updated' | translate }}</p>
+		<p class="legal-intro">{{ introKey | translate }}</p>
+
+		@for (section of sections; track section.titleKey) {
+			<section class="legal-section">
+				<h2>{{ section.titleKey | translate }}</h2>
+				<p>{{ section.bodyKey | translate }}</p>
+			</section>
+		}
+
+		<section class="legal-section">
+			<h2>{{ contactTitleKey | translate }}</h2>
+			<p>{{ contactBodyKey | translate }} <a [href]="'mailto:' + ('legal.contactEmail' | translate)">{{ 'legal.contactEmail' | translate }}</a>.</p>
+		</section>
+	</article>
+</div>

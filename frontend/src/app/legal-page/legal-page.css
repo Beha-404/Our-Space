@@ -1,0 +1,76 @@
+.legal {
+  min-height: 100vh;
+  padding: 0 24px 60px;
+}
+
+.legal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-mark {
+  font-size: 1.3rem;
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.legal-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.legal-content h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: 4px;
+}
+
+.legal-updated {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  color: var(--color-text-faint);
+}
+
+.legal-intro {
+  margin-bottom: 32px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.legal-section {
+  margin-bottom: 26px;
+}
+
+.legal-section h2 {
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.legal-section p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.legal-section a {
+  color: var(--color-accent-strong);
+}
+
+@media (max-width: 560px) {
+  .legal-nav {
+    padding: 16px 0;
+  }
+}
