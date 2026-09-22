@@ -136,7 +136,7 @@
   top: -15px;
   height: 16px;
   background-image: var(--wave-back);
-  background-size: 220px 16px;
+  background-size: 100% 16px;
   animation: waveShift 9s linear infinite;
 }
 
@@ -150,7 +150,7 @@
   top: -13px;
   height: 14px;
   background-image: var(--wave-front);
-  background-size: 220px 14px;
+  background-size: 100% 14px;
   animation: waveShift 6s linear infinite reverse;
 }
 
@@ -271,7 +271,7 @@
 }
 
 @keyframes waveShift {
-  to { background-position-x: 220px; }
+  to { background-position-x: 100%; }
 }
 
 @keyframes rise {
