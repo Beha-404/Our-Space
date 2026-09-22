@@ -8,7 +8,6 @@ import { NominatimPlace, PickedLocation, placeLabel, reversePlace, searchPlaces,
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 const PICKED_ZOOM = 13;
-const MIN_ZOOM = 2;
 const WORLD_BOUNDS: L.LatLngBoundsExpression = [[-90, -180], [90, 180]];
 const HOME_VIEW: Record<string, { center: L.LatLngTuple; zoom: number }> = {
   bs: { center: [44.0, 17.8], zoom: 6 },
@@ -108,13 +107,12 @@ export class LocationPicker {
 
     const map = L.map(element, {
       zoomControl: true,
-      minZoom: MIN_ZOOM,
       maxBounds: WORLD_BOUNDS,
       maxBoundsViscosity: 1,
     });
     this.map = map;
     map.attributionControl.setPrefix(false);
-    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19, minZoom: MIN_ZOOM, noWrap: true }).addTo(map);
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19, noWrap: true }).addTo(map);
 
     if (current) {
       map.setView([current.latitude, current.longitude], PICKED_ZOOM);
