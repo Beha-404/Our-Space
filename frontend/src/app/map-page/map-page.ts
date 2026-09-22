@@ -20,6 +20,8 @@ const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 const SINGLE_PLACE_ZOOM = 13;
 const PANEL_OFFSET_PX = 90;
+const MIN_ZOOM = 2;
+const WORLD_BOUNDS: L.LatLngBoundsExpression = [[-90, -180], [90, 180]];
 
 @Component({
   imports: [LocalDatePipe, TranslatePipe, Skeleton, RouterLink],
@@ -98,12 +100,18 @@ export class MapPage {
   }
 
   private createMap(element: HTMLElement, places: MapPlace[]): void {
-    const map = L.map(element, { zoomControl: false, attributionControl: true, worldCopyJump: true });
+    const map = L.map(element, {
+      zoomControl: false,
+      attributionControl: true,
+      minZoom: MIN_ZOOM,
+      maxBounds: WORLD_BOUNDS,
+      maxBoundsViscosity: 1,
+    });
     this.map = map;
 
     L.control.zoom({ position: 'topright' }).addTo(map);
     map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
-    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19 }).addTo(map);
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 19, minZoom: MIN_ZOOM, noWrap: true }).addTo(map);
 
     this.layer = L.layerGroup().addTo(map);
     map.on('moveend', () => this.renderMarkers());
