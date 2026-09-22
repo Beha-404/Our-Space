@@ -206,7 +206,8 @@
 
 @media (max-width: 720px) {
   .label {
-    display: none;
+    max-width: 68px;
+    font-size: 0.6rem;
   }
 }
 
