@@ -135,6 +135,10 @@ export class CapsulesPage {
     setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
   }
 
+  private scrollToCapsule(id: number): void {
+    document.getElementById(`capsule-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   private reveal(id: number): void {
     const sealedIndex = this.sealed().findIndex(c => c.id === id);
     if (sealedIndex >= 0) this.sealedPageRequested.set(Math.floor(sealedIndex / SEALED_PAGE_SIZE) + 1);
@@ -228,7 +232,7 @@ export class CapsulesPage {
         this.justOpenedId.set(opened.id);
         this.reveal(opened.id);
         afterNextRender(
-          () => setTimeout(() => scrollAndHighlight(`capsule-${opened.id}`), UNROLL_SETTLE_MS),
+          () => setTimeout(() => this.scrollToCapsule(opened.id), UNROLL_SETTLE_MS),
           { injector: this.injector },
         );
         this.toast.success('toast.capsuleOpened');
