@@ -253,7 +253,7 @@ h1 {
 
 .sea {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -263,7 +263,7 @@ h1 {
 .letters {
   display: flex;
   flex-direction: column;
-  gap: 34px;
+  gap: 22px;
   padding-top: 12px;
 }
 
@@ -286,7 +286,7 @@ h1 {
   }
 
   .sea {
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 }
 

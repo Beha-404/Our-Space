@@ -9,7 +9,7 @@
   justify-content: space-between;
   gap: 16px;
   width: 100%;
-  padding: 16px 26px;
+  padding: 13px 20px;
   font: inherit;
   color: inherit;
   text-align: left;
@@ -40,7 +40,7 @@
 
 .title {
   font-family: var(--font-hand);
-  font-size: 2.1rem;
+  font-size: 1.7rem;
   font-weight: 700;
   line-height: 1.1;
   overflow-wrap: anywhere;
@@ -101,21 +101,21 @@
 }
 
 .letter-wrap {
-  padding: 0 26px 20px;
+  padding: 0 20px 16px;
   border-top: 1px dashed var(--ink-line);
 }
 
 .letter {
   margin: 0;
   color: var(--ink);
-  padding: 10px 0 8px;
+  padding: 8px 0 6px;
   font-family: var(--font-hand);
-  font-size: 1.65rem;
+  font-size: 1.35rem;
   font-weight: 500;
-  line-height: 36px;
+  line-height: 30px;
   white-space: pre-wrap;
-  background: repeating-linear-gradient(180deg, transparent 0, transparent 35px, var(--ink-line) 35px, var(--ink-line) 36px);
-  background-position: 0 10px;
+  background: repeating-linear-gradient(180deg, transparent 0, transparent 29px, var(--ink-line) 29px, var(--ink-line) 30px);
+  background-position: 0 8px;
 }
 
 .foot {
@@ -129,7 +129,7 @@
 .signature {
   margin-left: auto;
   font-family: var(--font-hand);
-  font-size: 1.9rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--ink-accent);
 }
@@ -159,12 +159,12 @@
 @media (max-width: 640px) {
   .head,
   .letter-wrap {
-    padding-left: 18px;
-    padding-right: 18px;
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   .title {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
   }
 }
 
